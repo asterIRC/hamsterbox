@@ -118,4 +118,11 @@ extern void clear_ban_cache_client(struct Client *);
 extern void init_chcap_usage_counts(void);
 extern void set_chcap_usage_counts(struct Client *);
 extern void unset_chcap_usage_counts(struct Client *);
+
+extern int del_id(struct Channel *, char *, int);
+extern void send_mode_changes(struct Client *, struct Client *, struct Channel *, char *);
+extern int get_channel_access(struct Client *source_p, struct Membership *member);
+extern struct ChModeChange mode_changes[IRCD_BUFSIZE];
+extern int mode_count;
+
 #endif /* INCLUDED_channel_mode_h */

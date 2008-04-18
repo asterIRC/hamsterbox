@@ -24,6 +24,7 @@ PCRE_SRCS = \
   pcre_globals.c     \
   pcre_study.c       \
   pcre_tables.c      \
+  pcre_newline.c      \
   pcre_fullinfo.c    \
   pcre_try_flipped.c
 

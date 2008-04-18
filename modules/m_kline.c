@@ -250,7 +250,7 @@ me_kline(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 		DupString(aconf->host, khost);
 		DupString(aconf->user, kuser);
 
-		if(tkline_time != 0)
+		if(tkline_time > 1)
 		{
 			ircsprintf(buffer, "Temporary K-line %d min. - %s (%s)",
 				   (int) (tkline_time / 60), kreason, current_date);

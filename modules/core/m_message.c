@@ -39,6 +39,7 @@
 #include "irc_string.h"
 #include "hash.h"
 #include "packet.h"
+#include "hostmask.h"
 
 struct entity
 {
@@ -733,7 +734,7 @@ flood_attack_client(int p_or_n, struct Client *source_p, struct Client *target_p
 	int delta;
 
 	if(GlobalSetOptions.floodcount && MyConnect(target_p)
-	   && IsClient(source_p) && !IsConfCanFlood(source_p))
+	   && IsClient(source_p) && !IsCanFlood(source_p))
 	{
 		if((target_p->localClient->first_received_message_time + 1) < CurrentTime)
 		{
@@ -789,7 +790,7 @@ flood_attack_channel(int p_or_n, struct Client *source_p,
 {
 	int delta;
 
-	if(GlobalSetOptions.floodcount && !IsConfCanFlood(source_p))
+	if(GlobalSetOptions.floodcount && !IsCanFlood(source_p))
 	{
 		if((chptr->first_received_message_time + 1) < CurrentTime)
 		{

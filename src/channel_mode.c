@@ -80,7 +80,7 @@ static void chm_except(struct Client *, struct Client *, struct Channel *,
 static void chm_invex(struct Client *, struct Client *, struct Channel *,
 		      int, int *, char **, int *, int, int, char, void *, const char *);
 static void send_cap_mode_changes(struct Client *, struct Client *, struct Channel *, int, int);
-static void send_mode_changes(struct Client *, struct Client *, struct Channel *, char *);
+//static void send_mode_changes(struct Client *, struct Client *, struct Channel *, char *);
 
 /* 10 is a magic number in hybrid 6 NFI where it comes from -db */
 #define BAN_FUDGE	10
@@ -91,8 +91,8 @@ static char nuh_mask[MAXPARA][IRCD_BUFSIZE];
 /* some buffers for rebuilding channel/nick lists with ,'s */
 static char modebuf[IRCD_BUFSIZE];
 static char parabuf[MODEBUFLEN];
-static struct ChModeChange mode_changes[IRCD_BUFSIZE];
-static int mode_count;
+struct ChModeChange mode_changes[IRCD_BUFSIZE];
+int mode_count;
 static int mode_limit;		/* number of modes set other than simple */
 static int simple_modes_mask;	/* bit mask of simple modes already set */
 static int channel_capabs[] = { CAP_EX, CAP_IE, CAP_TS6 };
@@ -151,6 +151,19 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
 	char host[HOSTLEN + 1];
 	struct split_nuh_item nuh;
 
+	char rname[IRCD_BUFSIZE];
+	char ruser[IRCD_BUFSIZE];
+	char rhost[IRCD_BUFSIZE];
+	char errbuff[IRCD_BUFSIZE];
+	struct split_nuh_item rnuh;
+	pcre *exp_nick = NULL, *exp_user = NULL, *exp_host = NULL;
+	const char *errptr = NULL; 
+	int is_regex = 0;
+	int hosttype = HM_HOST;
+	struct irc_ssaddr raddr;
+	int rbits; 
+	char *s; 
+
 	/* dont let local clients overflow the b/e/I lists */
 	if(MyClient(client_p))
 	{
@@ -168,22 +181,80 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
 		collapse(banid);
 	}
 
-	nuh.nuhmask = check_string(banid);
-	nuh.nickptr = name;
-	nuh.userptr = user;
-	nuh.hostptr = host;
+	if((type == CHFL_BAN) && match("r/*", banid))
+	{
+		if(strlen(banid) > 200)
+		{
+			sendto_one(client_p, form_str(ERR_CANNOTDOCOMMAND),
+			   me.name, client_p->name, "MODE", "Regex too long");
+			return 0;
+ 		}
 
-	nuh.nicksize = sizeof(name);
-	nuh.usersize = sizeof(user);
-	nuh.hostsize = sizeof(host);
+		rnuh.nuhmask = check_string(banid);
+		rnuh.nickptr = rname;
+		rnuh.userptr = ruser;
+		rnuh.hostptr = rhost;
 
-	split_nuh(&nuh);
+		rnuh.nicksize = sizeof(rname);
+		rnuh.usersize = sizeof(ruser);
+		rnuh.hostsize = sizeof(rhost);
 
+		split_nuh(&rnuh);
+	
+		if((s = strchr(rname, '/')) == NULL)
+			s = rname;
+		else
+			s++; 
+		if((exp_nick = ircd_pcre_compile(s, &errptr)) && 
+		   (exp_user = ircd_pcre_compile(ruser, &errptr)))
+		{
+			hosttype = parse_netmask(rhost, &raddr, &rbits);
+			if(hosttype == HM_HOST)
+			{
+				exp_host = ircd_pcre_compile(rhost, &errptr);
+				if(exp_host)
+					is_regex = 1;
+				else
+				{
+					ircsprintf(errbuff, "Incorrect regex syntax: %s", errptr);
+					sendto_one(client_p, form_str(ERR_CANNOTDOCOMMAND),
+						   me.name, client_p->name, "MODE", errbuff);
+					return 0;
+				}
+			}
+			else
+				is_regex = 1;
+		}
+		else
+		{
+			ircsprintf(errbuff, "Incorrect regex syntax: %s", errptr);
+			sendto_one(client_p, form_str(ERR_CANNOTDOCOMMAND),
+			   me.name, client_p->name, "MODE", errbuff);
+			return 0;
+ 		}
+	}
+	else
+	{
+		nuh.nuhmask = check_string(banid);
+		nuh.nickptr = name;
+		nuh.userptr = user;
+		nuh.hostptr = host;
+
+		nuh.nicksize = sizeof(name);
+		nuh.usersize = sizeof(user);
+		nuh.hostsize = sizeof(host);
+
+		split_nuh(&nuh);
+	}
+	
 	/*
 	 * Re-assemble a new n!u@h and print it back to banid for sending
 	 * the mode to the channel.
 	 */
-	len = ircsprintf(banid, "%s!%s@%s", name, user, host);
+	if(is_regex)
+		len = ircsprintf(banid, "%s!%s@%s", rname, ruser, rhost);
+	else
+		len = ircsprintf(banid, "%s!%s@%s", name, user, host);
 
 	switch (type)
 	{
@@ -206,22 +277,50 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
 	DLINK_FOREACH(ban, list->head)
 	{
 		ban_p = ban->data;
-		if(!irccmp(ban_p->name, name) &&
-		   !irccmp(ban_p->username, user) && !irccmp(ban_p->host, host))
+		if(is_regex)
 		{
-			return 0;
+			if(!irccmp(ban_p->name, rname) &&
+			   !irccmp(ban_p->username, ruser) && !irccmp(ban_p->host, rhost))
+			{
+				return 0;
+			}
 		}
+		else
+		{
+			if(!irccmp(ban_p->name, name) &&
+			   !irccmp(ban_p->username, user) && !irccmp(ban_p->host, host))
+			{
+				return 0;
+			}
+		}	
 	}
 
 	ban_p = BlockHeapAlloc(ban_heap);
-
-	DupString(ban_p->name, name);
-	DupString(ban_p->username, user);
-	DupString(ban_p->host, host);
+	
+	if(is_regex)
+	{
+		DupString(ban_p->name, rname);
+		DupString(ban_p->username, ruser);
+		DupString(ban_p->host, rhost);
+	}
+	else
+	{
+		DupString(ban_p->name, name);
+		DupString(ban_p->username, user);
+		DupString(ban_p->host, host);
+	}
 
 	ban_p->when = CurrentTime;
 	ban_p->len = len - 2;	/* -2 for @ and ! */
-	ban_p->type = parse_netmask(host, &ban_p->addr, &ban_p->bits);
+	if(is_regex)
+	{
+		if(hosttype == HM_HOST)
+			ban_p->type = HM_HOST;
+		else
+			ban_p->type = parse_netmask(rhost, &ban_p->addr, &ban_p->bits);	
+	}
+	else
+		ban_p->type = parse_netmask(host, &ban_p->addr, &ban_p->bits);
 
 	if(IsClient(client_p))
 	{
@@ -245,7 +344,7 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
  * output	- 0 for failure, 1 for success
  * side effects	-
  */
-static int
+int
 del_id(struct Channel *chptr, char *banid, int type)
 {
 	dlink_list *list;
@@ -256,25 +355,87 @@ del_id(struct Channel *chptr, char *banid, int type)
 	char host[HOSTLEN + 1];
 	struct split_nuh_item nuh;
 
+	char rname[IRCD_BUFSIZE];
+	char ruser[IRCD_BUFSIZE];
+	char rhost[IRCD_BUFSIZE];
+	struct split_nuh_item rnuh;
+	pcre *exp_nick = NULL, *exp_user = NULL, *exp_host = NULL;
+	const char *errptr = NULL; 
+	int is_regex = 0;
+	int hosttype = HM_HOST;
+	struct irc_ssaddr raddr;
+	int rbits; 
+	char *s; 
+
 	if(banid == NULL)
 		return 0;
 
-	nuh.nuhmask = check_string(banid);
-	nuh.nickptr = name;
-	nuh.userptr = user;
-	nuh.hostptr = host;
+	if((type == CHFL_BAN) && match("r/*", banid))
+	{
+		if(strlen(banid) > 200)
+		{
+			return 0;
+ 		}
 
-	nuh.nicksize = sizeof(name);
-	nuh.usersize = sizeof(user);
-	nuh.hostsize = sizeof(host);
+		rnuh.nuhmask = check_string(banid);
+		rnuh.nickptr = rname;
+		rnuh.userptr = ruser;
+		rnuh.hostptr = rhost;
 
-	split_nuh(&nuh);
+		rnuh.nicksize = sizeof(rname);
+		rnuh.usersize = sizeof(ruser);
+		rnuh.hostsize = sizeof(rhost);
 
+		split_nuh(&rnuh);
+
+		if((s = strchr(rname, '/')) == NULL)
+			s = rname;
+		else
+			s++; 
+		if((exp_nick = ircd_pcre_compile(s, &errptr)) && 
+		   (exp_user = ircd_pcre_compile(ruser, &errptr)))
+		{
+			hosttype = parse_netmask(rhost, &raddr, &rbits);
+			if(hosttype == HM_HOST)
+			{
+				exp_host = ircd_pcre_compile(rhost, &errptr);
+				if(exp_host)
+					is_regex = 1;
+				else
+				{
+					return 0;
+				}
+			}
+			else
+				is_regex = 1;
+		}
+		else
+		{
+			return 0;
+ 		}
+	}
+	else
+	{
+		nuh.nuhmask = check_string(banid);
+		nuh.nickptr = name;
+		nuh.userptr = user;
+		nuh.hostptr = host;
+
+		nuh.nicksize = sizeof(name);
+		nuh.usersize = sizeof(user);
+		nuh.hostsize = sizeof(host);
+
+		split_nuh(&nuh);
+	}
+	
 	/*
 	 * Re-assemble a new n!u@h and print it back to banid for sending
 	 * the mode to the channel.
 	 */
-	ircsprintf(banid, "%s!%s@%s", name, user, host);
+	if(is_regex)
+		ircsprintf(banid, "%s!%s@%s", rname, ruser, rhost);
+	else
+		ircsprintf(banid, "%s!%s@%s", name, user, host);
 
 	switch (type)
 	{
@@ -299,11 +460,23 @@ del_id(struct Channel *chptr, char *banid, int type)
 	{
 		banptr = ban->data;
 
-		if(!irccmp(name, banptr->name) &&
-		   !irccmp(user, banptr->username) && !irccmp(host, banptr->host))
+		if(is_regex)
 		{
-			remove_ban(banptr, list);
-			return 1;
+			if(!irccmp(rname, banptr->name) &&
+			   !irccmp(ruser, banptr->username) && !irccmp(rhost, banptr->host))
+			{
+				remove_ban(banptr, list);
+				return 1;
+			}
+		}
+		else
+		{
+			if(!irccmp(name, banptr->name) &&
+			   !irccmp(user, banptr->username) && !irccmp(host, banptr->host))
+			{
+				remove_ban(banptr, list);
+				return 1;
+			}
 		}
 	}
 
@@ -695,6 +868,9 @@ chm_ban(struct Client *client_p, struct Client *source_p,
 	mask = nuh_mask[*parn];
 	memcpy(mask, parv[*parn], sizeof(nuh_mask[*parn]));
 	++*parn;
+
+	if(MyClient(source_p) && match("r/*", mask))
+		return;
 
 	if(IsServer(client_p))
 		if(strchr(mask, ' '))
@@ -1652,7 +1828,7 @@ static struct ChannelMode ModeTable[255] =
  *                chanop level access, 0 for peon level access.
  * side effects - NONE
  */
-static int
+int
 get_channel_access(struct Client *source_p, struct Membership *member)
 {
 	/* Let hacked servers in for now... */
@@ -1820,7 +1996,7 @@ send_cap_mode_changes(struct Client *client_p, struct Client *source_p,
  *               and propagates to servers.
  */
 /* ensure parabuf < MODEBUFLEN -db */
-static void
+void
 send_mode_changes(struct Client *client_p, struct Client *source_p,
 		  struct Channel *chptr, char *chname)
 {

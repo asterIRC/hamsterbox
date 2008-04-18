@@ -46,6 +46,8 @@
 static void m_mode(struct Client *, struct Client *, int, char *[]);
 static void ms_tmode(struct Client *, struct Client *, int, char *[]);
 static void ms_bmask(struct Client *, struct Client *, int, char *[]);
+static int check_rban(struct Client *client_p, struct Client *source_p, int parc, char *parv[]);
+
 
 struct Message mode_msgtab = {
 	"MODE", 0, 0, 2, 0, MFLG_SLOW, 0,
@@ -122,6 +124,15 @@ m_mode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 		sendto_one(source_p, form_str(ERR_NOSUCHCHANNEL),
 			   ID_or_name(&me, source_p->from),
 			   ID_or_name(source_p, source_p->from), parv[1]);
+		return;
+	}
+
+	switch(check_rban(client_p, source_p, parc, parv))
+	{
+	case 0:
+	case 1:
+		break;
+	default:
 		return;
 	}
 
@@ -319,3 +330,163 @@ ms_bmask(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 		      source_p->id, (unsigned long) chptr->channelts, chptr->chname,
 		      parv[3], parv[4]);
 }
+
+/*
+ * m_rban
+ */
+static void
+m_rban(struct Client *client_p, struct Client *source_p, char *chname, int dir, char *bmask)
+{
+	struct Channel *chptr = NULL;
+	struct Membership *member;
+	int alevel;
+	mode_count = 0;
+
+	chptr = hash_find_channel(chname);
+
+	if(strlen(bmask) > 200)
+	{
+		sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
+			   me.name, source_p->name, "MODE", "Regex too long");
+		return;
+	}
+	
+	if(!match("r/*", bmask))	
+	{
+		sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
+			   me.name, source_p->name, "MODE", "Missing regex prefix");
+		return;
+	}
+
+	if((dir != MODE_ADD) && (dir != MODE_DEL))
+	{
+		sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
+			   me.name, source_p->name, "MODE", "Direction undefined");
+		return;
+	}
+	
+	member = find_channel_link(source_p, chptr);
+	alevel = get_channel_access(source_p, member);
+
+	if(alevel < CHACCESS_HALFOP)
+	{
+		sendto_one(source_p, form_str(alevel == CHACCESS_NOTONCHAN ?
+  		           ERR_NOTONCHANNEL : ERR_CHANOPRIVSNEEDED),
+			   me.name, source_p->name, chptr->chname);
+		return;
+	}
+	
+	switch (dir)
+	{
+	case MODE_ADD:
+		if(!add_id(source_p, chptr, bmask, CHFL_BAN))
+			return;
+		break;
+	case MODE_DEL:
+		if(!del_id(chptr, bmask, CHFL_BAN))
+			return;
+		break;
+	default:
+		assert(0);
+	}
+
+	mode_changes[mode_count].letter = 'b';
+	mode_changes[mode_count].dir = dir;
+	mode_changes[mode_count].caps = 0;
+	mode_changes[mode_count].nocaps = 0;
+	mode_changes[mode_count].mems = ALL_MEMBERS;
+	mode_changes[mode_count].id = NULL;
+	mode_changes[mode_count++].arg = bmask;
+	
+	send_mode_changes(client_p, source_p, chptr, chptr->chname);
+}
+
+static int
+check_rban(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+	if(parc < 3)
+		return 0;
+
+	char *ml = parv[2], c;
+	int index = 3;
+	int is_rban = 0;
+	int has_param_mode = 0;
+	int dir = MODE_ADD;
+	int rban_index = 0;
+	int rban_dir = MODE_QUERY;
+	int total = 0;
+							
+	for(; (c = *ml) != '\0'; ml++)
+	{
+		total++;
+		switch (c)
+		{
+		case '+':
+			dir = MODE_ADD;
+			break;
+		case '-':
+			dir = MODE_DEL;
+			break;
+		case '=':
+			dir = MODE_QUERY;
+			break;
+		case 'b':
+			if(dir == MODE_QUERY)
+				break;
+			if(index < parc)
+			{
+				if(match("r/*", parv[index]))
+				{
+					is_rban++;
+					rban_index = index;
+					rban_dir = dir;
+				}
+			}
+			index++;
+			has_param_mode++;
+			break;
+		case 'I':
+		case 'a':
+		case 'e':
+		case 'h':
+		case 'k':
+		case 'l':
+		case 'o':
+		case 'q':
+		case 'v':
+			if(dir == MODE_QUERY)
+				break;
+			index++;
+			has_param_mode++;
+			break;
+		default:
+			break;
+		}
+	}
+
+	if(is_rban)
+	{
+		if(total > 20)
+		{
+			sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
+				   me.name, source_p->name, "MODE", "Channel modes string too long");
+			return -1;
+		}
+		if(is_rban > 1)
+		{
+			sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
+				   me.name, source_p->name, "MODE", "You can use only one regex ban per line");
+			return -1;
+		}
+		if(has_param_mode > 1)
+		{
+			sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
+				   me.name, source_p->name, "MODE", "You cannot use other parametric modes with regex ban");
+			return -1;
+		}
+		m_rban(client_p, source_p, parv[1], rban_dir, parv[rban_index]);
+		return 1;
+	}
+	return 0;
+}
+

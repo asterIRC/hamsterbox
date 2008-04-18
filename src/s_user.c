@@ -606,6 +606,8 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 {
 	dlink_node *server_node = NULL;
 	static char ubuf[12];
+	static char authflags[14]; 
+	char *prefix_ptr; 
 
 	if(MyClient(source_p))
 		send_umode(source_p, source_p, 0, SEND_UMODES, ubuf);
@@ -683,6 +685,29 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 					   (unsigned long) source_p->servicestamp,
 					   source_p->realhost, source_p->info);
 		}
+	}
+	if(MyClient(source_p))
+	{
+		prefix_ptr = authflags;
+		if(IsExemptResv(source_p))
+			*prefix_ptr++ = '$';
+		if(IsIPSpoof(source_p))
+			*prefix_ptr++ = '=';
+		if(IsExemptKline(source_p))
+			*prefix_ptr++ = '^';
+		if(IsExemptGline(source_p))
+			*prefix_ptr++ = '_';
+		if(IsExemptLimits(source_p))
+			*prefix_ptr++ = '>';
+		if(IsIdlelined(source_p))
+			*prefix_ptr++ = '<';
+		if(IsCanFlood(source_p))
+			*prefix_ptr++ = '|'; 
+		*prefix_ptr = '\0';
+		if(strlen(authflags) > 0)
+			sendto_server(NULL, source_p, NULL, CAP_ENCAP, NOCAPS,
+				      LL_ICLIENT, ":%s ENCAP * AUTHFLAGS %s %s",
+				      me.name, source_p->name, authflags);
 	}
 }
 
@@ -785,6 +810,7 @@ report_and_set_user_flags(struct Client *source_p, const struct AccessItem *acon
 	if(IsConfExemptKline(aconf))
 	{
 		SetExemptKline(source_p);
+		SetExemptGline(source_p);
 		sendto_one(source_p,
 			   ":%s NOTICE %s :*** You are exempt from K/D/G lines. congrats.",
 			   me.name, source_p->name);

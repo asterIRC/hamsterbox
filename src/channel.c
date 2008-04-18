@@ -720,29 +720,111 @@ find_bmask(const struct Client *who, const dlink_list * const list)
 	{
 		struct Ban *bp = ptr->data;
 
-		if(match(bp->name, who->name) && match(bp->username, who->username))
+		if(!match("r/*", bp->name))
 		{
-			switch (bp->type)
+			if(match(bp->name, who->name) && match(bp->username, who->username))
 			{
-			case HM_HOST:
-				if(match(bp->host, who->host) || match(bp->host, who->realhost)
-				   || match(bp->host, who->sockhost))
-					return 1;
-				break;
-			case HM_IPV4:
-				if(who->localClient->aftype == AF_INET)
-					if(match_ipv4(&who->localClient->ip, &bp->addr, bp->bits))
+				switch (bp->type)
+				{
+				case HM_HOST:
+					if(match(bp->host, who->host) || match(bp->host, who->realhost)
+					   || match(bp->host, who->sockhost))
 						return 1;
-				break;
+					break;
+				case HM_IPV4:
+					if(who->localClient->aftype == AF_INET)
+						if(match_ipv4(&who->localClient->ip, &bp->addr, bp->bits))
+							return 1;
+					break;
 #ifdef IPV6
-			case HM_IPV6:
-				if(who->localClient->aftype == AF_INET6)
-					if(match_ipv6(&who->localClient->ip, &bp->addr, bp->bits))
-						return 1;
-				break;
+				case HM_IPV6:
+					if(who->localClient->aftype == AF_INET6)
+						if(match_ipv6(&who->localClient->ip, &bp->addr, bp->bits))
+							return 1;
+					break;
 #endif
-			default:
-				assert(0);
+				default:
+					assert(0);
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+/*!
+ * \param who  pointer to Client to check
+ * \param list pointer to ban list to search
+ * \return 1 if regex ban found for given n!u\@h mask, 0 otherwise
+ *
+ */
+static int
+find_rbmask(const struct Client *who, const dlink_list * const list)
+{
+	const dlink_node *ptr = NULL;
+	pcre *exp_nick = NULL, *exp_user = NULL, *exp_host = NULL;
+	const char *errptr = NULL;
+	char *s; 
+
+	DLINK_FOREACH(ptr, list->head)
+	{
+		struct Ban *bp = ptr->data;
+
+		if(match("r/*", bp->name))
+		{
+			if((s = strchr(bp->name, '/')) == NULL)
+				s = bp->name;
+			else
+				s++; 
+			if((exp_nick = ircd_pcre_compile(s, &errptr)) && 
+			   (exp_user = ircd_pcre_compile(bp->username, &errptr)))
+			{
+				if(!ircd_pcre_exec(exp_nick, who->name) && !ircd_pcre_exec(exp_user, who->username))
+				{
+					exp_host = ircd_pcre_compile(bp->host, &errptr);
+					switch (bp->type)
+					{
+					case HM_HOST:
+		   				if(exp_host)
+						{
+							if(!ircd_pcre_exec(exp_host, who->host) || !ircd_pcre_exec(exp_host, who->realhost)
+							   || !ircd_pcre_exec(exp_host, who->sockhost))
+								return 1;
+						}
+						break;
+					case HM_IPV4:
+						if(who->localClient->aftype == AF_INET) 
+						{
+							if(match_ipv4(&who->localClient->ip, &bp->addr, bp->bits))
+								return 1;
+			   				if(exp_host)
+							{
+								if(!ircd_pcre_exec(exp_host, who->host) || !ircd_pcre_exec(exp_host, who->realhost)
+								   || !ircd_pcre_exec(exp_host, who->sockhost))
+									return 1;
+							}
+						}
+						break;
+#ifdef IPV6
+					case HM_IPV6:
+						if(who->localClient->aftype == AF_INET6)
+						{
+							if(match_ipv6(&who->localClient->ip, &bp->addr, bp->bits))
+								return 1;
+			   				if(exp_host)
+							{
+								if(!ircd_pcre_exec(exp_host, who->host) || !ircd_pcre_exec(exp_host, who->realhost)
+								   || !ircd_pcre_exec(exp_host, who->sockhost))
+									return 1;
+							}
+						}
+						break;
+#endif
+					default:
+						assert(0);
+					}
+				}
 			}
 		}
 	}
@@ -758,7 +840,7 @@ find_bmask(const struct Client *who, const dlink_list * const list)
 int
 is_banned(struct Channel *chptr, struct Client *who)
 {
-	if(find_bmask(who, &chptr->banlist))
+	if(find_bmask(who, &chptr->banlist) || find_rbmask(who, &chptr->banlist))
 		if(!ConfigChannel.use_except || !find_bmask(who, &chptr->exceptlist))
 			return 1;
 

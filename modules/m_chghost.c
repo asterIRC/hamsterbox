@@ -44,10 +44,11 @@
 #include "hash.h"
 
 static void me_chghost(struct Client *, struct Client *, int, char *[]);
+static void mo_chghost(struct Client *, struct Client *, int, char *[]);
 
 struct Message chghost_msgtab = {
 	"CHGHOST", 0, 0, 2, 0, MFLG_SLOW, 0,
-	{m_unregistered, m_ignore, m_ignore, me_chghost, m_ignore, m_ignore}
+	{m_unregistered, m_ignore, m_ignore, me_chghost, mo_chghost, m_ignore}
 };
 
 #ifndef STATIC_MODULES
@@ -96,4 +97,66 @@ me_chghost(struct Client *client_p, struct Client *source_p, int parc, char *par
 
 	if(ConfigChannel.cycle_on_hostchange)
 		do_hostchange_joins(target_p);
+}
+
+static void
+mo_chghost(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+	struct Client *target_p = NULL;
+
+	if(!IsNetAdmin(source_p))
+	{
+		sendto_one(source_p, form_str(ERR_NOPRIVILEGES), me.name, source_p->name);
+		return;
+	}
+
+	if(parc < 3)
+	{ 
+		sendto_one(source_p, form_str(ERR_NEEDMOREPARAMS), me.name, source_p->name, "CHGHOST"); 
+		return;
+	}
+
+	if((target_p = find_client(parv[1])) == NULL)
+	{
+		sendto_one(source_p, form_str(ERR_NOSUCHNICK),
+			   me.name, source_p->name, parv[1]);
+		return;
+	} 
+
+	if(!IsClient(target_p))
+	{
+		sendto_one(source_p, form_str(ERR_NONICKNAMEGIVEN),
+			   me.name, source_p->name, parv[1]);
+		return;
+	}
+
+	if(strlen(parv[2]) > HOSTLEN)
+	{
+		sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
+			   me.name, source_p->name, "CHGHOST", "Hostname is too long");
+		return;
+	}
+
+	if(!*parv[2] || !valid_hostname(parv[2]))
+	{
+		sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
+			   me.name, source_p->name, "CHGHOST", "Illegal character in hostname");
+		return;
+	}
+
+	sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
+		      LL_ICLIENT, ":%s ENCAP * CHGHOST %s %s",
+		      me.name, target_p->name, parv[2]);
+	
+	if(!strcmp(target_p->host, parv[2]))
+		return;
+
+	if(ConfigChannel.cycle_on_hostchange)
+		do_hostchange_quits(target_p);
+
+	strlcpy(target_p->host, parv[2], sizeof(target_p->host));
+
+	if(ConfigChannel.cycle_on_hostchange)
+		do_hostchange_joins(target_p);
+
 }

@@ -40,6 +40,7 @@ SRCS = \
   m_ltrace.c \
   m_mkpasswd.c  \
   m_ojoin.c     \
+  m_samode.c     \
   m_operspy.c   \
   m_opme.c      \
   m_spoof.c

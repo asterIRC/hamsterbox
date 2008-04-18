@@ -2358,6 +2358,8 @@ static const struct oper_privs
 	{
 	OPER_FLAG_X, 0, 'X'},
 	{
+	OPER_FLAG_HIDDEN_OPER, 0, 'Z'},
+	{
 	0, 0, '\0'}
 };
 
@@ -2370,10 +2372,12 @@ oper_privs_as_string(const unsigned int port)
 
 	for(; flag_list[i].oprivs; ++i)
 	{
-		if((port & flag_list[i].oprivs) && (port & flag_list[i].hidden) == 0)
-			*privs_ptr++ = flag_list[i].c;
-		else
-			*privs_ptr++ = ToLowerTab[flag_list[i].c];
+		if((port & flag_list[i].oprivs)||(port & flag_list[i].hidden)) {
+			if((port & flag_list[i].hidden) == 0)
+				*privs_ptr++ = flag_list[i].c;
+			else
+				*privs_ptr++ = ToLowerTab[flag_list[i].c];
+		}
 	}
 
 	*privs_ptr = '\0';

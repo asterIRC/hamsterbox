@@ -220,7 +220,7 @@ m_kick(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 			{
 				static char buf[IRCD_BUFSIZE];
 				sendto_one(who,
-					   ":%s NOTICE %s :*** %s tried to kick you from %s",
+					   ":%s NOTICE %s :*** %s tried to kick you from %s and failed",
 					   ID_or_name(&me, who->from), ID_or_name(who, who->from),
 					   source_p->name, name);
 				ircsprintf(buf, "%s is a %s and cannot be kicked from %s",

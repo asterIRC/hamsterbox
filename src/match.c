@@ -380,7 +380,7 @@ const unsigned int CharAttrs[] = {
 /* 0  */ CNTRL_C,
 /* 1  */ CNTRL_C | CHAN_C | VCHAN_C | NONEOS_C,
 /* 2  */ CNTRL_C | CHAN_C | NONEOS_C,
-/* 3  */ CNTRL_C | CHAN_C | NONEOS_C,
+/* 3  */ CNTRL_C | CHAN_C | NONEOS_C | HOST_C,
 /* 4  */ CNTRL_C | CHAN_C | VCHAN_C | NONEOS_C,
 /* 5  */ CNTRL_C | CHAN_C | VCHAN_C | NONEOS_C,
 /* 6  */ CNTRL_C | CHAN_C | VCHAN_C | NONEOS_C,

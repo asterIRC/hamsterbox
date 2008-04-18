@@ -867,6 +867,8 @@ void
 sendnick_TS(struct Client *client_p, struct Client *target_p)
 {
 	static char ubuf[12];
+	static char authflags[14]; 
+	char *prefix_ptr;
 
 	if(!IsClient(target_p))
 		return;
@@ -900,7 +902,30 @@ sendnick_TS(struct Client *client_p, struct Client *target_p)
 	if(IsConfAwayBurst((struct AccessItem *) map_to_conf(client_p->serv->sconf)))
 		if(!EmptyString(target_p->away))
 			sendto_one(client_p, ":%s AWAY :%s", target_p->name, target_p->away);
-
+	
+	if(MyClient(target_p))
+	{
+		prefix_ptr = authflags;
+		if(IsExemptResv(target_p))
+			*prefix_ptr++ = '$';
+		if(IsIPSpoof(target_p))
+			*prefix_ptr++ = '=';
+		if(IsExemptKline(target_p))
+			*prefix_ptr++ = '^';
+		if(IsExemptGline(target_p))
+			*prefix_ptr++ = '_';
+		if(IsExemptLimits(target_p))
+			*prefix_ptr++ = '>';
+		if(IsIdlelined(target_p))
+			*prefix_ptr++ = '<';
+		if(IsCanFlood(target_p))
+			*prefix_ptr++ = '|'; 
+		*prefix_ptr = '\0';
+		if(strlen(authflags) > 0)
+			sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
+				      LL_ICLIENT, ":%s ENCAP * AUTHFLAGS %s %s",
+				      me.name, target_p->name, authflags);
+	}
 }
 
 /* client_burst_if_needed()

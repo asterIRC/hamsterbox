@@ -1084,6 +1084,9 @@ static void
 stats_operedup(struct Client *source_p)
 {
 	dlink_node *ptr;
+	static char privs_out[16];
+	char *privs_ptr; 
+	int i,j;
 
 	DLINK_FOREACH(ptr, oper_list.head)
 	{
@@ -1093,14 +1096,33 @@ stats_operedup(struct Client *source_p)
 			continue;
 
 		if(MyClient(source_p) && IsOper(source_p))
-			sendto_one(source_p, ":%s %d %s p :[%c][%s] %s (%s@%s) Idle: %d",
-				   from, RPL_STATSDEBUG, to,
-				   IsAdmin(target_p) ?
-				   (IsOperHiddenAdmin(target_p) ? 'O' : 'A') : 'O',
-				   oper_privs_as_string(target_p->localClient->operflags),
-				   target_p->name, target_p->username, target_p->host,
-				   (int) (CurrentTime - target_p->localClient->last));
-		else
+		{
+			if(source_p != target_p)
+			{ 
+				privs_ptr = oper_privs_as_string(target_p->localClient->operflags);
+				for(i = 0,j = 0; i < strlen(privs_ptr); i++)
+				{
+					if((privs_ptr[i] >= 'A' ) && (privs_ptr[i] <= 'Z'))
+					{ 
+						privs_out[j] = privs_ptr[i];
+						j++;
+					}
+				}
+				privs_out[j] = '\0';				
+				sendto_one(source_p, ":%s %d %s p :[%c][%s] %s (%s@%s) Idle: %d",
+					   from, RPL_STATSDEBUG, to,
+					   IsAdmin(target_p) ?
+					   (IsOperHiddenAdmin(target_p) ? 'O' : 'A') : 'O',privs_out,					   
+					   target_p->name, target_p->username, target_p->host,
+					   (int) (CurrentTime - target_p->localClient->last));
+			} else
+				sendto_one(source_p, ":%s %d %s p :[%c][%s] %s (%s@%s) Idle: %d",
+					   from, RPL_STATSDEBUG, to,
+					   IsAdmin(target_p) ? 'A' : 'O',
+					   oper_privs_as_string(target_p->localClient->operflags),
+					   target_p->name, target_p->username, target_p->host,
+					   (int) (CurrentTime - target_p->localClient->last));
+		} else
 			sendto_one(source_p, ":%s %d %s p :[%c] %s (%s@%s) Idle: %d",
 				   from, RPL_STATSDEBUG, to,
 				   IsAdmin(target_p) ?

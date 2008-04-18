@@ -343,6 +343,8 @@ whois_person(struct Client *source_p, struct Client *target_p)
 	int tlen;
 	int reply_to_send = NO;
 	int visible;
+	static char authflags[14]; 
+	char *prefix_ptr; 
 
 	server_p = target_p->servptr;
 
@@ -451,12 +453,31 @@ whois_person(struct Client *source_p, struct Client *target_p)
 			ubuf[0] = '+';
 			ubuf[1] = '\0';
 		}
-
-		sendto_one(source_p, form_str(RPL_WHOISMODES),
-			   me.name, source_p->name, target_p->name, ubuf);
+		prefix_ptr = authflags;
+		if(IsExemptResv(target_p))
+			*prefix_ptr++ = '$';
+		if(IsIPSpoof(target_p))
+			*prefix_ptr++ = '=';
+		if(IsExemptKline(target_p))
+			*prefix_ptr++ = '^';
+		if(IsExemptGline(target_p))
+			*prefix_ptr++ = '_';
+		if(IsExemptLimits(target_p))
+			*prefix_ptr++ = '>';
+		if(IsIdlelined(target_p))
+			*prefix_ptr++ = '<';
+		if(IsCanFlood(target_p))
+			*prefix_ptr++ = '|'; 
+		*prefix_ptr = '\0';
+		if(strlen(authflags) > 0)
+			sendto_one(source_p, form_str(RPL_WHOISMODES),
+				   me.name, source_p->name, target_p->name, ubuf, authflags);
+		else
+			sendto_one(source_p, form_str(RPL_WHOISMODES),
+				   me.name, source_p->name, target_p->name, ubuf, "[none]");
 	}
 
-	if(ConfigFileEntry.use_whois_actually && IsCloaked(target_p))
+	if(ConfigFileEntry.use_whois_actually)
 	{
 		int hide_ip = 0;
 
@@ -474,10 +495,13 @@ whois_person(struct Client *source_p, struct Client *target_p)
 				   hide_ip ? "255.255.255.255" : target_p->sockhost);
 	}
 
-	if(MyClient(target_p))	/* Can't do any of this if not local! db */
-		sendto_one(source_p, form_str(RPL_WHOISIDLE),
-			   me.name, source_p->name, target_p->name,
-			   CurrentTime - target_p->localClient->last, target_p->firsttime);
+	if(!IsHideChannels(target_p) || IsAdmin(source_p) || source_p == target_p)
+	{
+		if(MyClient(target_p))	/* Can't do any of this if not local! db */
+			sendto_one(source_p, form_str(RPL_WHOISIDLE),
+				   me.name, source_p->name, target_p->name,
+				   CurrentTime - target_p->localClient->last, target_p->firsttime);
+	}
 
 #ifdef RIZON
 	if(source_p != target_p && IsOper(target_p) && IsSpy(target_p))

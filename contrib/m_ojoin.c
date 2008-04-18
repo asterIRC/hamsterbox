@@ -107,8 +107,22 @@ mo_ojoin(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 			modeletter = 'v';
 			++name;
 			break;
-		case '#':
+#ifdef CHANAQ
+		case '~':
+			prefix = "~";
+			flags = CHFL_OWNER;
+			modeletter = 'q';
+			++name;
+			break;
+		case '!':
+			prefix = "&";
+			flags = CHFL_PROTECTED;
+			modeletter = 'a';
+			++name;
+			break;
+#endif
 		case '&':
+		case '#':
 			prefix = "";
 			flags = 0;
 			modeletter = '\0';

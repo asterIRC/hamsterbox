@@ -17,7 +17,8 @@ SPOOF           SQUIT           STATS           SVINFO
 TESTGECOS       TESTLINE        TESTMASK        TRACE
 UHELP           UMODE           UNCAPTURE       UNDLINE
 UNGLINE         UNKLINE         UNRESV          UNXLINE
-WALLOPS         XLINE
+WALLOPS         XLINE           AUTHFLAGS       CHGHOST
+CHGIDENT        SAJOIN          SAMODE          SAPART
 
 Help topics available to users:
 

@@ -211,6 +211,9 @@ static void
 operspy_list(struct Client *client_p, int parc, char *parv[])
 {
 	const dlink_node *ptr = NULL;
+	static char modebuf[MODEBUFLEN];
+	static char parabuf[MODEBUFLEN];
+	static char modes[MODEBUFLEN];
 #ifdef OPERSPY_LOG
 	operspy_log(client_p, "LIST", parv[2]);
 #endif
@@ -226,9 +229,14 @@ operspy_list(struct Client *client_p, int parc, char *parv[])
 
 		if(match_chan(parv[2], chptr_list->chname))
 		{
-			sendto_one(client_p, form_str(RPL_LIST), me.name, client_p->name,
+			channel_modes(chptr_list, client_p, modebuf, parabuf);
+			if(modebuf[1] != '\0')
+				sprintf(modes, "[%s] ", modebuf);
+			else
+				*modes = '\0';
+ 			sendto_one(client_p, form_str(RPL_LIST), me.name, client_p->name,
 				   chptr_list->chname, dlink_list_length(&chptr_list->members),
-				   chptr_list->topic == NULL ? "" : chptr_list->topic);
+				   modes, chptr_list->topic == NULL ? "" : chptr_list->topic);
 		}
 	}
 
@@ -238,8 +246,6 @@ operspy_list(struct Client *client_p, int parc, char *parv[])
 static void
 operspy_mode(struct Client *client_p, int parc, char *parv[])
 {
-	/* needed to preserve actual client status */
-	int c_status = 0;
 	char modebuf[MODEBUFLEN];
 	char parabuf[MODEBUFLEN];
 	struct Channel *chptr_mode = NULL;
@@ -263,12 +269,10 @@ operspy_mode(struct Client *client_p, int parc, char *parv[])
 	 * XXX - this is a dirty nasty kludge to trick channel_modes()
 	 * into giving us the key
 	 */
-	c_status = client_p->status;
-	client_p->status = STAT_SERVER;
-
+	SetServices(client_p);
 	channel_modes(chptr_mode, client_p, modebuf, parabuf);
-	client_p->status = c_status;
-
+	ClearServices(client_p);
+	
 	sendto_one(client_p, form_str(RPL_CHANNELMODEIS),
 		   me.name, client_p->name, parv[2], modebuf, parabuf);
 	sendto_one(client_p, form_str(RPL_CREATIONTIME),
@@ -395,7 +399,7 @@ operspy_who(struct Client *client_p, int parc, char *parv[])
 			chptr_who = ((struct Membership *) target_p_who->channel.head->data)->chptr;
 
 			do_who(client_p, target_p_who, chptr_who->chname,
-			       get_member_status(target_p_who->channel.head->data, NO));
+			       get_member_status(target_p_who->channel.head->data, NO, NO));
 		}
 		else
 		{
@@ -479,7 +483,7 @@ operspy_whois(struct Client *client_p, int parc, char *parv[])
 
 		tlen = ircsprintf(t, "%s%s%s ",
 				  ShowChannel(client_p, target_p, chptr_whois) ? "" : "%",
-				  get_member_status((struct Membership *) lp->data, YES),
+				  get_member_status((struct Membership *) lp->data, YES, NO),
 				  chptr_whois->chname);
 		t += tlen;
 		cur_len += tlen;
@@ -558,7 +562,7 @@ who_global(struct Client *source_p, char *mask, int server_oper)
 					chptr;
 				snprintf(fl, sizeof(fl), "%s",
 					 get_member_status((struct Membership *) (target_p->channel.
-										  head->data), NO));
+										  head->data), NO, NO));
 
 				do_who(source_p, target_p, chptr->chname, fl);
 			}
@@ -583,7 +587,7 @@ do_who_on_channel(struct Client *source_p, struct Channel *chptr, char *chname)
 	DLINK_FOREACH(ptr, chptr->members.head)
 	{
 		ms = ptr->data;
-		do_who(source_p, ms->client_p, chname, get_member_status(ms, NO));
+		do_who(source_p, ms->client_p, chname, get_member_status(ms, NO, NO));
 	}
 }
 

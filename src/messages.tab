@@ -338,7 +338,7 @@ static struct NumericInfo replies[] = {
 /* 307 */  {"RPL_WHOISREGNICK", ":%s 307 %s %s :has identified for this nick", NULL},
 /* 308 */  {NULL, NULL, NULL},
 /* 309 */  {NULL, NULL, NULL},
-/* 310 */  {"RPL_WHOISMODES", ":%s 310 %s %s :is using modes %s", NULL}, 
+/* 310 */  {"RPL_WHOISMODES", ":%s 310 %s %s :is using modes %s authflags: %s", NULL}, 
 /* 311 */  {"RPL_WHOISUSER", ":%s 311 %s %s %s %s * :%s", NULL},
 /* 312 */  {"RPL_WHOISSERVER", ":%s 312 %s %s %s :%s", NULL},
 /* 313 */  {"RPL_WHOISOPERATOR", ":%s 313 %s %s :%s", NULL},
