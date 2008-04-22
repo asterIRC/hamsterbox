@@ -25,13 +25,13 @@ static struct NumericInfo replies[] = {
 /* 002 */  {"RPL_YOURHOST", ":%s 002 %s :Your host is %s, running version %s(%s)", NULL},
 /* 003 */  {"RPL_CREATED", ":%s 003 %s :This server was created %s", NULL},
 #if defined(CHANAQ) && defined(HALFOPS)
-/* 004 */  {"RPL_MYINFO", ":%s 004 %s %s %s(%s) %s BIMNORSabcehiklmnopqstv Iabehkloqv", NULL},
+/* 004 */  {"RPL_MYINFO", ":%s 004 %s %s %s(%s) %s BIMNORSabcehiklmnopqstvz Iabehkloqv", NULL},
 #elif defined(CHANAQ) && !defined(HALFOPS)
-/* 004 */  {"RPL_MYINFO", ":%s 004 %s %s %s %s BIMNORSabceiklmnopqstv Iabekloqv", NULL},
+/* 004 */  {"RPL_MYINFO", ":%s 004 %s %s %s %s BIMNORSabceiklmnopqstvz Iabekloqv", NULL},
 #elif !defined(CHANAQ) && defined(HALFOPS)
-/* 004 */  {"RPL_MYINFO", ":%s 004 %s %s %s %s BIMNORSbcehiklmnopstv Ibehklov", NULL},
+/* 004 */  {"RPL_MYINFO", ":%s 004 %s %s %s %s BIMNORSbcehiklmnopstvz Ibehklov", NULL},
 #elif !defined(CHANAQ) && !defined(HALFOPS)
-/* 004 */  {"RPL_MYINFO", ":%s 004 %s %s %s %s BIMNORSbceiklmnopstv Ibeklov", NULL},
+/* 004 */  {"RPL_MYINFO", ":%s 004 %s %s %s %s BIMNORSbceiklmnopstvz Ibeklov", NULL},
 #endif
 /* 005 */  {"RPL_ISUPPORT", ":%s 005 %s %s :are supported by this server", NULL},
 /* 006 */  {NULL, NULL, NULL},
@@ -700,7 +700,7 @@ static struct NumericInfo replies[] = {
 /* 669 */  {NULL, NULL, NULL},
 /* 670 */  {NULL, NULL, NULL},
 /* 671 */  {"RPL_WHOISSSL", ":%s 671 %s %s :is using a secure connection", NULL},
-/* 672 */  {NULL, NULL, NULL},
+/* 672 */  {"RPL_WHOISCGI", ":%s 672 %s %s :is a CGI:IRC client %s", NULL},
 /* 673 */  {NULL, NULL, NULL},
 /* 674 */  {NULL, NULL, NULL},
 /* 675 */  {NULL, NULL, NULL},

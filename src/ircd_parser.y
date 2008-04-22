@@ -257,6 +257,7 @@ unhook_hub_leaf_confs(void)
 %token  MODULES
 %token  NAME
 %token  NEED_PASSWORD
+%token  IS_WEBIRC
 %token  NETWORK_DESC
 %token  NETWORK_NAME
 %token  NICK
@@ -382,6 +383,8 @@ unhook_hub_leaf_confs(void)
 %token  USE_EGD
 %token  USE_EXCEPT
 %token  USE_INVEX
+%token  HIDE_KILLER
+%token  USE_REGEX_BANS
 %token  USE_KNOCK
 %token  USE_LOGGING
 %token  USE_WHOIS_ACTUALLY
@@ -1055,7 +1058,7 @@ oper_item:      oper_name | oper_user | oper_password | oper_hidden_admin |
                 oper_kline | oper_xline | oper_unkline |
 		oper_gline | oper_nick_changes | oper_remoteban |
                 oper_die | oper_rehash | oper_admin | oper_operwall |
-		oper_encrypted | oper_rsa_public_key_file |
+		oper_encrypted | oper_rsa_public_key_file | oper_spy | 
                 oper_flags | error ';' ;
 
 oper_name: NAME '=' QSTRING ';'
@@ -1419,6 +1422,17 @@ oper_hidden_oper: HIDDEN_OPER '=' TBOOL ';'
       yy_aconf->port |= OPER_FLAG_HIDDEN_OPER;
     else
       yy_aconf->port &= ~OPER_FLAG_HIDDEN_OPER;
+  }
+};
+
+oper_spy: OPER_SPY_T '=' TBOOL ';'
+{
+  if (ypass == 2)
+  {
+    if (yylval.number)
+      yy_aconf->port |= OPER_FLAG_OPER_SPY;
+    else
+      yy_aconf->port &= ~OPER_FLAG_OPER_SPY;
   }
 };
 
@@ -1885,7 +1899,7 @@ auth_items:     auth_items auth_item | auth_item;
 auth_item:      auth_user | auth_passwd | auth_class | auth_flags |
                 auth_kline_exempt | auth_need_ident |
                 auth_exceed_limit | auth_no_tilde | auth_gline_exempt |
-		auth_spoof | auth_spoof_notice |
+		auth_spoof | auth_spoof_notice | auth_webirc |
                 auth_redir_serv | auth_redir_port | auth_can_flood |
                 auth_need_password | auth_encrypted | error ';' ;
 
@@ -2042,6 +2056,13 @@ auth_flags_item_atom: SPOOF_NOTICE
     if (not_atom) yy_aconf->flags &= ~CONF_FLAGS_EXEMPTRESV;
     else yy_aconf->flags |= CONF_FLAGS_EXEMPTRESV;
   }
+} | IS_WEBIRC
+{
+  if (ypass == 2)
+  {
+    if (not_atom) yy_aconf->flags &= ~CONF_FLAGS_WEBIRC;
+    else yy_aconf->flags |= CONF_FLAGS_WEBIRC;
+  }
 } | NEED_PASSWORD
 {
   if (ypass == 2)
@@ -2153,6 +2174,17 @@ auth_redir_port: REDIRPORT '=' NUMBER ';'
   {
     yy_aconf->flags |= CONF_FLAGS_REDIR;
     yy_aconf->port = $3;
+  }
+};
+
+auth_webirc: IS_WEBIRC '=' TBOOL ';'
+{
+  if (ypass == 2)
+  {
+    if (yylval.number)
+      yy_aconf->flags |= CONF_FLAGS_WEBIRC;
+    else
+      yy_aconf->flags &= ~CONF_FLAGS_WEBIRC;
   }
 };
 
@@ -3208,7 +3240,7 @@ general_item:       general_hide_spoof_ips | general_ignore_bogus_ts |
                     general_disable_auth | general_burst_away |
 		    general_tkline_expire_notices | general_gline_min_cidr |
                     general_gline_min_cidr6 | general_use_whois_actually |
-		    general_reject_hold_time |
+		    general_reject_hold_time | general_hide_killer |
 		    general_cloak_key1 | general_cloak_key2 | general_cloak_key3 |
 		    general_services_name |
 		    error;
@@ -3395,6 +3427,11 @@ general_stats_o_oper_only: STATS_O_OPER_ONLY '=' TBOOL ';'
 general_stats_P_oper_only: STATS_P_OPER_ONLY '=' TBOOL ';'
 {
   ConfigFileEntry.stats_P_oper_only = yylval.number;
+};
+
+general_hide_killer: HIDE_KILLER '=' TBOOL ';'
+{
+  ConfigFileEntry.hide_killer = yylval.number;
 };
 
 general_stats_k_oper_only: STATS_K_OPER_ONLY '=' TBOOL ';'
@@ -3904,7 +3941,7 @@ channel_entry: CHANNEL
 
 channel_items:      channel_items channel_item | channel_item;
 channel_item:       channel_disable_local_channels | channel_use_except |
-                    channel_use_invex | channel_use_knock |
+                    channel_use_invex | channel_use_knock | channel_use_regex_bans |
                     channel_max_bans | channel_knock_delay |
                     channel_knock_delay_channel | channel_max_chans_per_user |
                     channel_quiet_on_ban | channel_default_split_user_count |
@@ -3943,6 +3980,11 @@ channel_use_except: USE_EXCEPT '=' TBOOL ';'
 channel_use_invex: USE_INVEX '=' TBOOL ';'
 {
   ConfigChannel.use_invex = yylval.number;
+};
+
+channel_use_regex_bans: USE_REGEX_BANS '=' TBOOL ';'
+{
+  ConfigChannel.regex_bans = yylval.number;
 };
 
 channel_use_knock: USE_KNOCK '=' TBOOL ';'

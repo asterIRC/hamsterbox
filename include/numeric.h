@@ -458,6 +458,7 @@ extern const char *get_locale(void);
 */
 
 #define RPL_WHOISSSL         671
+#define RPL_WHOISCGI         672
 
 #define RPL_MODLIST          702
 #define RPL_ENDOFMODLIST     703

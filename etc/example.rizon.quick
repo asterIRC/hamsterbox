@@ -93,9 +93,20 @@ auth
 	 * no_tilde:      remove ~ from a user with no ident ('-' prefix on /stats I)
 	 * can_flood:     allow this user to exceed flood limits ('|' prefix on /stats I)
 	 * can_idle:      exempt this user from idle restrictions ('<' prefix on /stats I)
+	 * webirc:        cgi:irc authentication auth block ('?' prefix on /stats I)
 	 */
 	flags = need_password, spoof_notice, exceed_limit, kline_exempt,
 		gline_exempt, resv_exempt, no_tilde, can_flood, can_idle;
+};
+
+/* CGI IRC AUTHENTICATION */
+auth
+{
+	user = "*@172.16.1.1/32";
+	password = "letmein";
+	encrypted = yes;
+	class = "users";
+	flags = need_password, webirc;
 };
 
 auth
@@ -173,6 +184,7 @@ operator
 	 * hidden_admin: same as 'admin', but noone can recognize you as
 	 *               being an admin
 	 * hidden_oper:  not shown in /stats p (except for other operators)
+	 * oper_spy:     currently not used
 	 */
 	flags = global_kill, remote, kline, unkline, xline,
 		die, rehash, nick_changes, admin, operwall;
@@ -248,6 +260,7 @@ gecos
 
 channel
 {
+	regex_bans = no;
 	cycle_on_hostchange = yes;
 	disable_fake_channels = yes;
 	restrict_channels = no;
@@ -293,6 +306,7 @@ general
 	use_whois_actually = yes;
 	kill_chase_time_limit = 90;
 	hide_spoof_ips = yes;
+	hide_killer = no;
 	ignore_bogus_ts = no;
 	disable_auth = no;
 	disable_remote_commands = yes;

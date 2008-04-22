@@ -443,6 +443,19 @@ whois_person(struct Client *source_p, struct Client *target_p)
 		sendto_one(source_p, form_str(RPL_WHOISSSL),
 			   me.name, source_p->name, target_p->name);
 
+	if(IsWebIrc(target_p))
+	{	
+		buf[0] = '\0';
+		if(IsOper(source_p) && MyClient(target_p))
+		{
+			strcat(buf, "from [");
+			strcat(buf, target_p->localClient->cgisockhost);
+			strcat(buf, "]");
+		}
+		sendto_one(source_p, form_str(RPL_WHOISCGI),
+			   me.name, source_p->name, target_p->name, buf);
+	}
+
 	if(IsOper(source_p) || source_p == target_p)
 	{
 		char ubuf[IRCD_BUFSIZE];

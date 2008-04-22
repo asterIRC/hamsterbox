@@ -201,6 +201,9 @@ extern struct Message svsnick_msgtab;
 extern struct Message svsnoop_msgtab;
 extern struct Message svspart_msgtab;
 extern struct Message uncapture_msgtab;
+extern struct Message authflags_msgtab;
+extern struct Message chgident_msgtab;
+extern struct Message cgiirc_msgtab;
 
 #ifdef BUILD_CONTRIB
 extern struct Message classlist_msgtab;
@@ -216,6 +219,9 @@ extern struct Message ojoin_msgtab;
 extern struct Message operspy_msgtab;
 extern struct Message opme_msgtab;
 extern struct Message spoof_msgtab;
+extern struct Message sajoin_msgtab;
+extern struct Message sapart_msgtab;
+extern struct Message samode_msgtab;
 #endif
 
 extern void load_all_modules(int);

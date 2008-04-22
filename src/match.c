@@ -379,7 +379,7 @@ const unsigned char ToUpperTab[] = {
 const unsigned int CharAttrs[] = {
 /* 0  */ CNTRL_C,
 /* 1  */ CNTRL_C | CHAN_C | VCHAN_C | NONEOS_C,
-/* 2  */ CNTRL_C | CHAN_C | NONEOS_C,
+/* 2  */ CNTRL_C | CHAN_C | NONEOS_C | HOST_C,
 /* 3  */ CNTRL_C | CHAN_C | NONEOS_C | HOST_C,
 /* 4  */ CNTRL_C | CHAN_C | VCHAN_C | NONEOS_C,
 /* 5  */ CNTRL_C | CHAN_C | VCHAN_C | NONEOS_C,
@@ -408,7 +408,7 @@ const unsigned int CharAttrs[] = {
 /* 28 */ CNTRL_C | CHAN_C | VCHAN_C | NONEOS_C,
 /* 29 */ CNTRL_C | CHAN_C | VCHAN_C | NONEOS_C,
 /* 30 */ CNTRL_C | CHAN_C | VCHAN_C | NONEOS_C,
-/* 31 */ CNTRL_C | CHAN_C | NONEOS_C,
+/* 31 */ CNTRL_C | CHAN_C | NONEOS_C | HOST_C,
 /* SP */ PRINT_C | SPACE_C,
 /* ! */ PRINT_C | KWILD_C | CHAN_C | VCHAN_C | NONEOS_C,
 /* " */ PRINT_C | CHAN_C | VCHAN_C | NONEOS_C,

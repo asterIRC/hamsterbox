@@ -212,7 +212,7 @@ m_join(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 			 * This should never be the case unless there is some sort of
 			 * persistant channels.
 			 */
-			if(dlink_list_length(&chptr->members) == 0)
+			if((dlink_list_length(&chptr->members) == 0) && !PersistChannel(chptr))
 				flags = CHFL_CHANOP;
 			else
 				flags = 0;

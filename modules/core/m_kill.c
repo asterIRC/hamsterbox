@@ -140,9 +140,15 @@ mo_kill(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
 	}
 
 	if(MyConnect(target_p))
-		sendto_one(target_p, ":%s!%s@%s KILL %s :%s",
-			   source_p->name, source_p->username, source_p->host,
-			   target_p->name, reason);
+	{
+		if(ConfigFileEntry.hide_killer)
+			sendto_one(target_p, ":%s KILL %s :%s",
+				   me.name, target_p->name, reason);
+		else
+			sendto_one(target_p, ":%s!%s@%s KILL %s :%s",
+				   source_p->name, source_p->username, source_p->host,
+				   target_p->name, reason);
+	}
 
 	/* Do not change the format of this message.  There's no point in changing messages
 	 * that have been around for ever, for no reason.. */
@@ -171,7 +177,10 @@ mo_kill(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
 		SetKilled(target_p);
 	}
 
-	ircsprintf(buf, "Killed (%s (%s))", source_p->name, reason);
+	if(ConfigFileEntry.hide_killer)
+		ircsprintf(buf, "Killed (%s (%s))", me.name, reason);
+	else
+		ircsprintf(buf, "Killed (%s (%s))", source_p->name, reason);
 	exit_client(target_p, source_p, buf);
 }
 
@@ -255,9 +264,19 @@ ms_kill(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
 					   source_p->name, target_p->name, reason);
 		}
 		else
-			sendto_one(target_p, ":%s!%s@%s KILL %s :%s",
-				   source_p->name, source_p->username, source_p->host,
-				   target_p->name, reason);
+		{
+			if(ConfigFileEntry.hide_killer)
+			{
+				sendto_one(target_p, ":%s KILL %s :%s",
+					   me.name, target_p->name, reason);
+			}
+			else
+			{
+				sendto_one(target_p, ":%s!%s@%s KILL %s :%s",
+					   source_p->name, source_p->username, source_p->host,
+				   	   target_p->name, reason);
+			}
+		}
 	}
 
 	/* Be warned, this message must be From %s, or it confuses clients
@@ -289,7 +308,12 @@ ms_kill(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
 	if(IsServer(source_p) && (IsHidden(source_p) || ConfigServerHide.hide_servers))
 		ircsprintf(buf, "Killed (%s %s)", me.name, reason);
 	else
-		ircsprintf(buf, "Killed (%s %s)", source_p->name, reason);
+	{	
+		if(ConfigFileEntry.hide_killer)
+			ircsprintf(buf, "Killed (%s %s)", me.name, reason);
+		else
+			ircsprintf(buf, "Killed (%s %s)", source_p->name, reason);
+	}
 
 	exit_client(target_p, source_p, buf);
 }

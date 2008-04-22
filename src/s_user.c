@@ -117,7 +117,7 @@ unsigned int user_modes[256] =
   0,                  /* T */
   0,                  /* U */
   0,                  /* V */
-  0,                  /* W */
+  UMODE_WEBIRC,       /* W */
   UMODE_EXTERNAL,     /* X */
   0,                  /* Y */
   0,                  /* Z 0x5A */
@@ -1110,6 +1110,7 @@ set_user_mode(struct Client *client_p, struct Client *source_p, int parc, char *
 			case 'r':
 			case 'N':
 			case 'S':
+			case 'W':
 				/* we may not get these,
 				 * but they shouldnt be in default
 				 */

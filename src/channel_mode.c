@@ -503,6 +503,7 @@ static const struct mode_letter
 	{MODE_PRIVATE, 'p'},
 	{MODE_SECRET, 's'},
 	{MODE_TOPICLIMIT, 't'},
+	{MODE_PERSIST, 'z'},
 	{0, '\0'}
 };
 /* *INDENT-ON* */
@@ -740,6 +741,15 @@ chm_simple(struct Client *client_p, struct Client *source_p, struct Channel *chp
 	}
 
 	if((mode_type == MODE_OPERONLY) && (alev < CHACCESS_REMOTE) && !IsOper(source_p))
+	{
+		if(!(*errors & SM_ERR_NOTOPER))
+			sendto_one(source_p, form_str(ERR_NOPRIVS), me.name, source_p->name,
+				   "mode");
+		*errors |= SM_ERR_NOTOPER;
+		return;
+	}
+
+	if((mode_type == MODE_PERSIST) && (alev < CHACCESS_REMOTE))
 	{
 		if(!(*errors & SM_ERR_NOTOPER))
 			sendto_one(source_p, form_str(ERR_NOPRIVS), me.name, source_p->name,
@@ -1816,7 +1826,7 @@ static struct ChannelMode ModeTable[255] =
   {chm_nosuch, NULL},                             /* w */
   {chm_nosuch, NULL},                             /* x */
   {chm_nosuch, NULL},                             /* y */
-  {chm_nosuch, NULL},                             /* z */
+  {chm_simple, (void *) MODE_PERSIST},            /* z */
 };
 /* *INDENT-ON* */
 
@@ -2156,4 +2166,9 @@ set_channel_mode(struct Client *client_p, struct Client *source_p, struct Channe
 	}
 
 	send_mode_changes(client_p, source_p, chptr, chname);
+
+	if(!PersistChannel(chptr) && (dlink_list_length(&chptr->members) == 0))
+	{
+		destroy_channel(chptr);
+	}
 }

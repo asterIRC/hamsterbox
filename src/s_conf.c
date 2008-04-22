@@ -1856,6 +1856,8 @@ set_default_conf(void)
 	ConfigChannel.no_join_on_split = NO;
 	ConfigChannel.no_create_on_split = NO;
 	ConfigChannel.burst_topicwho = YES;
+	ConfigChannel.regex_bans = YES;
+
 
 	ConfigServerHide.flatten_links = NO;
 	ConfigServerHide.links_delay = 300;
@@ -1902,6 +1904,7 @@ set_default_conf(void)
 	ConfigFileEntry.stats_k_oper_only = 1;	/* masked */
 	ConfigFileEntry.stats_i_oper_only = 1;	/* masked */
 	ConfigFileEntry.stats_P_oper_only = NO;
+	ConfigFileEntry.hide_killer = NO;
 	ConfigFileEntry.caller_id_wait = 60;
 	ConfigFileEntry.opers_bypass_callerid = NO;
 	ConfigFileEntry.pace_wait = 10;
@@ -2489,7 +2492,7 @@ read_conf_files(int cold)
 		   ConfigChannel.max_chans_per_user);
 	add_isupport("CHANLIMIT", chanlimit, -1);
 	ircsprintf(chanmodes, "%s%s%s", ConfigChannel.use_except ? "e" : "",
-		   ConfigChannel.use_invex ? "I" : "", "b,k,l,BMNORScimnpst");
+		   ConfigChannel.use_invex ? "I" : "", "b,k,l,BMNORScimnpstz");
 	add_isupport("CHANNELLEN", NULL, LOCAL_CHANNELLEN);
 	if(ConfigChannel.use_except)
 		add_isupport("EXCEPTS", "e", -1);

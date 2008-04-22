@@ -141,6 +141,16 @@ auth
 	class = "users";
 };
 
+/* CGI IRC AUTHENTICATION */
+auth
+{
+	user = "*@172.16.1.1/32";
+	password = "letmein";
+	encrypted = yes;
+	class = "users";
+	flags = need_password, webirc;
+};
+
 auth
 {
 	user = "*@*";
@@ -161,7 +171,7 @@ operator
 	encrypted = yes;
 #rsa_public_key_file = "/usr/local/ircd/etc/oper.pub";
 	class = "opers";
-	flags = global_kill, remote, kline, unkline, gline, xline, die, rehash, nick_changes, admin;
+	flags = global_kill, remote, kline, unkline, gline, xline, die, rehash, nick_changes, admin, oper_spy;
 };
 
 /* connect {}: controls servers we connect to (OLD C:, N:, H:, L:) */
@@ -290,6 +300,7 @@ gecos
 
 channel
 {
+	regex_bans = no;
 	cycle_on_hostchange = yes;
 	disable_fake_channels = yes;
 	restrict_channels = no;
@@ -332,6 +343,7 @@ general
 
 	kill_chase_time_limit = 90;
 	hide_spoof_ips = yes;
+	hide_killer = no;
 	ignore_bogus_ts = no;
 
 	disable_auth = no;

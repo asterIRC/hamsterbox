@@ -202,6 +202,9 @@ ms_sjoin(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 			if(parc < 5 + args)
 				return;
 			break;
+		case 'z':
+			mode.mode |= MODE_PERSIST;
+			break;
 		}
 	}
 
@@ -628,8 +631,14 @@ ms_sjoin(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 	}
 
 	*mbuf = '\0';
-	*(nick_ptr - 1) = '\0';
-	*(uid_ptr - 1) = '\0';
+	if(PersistChannel(chptr) && (*(nick_ptr - 1) == ':'))
+		*(nick_ptr) = '\0';
+	else
+		*(nick_ptr - 1) = '\0';
+	if(PersistChannel(chptr) && (*(uid_ptr - 1) == ':'))
+		*(uid_ptr) = '\0';
+	else
+		*(uid_ptr - 1) = '\0';
 
 	/*
 	 * checking for lcount < MAXMODEPARAMS at this time is wrong
@@ -662,12 +671,18 @@ ms_sjoin(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 
 	if((dlink_list_length(&chptr->members) == 0) && isnew)
 	{
-		destroy_channel(chptr);
-		return;
+		if(!PersistChannel(chptr))
+		{
+			destroy_channel(chptr);
+			return;
+		}
 	}
 
 	if(parv[4 + args][0] == '\0')
-		return;
+	{
+		if(!PersistChannel(chptr))
+			return;
+	}
 
 	/* relay the SJOIN to other servers */
 	DLINK_FOREACH(m, serv_list.head)
@@ -728,6 +743,7 @@ static const struct mode_letter
 	{MODE_MODERATED, 'm'},
 	{MODE_INVITEONLY, 'i'},
 	{MODE_PRIVATE, 'p'},
+	{MODE_PERSIST, 'z'},
 	{0, '\0'}
 };
 /* *INDENT-ON* */

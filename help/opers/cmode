@@ -38,6 +38,10 @@ NO PARAMETERS:
               channel who hasn't received an /invite or whose host isn't in
               the +I list.
 
+     +z     - 'Persist'. This will prevent the channel from being 
+              destroyed when last user leaves. Only Services may
+              set this mode.
+
      +B     - 'Bandwith Saver'. This will prevent anyone set away, or idle
               for longer than 30 minutes from receiving channel messages.
 

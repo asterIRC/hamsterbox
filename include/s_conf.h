@@ -241,6 +241,7 @@ struct CidrItem
 #define CONF_FLAGS_RESTRICTED           0x00002000
 #define CONF_FLAGS_CAN_FLOOD            0x00100000
 #define CONF_FLAGS_NEED_PASSWORD        0x00200000
+#define CONF_FLAGS_WEBIRC	        0x02000000
 /* server flags */
 #define CONF_FLAGS_ALLOW_AUTO_CONN      0x00004000
 #define CONF_FLAGS_LAZY_LINK            0x00008000
@@ -257,6 +258,7 @@ struct CidrItem
 #define IsNoTilde(x)            ((x)->flags & CONF_FLAGS_NO_TILDE)
 #define IsConfCanFlood(x)       ((x)->flags & CONF_FLAGS_CAN_FLOOD)
 #define IsNeedPassword(x)       ((x)->flags & CONF_FLAGS_NEED_PASSWORD)
+#define IsConfWebIrc(x)		((x)->flags & CONF_FLAGS_WEBIRC)
 #define IsNeedIdentd(x)         ((x)->flags & CONF_FLAGS_NEED_IDENTD)
 #define IsNoMatchIp(x)          ((x)->flags & CONF_FLAGS_NOMATCH_IP)
 #define IsConfExemptKline(x)    ((x)->flags & CONF_FLAGS_EXEMPTKLINE)
@@ -361,6 +363,7 @@ struct config_file_entry
 	int stats_k_oper_only;
 	int stats_i_oper_only;
 	int stats_P_oper_only;
+	int hide_killer;
 	int short_motd;
 	int no_oper_flood;
 	int true_no_oper_flood;
@@ -413,6 +416,7 @@ struct config_channel_entry
 	int use_except;
 	int use_invex;
 	int use_knock;
+	int regex_bans;
 	int knock_delay;
 	int knock_delay_channel;
 	unsigned int max_bans;

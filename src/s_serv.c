@@ -1523,7 +1523,7 @@ burst_all(struct Client *client_p)
 	{
 		struct Channel *chptr = ptr->data;
 
-		if(dlink_list_length(&chptr->members) != 0)
+		if((dlink_list_length(&chptr->members) != 0) || PersistChannel(chptr))
 		{
 			burst_members(client_p, chptr);
 			send_channel_modes(client_p, chptr);

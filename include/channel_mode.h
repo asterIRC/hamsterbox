@@ -65,6 +65,7 @@
 #define MODE_SSLONLY    0x0400
 #define MODE_BWSAVER    0x0800
 #define MODE_NONOTICES  0x1000
+#define MODE_PERSIST	0x2000
 
 /* cache flags for silence on ban */
 #define CHFL_BAN_CHECKED  0x0080
@@ -90,6 +91,8 @@
 #define PrivateChannel(x)       (((x)->mode.mode & MODE_PRIVATE))
 
 #define BwSaverChannel(x)       (((x)->mode.mode & MODE_BWSAVER))
+
+#define PersistChannel(x)       (((x)->mode.mode & MODE_PERSIST))	
 
 struct ChModeChange
 {

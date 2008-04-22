@@ -251,6 +251,7 @@ min_nonwildcard { return MIN_NONWILDCARD; }
 min_nonwildcard_simple	{ return MIN_NONWILDCARD_SIMPLE; }
 name		{ return NAME; }
 need_password   { return NEED_PASSWORD; }
+webirc   { return IS_WEBIRC; }
 network_desc    { return NETWORK_DESC; }
 network_name    { return NETWORK_NAME; }
 nick		{ return NICK; }
@@ -265,6 +266,7 @@ number_per_ip	{ return NUMBER_PER_IP; }
 oper		{ return OPERATOR; }
 oper_log        { return OPER_LOG; }
 oper_pass_resv	{ return OPER_PASS_RESV; }
+oper_spy	{ return OPER_SPY_T; }
 operator	{ return OPERATOR; }
 passwd		{ return PASSWORD; }
 password	{ return PASSWORD; }
@@ -311,6 +313,8 @@ unkline		{ return UNKLINE; }
 use_egd 	{ return USE_EGD; }
 use_except	{ return USE_EXCEPT; }
 use_invex	{ return USE_INVEX; }
+regex_bans	{ return USE_REGEX_BANS; }
+hide_killer	{ return HIDE_KILLER; }
 use_knock	{ return USE_KNOCK; }
 use_logging	{ return USE_LOGGING; }
 use_whois_actually { return USE_WHOIS_ACTUALLY; }

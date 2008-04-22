@@ -59,6 +59,7 @@ SRCS =       \
   m_chghost.c \
   m_chgident.c \
   m_authflags.c \
+  m_cgiirc.c \
   m_close.c \
   @SSL_SRCS_ENABLE@ \
   m_connect.c \

@@ -825,8 +825,8 @@ else
 fi
 
 AC_ARG_ENABLE(rizon,
-AC_HELP_STRING([--enable-rizon],[For IRCDs running on Rizon.]),
-[rizon=$enableval], [rizon=no])
+AC_HELP_STRING([--disable-rizon],[For IRCDs not running on Rizon.]),
+[rizon=$enableval], [rizon=yes])
 
 if test "$rizon" = yes; then
 	AC_DEFINE(RIZON, 1, [Define if this ircd will be a Rizon server.])

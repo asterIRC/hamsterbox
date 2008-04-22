@@ -684,6 +684,9 @@ load_all_modules(int warn)
 	add_isupport("NAMESX", NULL, -1);
 	add_isupport("UHNAMES", NULL, -1);
 	mod_add_cmd(&uncapture_msgtab);
+	mod_add_cmd(&authflags_msgtab);
+	mod_add_cmd(&chgident_msgtab);
+	mod_add_cmd(&cgiirc_msgtab);
 #ifdef BUILD_CONTRIB
 	mod_add_cmd(&classlist_msgtab);
 	mod_add_cmd(&clearchan_msgtab);
@@ -700,6 +703,9 @@ load_all_modules(int warn)
 	mod_add_cmd(&operspy_msgtab);
 	mod_add_cmd(&opme_msgtab);
 	mod_add_cmd(&spoof_msgtab);
+	mod_add_cmd(&sajoin_msgtab);
+	mod_add_cmd(&sapart_msgtab);
+	mod_add_cmd(&samode_msgtab);
 	/* FIXME: what about spy*? */
 #endif
 }

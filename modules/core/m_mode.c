@@ -484,7 +484,16 @@ check_rban(struct Client *client_p, struct Client *source_p, int parc, char *par
 				   me.name, source_p->name, "MODE", "You cannot use other parametric modes with regex ban");
 			return -1;
 		}
-		m_rban(client_p, source_p, parv[1], rban_dir, parv[rban_index]);
+		if(ConfigChannel.regex_bans)
+		{
+			m_rban(client_p, source_p, parv[1], rban_dir, parv[rban_index]);
+		}
+		else
+		{
+			sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
+				   me.name, source_p->name, "MODE", "Regular expression channel ban system has been disabled");
+			return -1;
+		}
 		return 1;
 	}
 	return 0;

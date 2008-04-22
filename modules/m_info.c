@@ -173,6 +173,11 @@ static const struct InfoStruct info_table[] = {
 	 &ConfigChannel.use_invex,
 	 "Enable chanmode +I (invite exceptions)"},
 	{
+	 "regex_bans",
+	 OUTPUT_BOOLEAN_YN,
+	 &ConfigChannel.regex_bans,
+	 "Enable regular expression channel bans"},
+	{
 	 "use_except",
 	 OUTPUT_BOOLEAN_YN,
 	 &ConfigChannel.use_except,
@@ -422,6 +427,11 @@ static const struct InfoStruct info_table[] = {
 	 OUTPUT_BOOLEAN2,
 	 &ConfigFileEntry.stats_k_oper_only,
 	 "STATS K output is only shown to operators"},
+	{
+	 "hide_killer",
+	 OUTPUT_BOOLEAN_YN,
+	 &ConfigFileEntry.hide_killer,
+	 "Hide IRC operator sending kill message"},
 	{
 	 "caller_id_wait",
 	 OUTPUT_DECIMAL,

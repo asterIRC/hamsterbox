@@ -182,7 +182,10 @@ remove_user_from_channel(struct Membership *member)
 	BlockHeapFree(member_heap, member);
 
 	if(dlink_list_length(&chptr->members) == 0)
-		destroy_channel(chptr);
+	{
+		if(!PersistChannel(chptr))
+			destroy_channel(chptr);
+	}
 }
 
 /* send_members()
@@ -253,7 +256,10 @@ send_members(struct Client *client_p, struct Channel *chptr, char *lmodebuf, cha
 	/* should always be non-NULL unless we have a kind of persistent channels */
 	if(chptr->members.head != NULL)
 		t--;		/* take the space out */
-	*t = '\0';
+	if(PersistChannel(chptr) && (*t == ':'))
+		*(t + 1) = '\0';
+	else
+		*t = '\0';
 	sendto_one(client_p, "%s", buf);
 }
 

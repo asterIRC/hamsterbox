@@ -789,7 +789,7 @@ clear_out_address_conf(void)
 char *
 show_iline_prefix(struct Client *sptr, struct AccessItem *aconf, const char *name)
 {
-	static char prefix_of_host[USERLEN + 14];
+	static char prefix_of_host[USERLEN + 15];
 	char *prefix_ptr;
 
 	prefix_ptr = prefix_of_host;
@@ -799,6 +799,8 @@ show_iline_prefix(struct Client *sptr, struct AccessItem *aconf, const char *nam
 		*prefix_ptr++ = '!';
 	if(IsNeedIdentd(aconf))
 		*prefix_ptr++ = '+';
+	if(IsConfWebIrc(aconf))
+		*prefix_ptr++ = '?';
 	if(!IsNeedPassword(aconf))
 		*prefix_ptr++ = '&';
 	if(IsConfExemptResv(aconf))

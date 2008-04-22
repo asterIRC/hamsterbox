@@ -17,3 +17,4 @@ Usermodes:
          +R     - "RegOnly": this client will only accept private messages from
                   clients who have identified to their nickname.
          +S     - Designates this client as having connected via SSL.
+         +W     - Designates this client as having connected via CGI:IRC.

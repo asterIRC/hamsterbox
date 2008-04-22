@@ -242,6 +242,10 @@ struct LocalUser
 	int caps;		/* server capabilities bit-field */
 	int enc_caps;		/* cipher capabilities bit-field */
 
+	char cgisockhost[HOSTIPLEN + 1];	/* This is the host name from the 
+					   socket ip address as string */
+
+
 #ifdef HAVE_LIBCRYPTO
 	struct EncCapability *in_cipher;
 	struct EncCapability *out_cipher;
@@ -378,7 +382,6 @@ struct LocalUser
 #define FLAGS_FINISHED_AUTH 0x0000000080000000ULL	/* Client has been released from auth       */
 #define FLAGS_SERVICES      0x0000000100000000ULL	/* client is a services server or client    */
 
-
 /* umodes, settable flags */
 #define UMODE_SERVNOTICE   0x00000001	/* server notices such as kill              */
 #define UMODE_CCONN        0x00000002	/* Client Connections                       */
@@ -404,6 +407,7 @@ struct LocalUser
 #define UMODE_REGONLY      0x00200000	/* only accept privmsgs from +r users       */
 #define UMODE_CCONN_FULL   0x00400000	/* add unused fields to connection monitoring */
 #define UMODE_HIDECHANNELS 0x00800000	/* suppress output of channel list on WHOIS */
+#define UMODE_WEBIRC       0x01000000	/* cgi:irc user                             */
 
 /* user information flags, only settable by remote mode or local oper */
 #define UMODE_OPER         0x20000000	/* Operator                                 */
@@ -414,7 +418,7 @@ struct LocalUser
 
 #define SEND_UMODES  (UMODE_INVISIBLE | UMODE_OPER | UMODE_WALLOP | UMODE_SPY | \
                       UMODE_ADMIN | UMODE_CLOAK | UMODE_SSL | UMODE_REGNICK | \
-                      UMODE_REGONLY | UMODE_NETADMIN | UMODE_HIDECHANNELS)
+                      UMODE_REGONLY | UMODE_NETADMIN | UMODE_HIDECHANNELS | UMODE_WEBIRC)
 
 
 /* oper priv flags */
@@ -513,6 +517,10 @@ struct LocalUser
 #define IsHideChannels(x)       ((x)->umodes & UMODE_HIDECHANNELS)
 
 #define IsSpy(x)                ((x)->umodes & UMODE_SPY)
+
+#define SetWebIrc(x)               ((x)->umodes |= UMODE_WEBIRC)
+#define ClearWebIrc(x)             ((x)->umodes &= ~UMODE_WEBIRC)
+#define IsWebIrc(x)                ((x)->umodes & UMODE_WEBIRC)
 
 #define SetSendQExceeded(x)	((x)->flags |= FLAGS_SENDQEX)
 #define IsSendQExceeded(x)	((x)->flags &  FLAGS_SENDQEX)
