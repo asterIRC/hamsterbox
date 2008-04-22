@@ -29,13 +29,11 @@
 
 #include "handlers.h"		/* m_ignore */
 
-#include "hostmask.h"		/* HM_HOST, HM_IPV4, HM_IPV6, parse_netmask */
+#include "hostmask.h"		/* HM_HOST, HM_IPV4, HM_IPV6, parse_netmask, find_address_conf */
 
 #include "s_user.h"		/* valid_username, valid_hostname */
 
 #include "irc_string.h"		/* strlcpy */
-
-#include "hook.h"		/* execute_callback */
 
 #include "s_conf.h"		/* client_check_cb */
 
@@ -75,8 +73,8 @@ const char *_version = "$Revision: 1.0 $";
 static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
 	char *password = parv[1];
-	const struct AccessItem *aconf = NULL;
-	dlink_node *ptr = NULL; 
+	char non_ident[USERLEN + 1] = { '~', '\0' }; 
+	struct AccessItem *aconf = NULL;
 	int hosttype = HM_HOST;
 	struct irc_ssaddr haddr;
 	int bits;
@@ -106,7 +104,23 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 	if(strlen(password) > PASSWDLEN)
 		password[PASSWDLEN] = '\0';
 	DupString(source_p->localClient->passwd, password); 	
-	if(!execute_callback(client_check_cb, source_p, parv[2]))
+	if(IsGotId(source_p))	{
+		aconf = find_address_conf(source_p->host, source_p->username,
+					  &source_p->localClient->ip,
+					  source_p->localClient->aftype,
+					  source_p->localClient->passwd);
+	}
+	else
+	{
+		strlcpy(non_ident + 1, parv[2], sizeof(non_ident) - 1);
+		aconf = find_address_conf(source_p->host, non_ident,
+					  &source_p->localClient->ip,
+					  source_p->localClient->aftype,
+					  source_p->localClient->passwd);
+	} 	
+	
+	if((!aconf) || (!aconf->class_ptr) || (!IsConfClient(aconf)) || (!IsConfWebIrc(aconf)) ||
+	   IsConfRedir(aconf) || IsConfIllegal(aconf) || IsConfKill(aconf) || IsConfGline(aconf))	   
 	{
 		sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
 			   me.name, me.name, "WEBIRC", "CGI:IRC authentication failed");
@@ -114,15 +128,6 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 		return; 	
 	}
 
-	ptr = source_p->localClient->confs.head;
-	aconf = map_to_conf(ptr->data); 	
-	if(!IsConfWebIrc(aconf))
-	{
-		sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
-			   me.name, me.name, "WEBIRC", "Unauthorised CGI:IRC");
-		exit_client(source_p, &me, "Unauthorised CGI:IRC"); 
-		return;	
-	}
 	if(!EmptyString(aconf->passwd))
 	{
 		if(!match_conf_password(password, aconf))
@@ -156,9 +161,6 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 			exit_client(source_p, &me, "Invalid client IP"); 
 			return;	
 	}
-	if(IsIpHash(source_p))
-		remove_one_ip(&source_p->localClient->ip); 
-	detach_conf(source_p, CLIENT_TYPE);	
 
 	strlcpy(source_p->localClient->cgisockhost, source_p->sockhost, sizeof(source_p->localClient->cgisockhost)); 
 	parse_netmask(parv[4], &source_p->localClient->ip, &bits);

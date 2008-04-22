@@ -318,7 +318,7 @@ make_request(struct DNSQuery *query)
 	request = (struct reslist *) MyMalloc(sizeof(struct reslist));
 
 	request->sentat = CurrentTime;
-	request->retries = 3;
+	request->retries = 2;
 	request->resend = 1;
 	request->timeout = 4;	/* start at 4 and exponential inc. */
 	request->query = query;
