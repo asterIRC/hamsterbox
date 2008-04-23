@@ -181,7 +181,7 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
 		collapse(banid);
 	}
 
-	if((type == CHFL_BAN) && match("r/*", banid))
+	if((type == CHFL_BAN) && match("r/*", banid) && ConfigChannel.regex_bans)
 	{
 		if(strlen(banid) > 200)
 		{
@@ -370,7 +370,7 @@ del_id(struct Channel *chptr, char *banid, int type)
 	if(banid == NULL)
 		return 0;
 
-	if((type == CHFL_BAN) && match("r/*", banid))
+	if((type == CHFL_BAN) && match("r/*", banid) && ConfigChannel.regex_bans)
 	{
 		if(strlen(banid) > 200)
 		{

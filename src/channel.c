@@ -846,7 +846,7 @@ find_rbmask(const struct Client *who, const dlink_list * const list)
 int
 is_banned(struct Channel *chptr, struct Client *who)
 {
-	if(find_bmask(who, &chptr->banlist) || find_rbmask(who, &chptr->banlist))
+	if(find_bmask(who, &chptr->banlist) || (ConfigChannel.regex_bans && find_rbmask(who, &chptr->banlist)))
 		if(!ConfigChannel.use_except || !find_bmask(who, &chptr->exceptlist))
 			return 1;
 
