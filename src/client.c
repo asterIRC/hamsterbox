@@ -78,7 +78,7 @@ static dlink_node *eac_next;	/* next aborted client to exit */
 
 static void check_pings_list(dlink_list *);
 static void check_unknowns_list(void);
-static void ban_them(struct Client *client_p, struct ConfItem *conf);
+
 
 
 /* init_client()
@@ -412,6 +412,13 @@ check_conf_klines(void)
 		if((aconf = find_dline_conf(&client_p->localClient->ip,
 					    client_p->localClient->aftype)) != NULL)
 		{
+			if(IsExemptKline(client_p))
+			{
+				sendto_realops_flags(UMODE_ALL, L_ALL,
+						     "DLINE over-ruled for %s, client is kline_exempt",
+						     get_client_name(client_p, HIDE_IP));
+				continue;
+			}
 			if(aconf->status & CONF_EXEMPTDLINE)
 				continue;
 
@@ -460,6 +467,13 @@ check_conf_klines(void)
 		   (conf = find_matching_name_conf(RXLINE_TYPE, client_p->info,
 						   NULL, NULL, 0)) != NULL)
 		{
+			if(IsExemptKline(client_p))
+			{
+				sendto_realops_flags(UMODE_ALL, L_ALL,
+						     "XLINE over-ruled for %s, client is kline_exempt",
+						     get_client_name(client_p, HIDE_IP));
+				continue;
+			}
 			ban_them(client_p, conf);
 			continue;
 		}
@@ -489,7 +503,7 @@ check_conf_klines(void)
  * output	- NONE
  * side effects	- given client_p is banned
  */
-static void
+void
 ban_them(struct Client *client_p, struct ConfItem *conf)
 {
 	const char *user_reason = NULL;	/* What is sent to user */

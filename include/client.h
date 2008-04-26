@@ -632,5 +632,6 @@ extern struct Client *make_client(struct Client *);
 extern struct Client *find_chasing(struct Client *, struct Client *, const char *, int *);
 extern struct Client *find_person(const struct Client *const, const char *);
 extern const char *get_client_name(struct Client *, int);
+extern void ban_them(struct Client *, struct ConfItem *);
 
 #endif /* INCLUDED_client_h */

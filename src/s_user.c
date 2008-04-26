@@ -412,8 +412,30 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 	assert(source_p == client_p);
 
 	/* end of valid user name check */
-	if(check_xline(source_p))
-		return;
+	if(!IsExemptKline(source_p))
+	{
+		if(IsIPSpoof(source_p))
+		{
+			struct AccessItem *aconf2 = NULL;
+			struct ConfItem *conf2 = NULL;
+
+			if(ConfigFileEntry.glines && (!IsExemptGline(source_p)) && (aconf2 = find_gline(source_p)))
+			{
+				conf2 = unmap_conf_item(aconf2);
+				ban_them(source_p, conf2);
+				return;
+			}
+			if((aconf2 = find_kill(source_p)) != NULL)
+			{
+				conf2 = unmap_conf_item(aconf2);
+				ban_them(source_p, conf2);
+				return;
+			}
+
+		}		
+		if(check_xline(source_p))
+			return;
+	}
 
 	if(IsDead(client_p))
 		return;
