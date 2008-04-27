@@ -70,6 +70,7 @@ static void do_sgline(struct Client *, struct Client *, int, char **, int);
 static void me_gline(struct Client *, struct Client *, int, char **);
 static void ms_gline(struct Client *, struct Client *, int, char **);
 static void mo_gline(struct Client *, struct Client *, int, char **);
+static void me_ungline(struct Client *, struct Client *, int, char **);
 static void mo_ungline(struct Client *, struct Client *, int, char **);
 
 /*
@@ -84,7 +85,7 @@ struct Message gline_msgtab = {
 
 struct Message ungline_msgtab = {
 	"UNGLINE", 0, 0, 2, 0, MFLG_SLOW, 0,
-	{m_unregistered, m_not_oper, m_error, m_ignore, mo_ungline, m_ignore}
+	{m_unregistered, m_not_oper, m_error, me_ungline, mo_ungline, m_ignore}
 };
 
 #ifndef STATIC_MODULES
@@ -584,6 +585,38 @@ remove_gline_match(const char *user, const char *host)
 }
 
 /*
+** me_ungline
+** added April 27th 2008 by Celestin
+**
+**      parv[0] = sender nick
+**      parv[1] = gline to remove
+*/
+static void
+me_ungline(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+	char *user, *host;
+
+	if(!ConfigFileEntry.glines)
+	{
+		return;
+	}
+
+	if(!IsServer(source_p))
+	{
+		return;
+	}
+
+	if(parse_aline("UNGLINE", source_p, parc, parv, 0, &user, &host, NULL, NULL, NULL) < 0)
+		return;
+
+	if(remove_gline_match(user, host))
+	{
+		ilog(L_NOTICE, "%s removed G-Line for [%s@%s]",
+		     get_oper_name(source_p), user, host);
+	}
+}
+
+/*
 ** m_ungline
 ** added May 29th 2000 by Toby Verrall <toot@melnet.co.uk>
 ** added to hybrid-7 7/11/2000 --is
@@ -595,6 +628,7 @@ static void
 mo_ungline(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
 	char *user, *host;
+	char buf[IRCD_BUFSIZE];
 
 	if(!ConfigFileEntry.glines)
 	{
@@ -608,16 +642,22 @@ mo_ungline(struct Client *client_p, struct Client *source_p, int parc, char *par
 		return;
 	}
 
+	ircsprintf(buf, "%s", parv[1]);
 	if(parse_aline("UNGLINE", source_p, parc, parv, 0, &user, &host, NULL, NULL, NULL) < 0)
 		return;
 
 	if(remove_gline_match(user, host))
 	{
-		sendto_one(source_p, ":%s NOTICE %s :G-Line for [%s@%s] is removed",
-			   me.name, source_p->name, user, host);
-		sendto_realops_flags(UMODE_ALL, L_ALL,
-				     "%s has removed the G-Line for: [%s@%s]",
+		sendto_server(NULL, source_p, NULL, CAP_ENCAP, NOCAPS,
+			      LL_ICLIENT, ":%s ENCAP * UNGLINE %s",
+			      me.name, buf);
+
+		sendto_server(NULL, source_p, NULL, NOCAPS, NOCAPS, LL_ICLIENT,
+			      ":%s OPERWALL :%s has removed the G-Line for: [%s@%s]",
+			      me.name, get_oper_name(source_p), user, host);
+		sendto_wallops_flags(UMODE_OPERWALL, source_p, "OPERWALL - %s has removed the G-Line for: [%s@%s]",
 				     get_oper_name(source_p), user, host);
+
 		ilog(L_NOTICE, "%s removed G-Line for [%s@%s]",
 		     get_oper_name(source_p), user, host);
 	}
@@ -627,3 +667,4 @@ mo_ungline(struct Client *client_p, struct Client *source_p, int parc, char *par
 			   me.name, source_p->name, user, host);
 	}
 }
+
