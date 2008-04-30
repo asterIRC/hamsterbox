@@ -1,3 +1,308 @@
+Celestin         2008/04/28 00:26:13	(20080427_0-513)
+  Log:
+- Added global UNGLINE system using ENCAP command
+	Modified : /trunk/modules/m_gline.c
+- Changed version number to 513
+	Modified : /trunk/include/serno.h
+
+
+  Modified:
+	Modified : /trunk/include/serno.h
+	Modified : /trunk/modules/m_gline.c
+
+
+Celestin         2008/04/26 21:56:09	(20080426_0-512)
+  Log:
+- Changed internal function ban_them accessible globally
+	Modified : /trunk/include/client.h
+	Modified : /trunk/src/client.c
+- Added DLINE and XLINE exempt for clients with ExemptKline
+	Modified : /trunk/src/client.c
+- Added KLINE, RKLINE and GLINE checks on spoofed hostnames for clients without ExemptKline
+	Modified : /trunk/src/s_user.c
+- Changed version number to 512
+	Modified : /trunk/include/serno.h
+
+
+  Modified:
+	Modified : /trunk/include/client.h
+	Modified : /trunk/include/serno.h
+	Modified : /trunk/src/client.c
+	Modified : /trunk/src/s_user.c
+
+
+mr.jackfrost         2008/04/25 05:21:52	(20080424_0-511)
+  Log:
+- Added Ctrl+O as permitted character in hostnames (allows resetting color of hostname back to normal)
+	Modified : /trunk/src/match.c
+- Changed version number to 511
+	Modified : /trunk/include/serno.h
+
+
+  Modified:
+	Modified : /trunk/include/serno.h
+	Modified : /trunk/src/match.c
+
+
+Celestin         2008/04/23 15:51:12	(20080422_0-510)
+  Log:
+- Added config channel block regex_bans switch into regex_bans system
+	Modified : /trunk/src/channel.c
+	Modified : /trunk/src/channel_mode.c
+
+
+  Modified:
+	Modified : /trunk/src/channel.c
+	Modified : /trunk/src/channel_mode.c
+
+
+Celestin         2008/04/22 22:44:45	(20080422_0-510)
+  Log:
+- Changed plexus version from 3.0.0 to 3.0.1
+	Modified : /trunk/include/patchlevel.h
+- Changed version number to 510
+	Modified : /trunk/include/serno.h
+
+
+  Modified:
+	Modified : /trunk/include/patchlevel.h
+	Modified : /trunk/include/serno.h
+
+
+Celestin         2008/04/22 18:41:35	(20070716_2-509)
+  Log:
+- Changed the way cgi host is authenticated by simplifying authentication process
+	Modified : /trunk/modules/m_cgiirc.c
+- Changed number of dns resolve tries from 3 to 2, speeds connection time by 16 seconds for dns resolve failure
+	Modified : /trunk/src/irc_res.c
+
+
+  Modified:
+	Modified : /trunk/modules/m_cgiirc.c
+	Modified : /trunk/src/irc_res.c
+
+
+Celestin         2008/04/22 10:47:06	(20070716_2-509)
+  Log:
+- Added help files for new oper commands: SAJOIN, SAMODE, SAPART
+	Added : /trunk/contrib/help/opers/sajoin
+	Added : /trunk/contrib/help/opers/samode
+	Added : /trunk/contrib/help/opers/sapart
+- Added new netadmin oper commands: SAJOIN, SAMODE, SAPART (for full description check respective help files)
+	Added : /trunk/contrib/m_samode.c
+- Added help file for server command AUTHFLAGS
+	Added : /trunk/help/opers/authflags
+- Added help files for new oper commands: CHGHOST, CHGIDENT
+	Added : /trunk/help/opers/chghost
+	Added : /trunk/help/opers/chgident
+- Added new files required by updated lib_pcre 
+	Added : /trunk/lib/pcre/config.h
+	Added : /trunk/lib/pcre/pcre_newline.c
+	Added : /trunk/lib/pcre/ucp.h
+- Added server only AUTHFLAGS command which sets auth client flags on remote servers
+	Added : /trunk/modules/m_authflags.c
+- Added new WEBIRC command to provide CGI:IRC support
+	Added : /trunk/modules/m_cgiirc.c
+- Added new netadmin oper command: CHGIDENT (for full description check respective help file)
+	Added : /trunk/modules/m_chgident.c
+- Enabled Rizon server support in configure script by default, added --disable-rizon configure switch to turn Rizon server support off
+	Modified : /trunk/configure
+	Modified : /trunk/configure.ac
+- Added m_samode module to contrib Makefile
+	Modified : /trunk/contrib/Makefile.in
+- Added new contrib help files to Makefile.in
+	Modified : /trunk/contrib/help/Makefile.in
+- Modified list of help entries for contrib oper commands 
+	Modified : /trunk/contrib/help/opers/index
+- Modified channel mode flags supported by OJOIN command in ojoin help file
+	Modified : /trunk/contrib/help/opers/ojoin
+- Added support for owner mode and protect mode to OJOIN (~ and ! flags respectively)
+	Modified : /trunk/contrib/m_ojoin.c
+- Fixed OPERSPY LIST command, improved OPERSPY MODE trick to get channel key, fixed compilation errors
+	Modified : /trunk/contrib/m_operspy.c
+- Added description of webirc authflag, added example CGI:IRC authentication auth block, added description of oper_spy oper flag, added description for channel block regex_bans switch, added description for general block hide_killer switch
+	Modified : /trunk/etc/example.conf
+	Modified : /trunk/etc/example.conf.quick
+	Modified : /trunk/etc/example.rizon.conf
+	Modified : /trunk/etc/example.rizon.quick
+- Added new help files to Makefile.in
+	Modified : /trunk/help/Makefile.in
+- Modified list of help entries for oper commands 
+	Modified : /trunk/help/opers/index
+- Added auth flags to whois help file
+	Modified : /trunk/help/opers/whois
+- Added Persist channel mode (+z) to channel modes help file
+	Modified : /trunk/help/opers/cmode
+- Added CGI:IRC user mode (+W) to user modes oper help file
+	Modified : /trunk/help/opers/umode
+- Added CGI:IRC user mode (+W) to user modes user help file
+	Modified : /trunk/help/users/umode
+- Added Persist channel mode (+z), made some internal functions and variables accessible globally
+	Modified : /trunk/include/channel_mode.h
+- Modified maximum temporary kline/dline time from 10 to 30 days
+	Modified : /trunk/include/defaults.h
+- Added CGI:IRC user mode (+W), added local sockhost backup field (cgisockhost) to store sockhost of CGI:IRC host used
+	Modified : /trunk/include/client.h
+- Added AUTHFLAGS, CHGIDENT, CGIIRC modules to static modules build list, added SAJOIN, SAPART, SAMODE modules to static contrib modules build list
+	Modified : /trunk/include/modules.h
+- Added numeric RPL_WHOISCGI (672) as CGI:IRC WHOIS reply for +W users
+	Modified : /trunk/include/numeric.h
+- Added config auth block flag webirc, added general config field hide_killer, added channel option field regex_bans
+	Modified : /trunk/include/s_conf.h
+- Updated PCRE (Perl Compatible Regular Expression) library version from 6.4 to 7.6, stored all update process informations in README file, added 1 more required file (pcre_newline.c) to Makefile.in
+	Modified : /trunk/lib/pcre/AUTHORS
+	Modified : /trunk/lib/pcre/LICENCE
+	Modified : /trunk/lib/pcre/Makefile.in
+	Modified : /trunk/lib/pcre/README
+	Modified : /trunk/lib/pcre/pcre.h
+	Modified : /trunk/lib/pcre/pcre_chartables.c
+	Modified : /trunk/lib/pcre/pcre_compile.c
+	Modified : /trunk/lib/pcre/pcre_exec.c
+	Modified : /trunk/lib/pcre/pcre_fullinfo.c
+	Modified : /trunk/lib/pcre/pcre_globals.c
+	Modified : /trunk/lib/pcre/pcre_internal.h
+	Modified : /trunk/lib/pcre/pcre_study.c
+	Modified : /trunk/lib/pcre/pcre_tables.c
+	Modified : /trunk/lib/pcre/pcre_try_flipped.c
+- Added AUTHFLAGS, CHGIDENT, CGIIRC modules to automatic build list
+	Modified : /trunk/modules/Makefile.in
+- Removed autoop on join for Persist channel in JOIN command
+	Modified : /trunk/modules/core/m_join.c
+- Added " and failed" to the end of netadmin kick notice
+	Modified : /trunk/modules/core/m_kick.c
+- Added hide_killer system that spoofs killer's oper nick with user's local server name
+	Modified : /trunk/modules/core/m_kill.c
+- Added bug-fix for flood_attack_client and flood_attack_channel functions, which are responsible for controling flooding of user and channel
+	Modified : /trunk/modules/core/m_message.c
+- Added regex_bans system to MODE command, added protection from adding too long regex bans, added protection from adding additonal parametric modes with regex bans in same MODE command, added syntax checks for regex bans 
+	Modified : /trunk/modules/core/m_mode.c
+- Added Persist channel channel mode (+z) support in SJOIN
+	Modified : /trunk/modules/core/m_sjoin.c
+- Added new netadmin oper command: CHGHOST (for full description check respective help file)
+	Modified : /trunk/modules/m_chghost.c
+- Added description for general config block setting hide_killer and channel config block setting regex_bans to INFO command
+	Modified : /trunk/modules/m_info.c
+- Added bug-fix enabling setting permament klines from services
+	Modified : /trunk/modules/m_kline.c
+- Removed autoop on join for Persist channel in LLJOIN command
+	Modified : /trunk/modules/m_lljoin.c
+- Changed the way operflags are shown in STATS command (have flag - uppercase, hidden flag - lowercase, missing flag - stripped)
+	Modified : /trunk/modules/m_stats.c
+- Added authflags to oper whois reply, added CGI:IRC whois reply, added cgi host sockhost to oper CGI:IRC whois reply, enabled whois_actually for all clients, changed RPL_WHOISIDLE to be shown only when whosing yourself, whoiser is Server Admin or whoised person doesn't have HideChannels (+p) umode
+	Modified : /trunk/modules/m_whois.c
+- Added Persist channel mode (+z), added regular expression ban system
+	Modified : /trunk/src/channel.c
+- Added Persist channel mode (+z), made some internal functions and variables accessible globally, added regular expression ban system
+	Modified : /trunk/src/channel_mode.c
+- Added config auth block webirc flag to I:line prefix as '?'
+	Modified : /trunk/src/hostmask.c
+- Added config auth block webirc flag, added config oper block oper_spy flag, added config channel block regex_bans switch, added config general block hide_killer switch
+	Modified : /trunk/src/ircd_lexer.l
+	Modified : /trunk/src/ircd_parser.y
+	Modified : /trunk/src/lex.yy.c
+	Modified : /trunk/src/y.tab.c
+	Modified : /trunk/src/y.tab.h
+- Added Ctrl+B, Ctrl+C, Ctrl+U as permitted characters in hostnames (allows colors, bold and underline in hostnames)
+	Modified : /trunk/src/match.c
+- Added Persist channel mode (+z) to RPL_MYINFO (numeric 004 - list of supported channel modes send to client on connect), added authflags to RPL_WHOISMODES (numeric 310), added RPL_WHOISCGI (numeric 672)
+	Modified : /trunk/src/messages.tab
+- Added AUTHFLAGS, CHGIDENT, CGIIRC modules to static modules build list, added SAJOIN, SAPART, SAMODE modules to static contrib modules build list
+	Modified : /trunk/src/modules.c
+- Added default values for config channel block regex_bans switch and config general block hide_killer switch, added missing oper flag hidden_oper to operflags list, changed the way operflags are shown (have flag - uppercase, hidden flag - lowercase, missing flag - stripped), added Persist channel mode (+z) to chanmodes string send to client on connect
+	Modified : /trunk/src/s_conf.c
+- Added sending authflags for clients that have them to other servers on server burst, added sending empty Persist channels (with +z) on burst
+	Modified : /trunk/src/s_serv.c
+- Added sending authflags for client that have them to other servers when that new client is connecting, added CGI:IRC user mode (+W) and prevented removing it with MODE command, added ExemptGline for clients with ExemptKline, because ExemptKline is also ExemptGline
+	Modified : /trunk/src/s_user.c
+
+  
+  Modified:
+	Added : /trunk/Makefile
+	Added : /trunk/config.log
+	Added : /trunk/config.status
+	Added : /trunk/.indent.pro
+	Added : /trunk/contrib/help/opers/sajoin
+	Added : /trunk/contrib/help/opers/samode
+	Added : /trunk/contrib/help/opers/sapart
+	Added : /trunk/contrib/m_samode.c
+	Added : /trunk/help/opers/authflags
+	Added : /trunk/help/opers/chghost
+	Added : /trunk/help/opers/chgident
+	Added : /trunk/lib/pcre/config.h
+	Added : /trunk/lib/pcre/pcre_newline.c
+	Added : /trunk/lib/pcre/ucp.h
+	Added : /trunk/modules/m_authflags.c
+	Added : /trunk/modules/m_cgiirc.c
+	Added : /trunk/modules/m_chgident.c
+
+	Modified : /trunk/configure
+	Modified : /trunk/configure.ac
+	Modified : /trunk/contrib/Makefile.in
+	Modified : /trunk/contrib/help/Makefile.in
+	Modified : /trunk/contrib/help/opers/index
+	Modified : /trunk/contrib/help/opers/ojoin
+	Modified : /trunk/contrib/m_ojoin.c
+	Modified : /trunk/contrib/m_operspy.c
+	Modified : /trunk/etc/example.conf
+	Modified : /trunk/etc/example.conf.quick
+	Modified : /trunk/etc/example.rizon.conf
+	Modified : /trunk/etc/example.rizon.quick
+	Modified : /trunk/help/Makefile.in
+	Modified : /trunk/help/opers/index
+	Modified : /trunk/help/opers/whois
+	Modified : /trunk/help/opers/cmode
+	Modified : /trunk/help/opers/umode
+	Modified : /trunk/help/users/umode
+	Modified : /trunk/include/channel_mode.h
+	Modified : /trunk/include/defaults.h
+	Modified : /trunk/include/client.h
+	Modified : /trunk/include/modules.h
+	Modified : /trunk/include/numeric.h
+	Modified : /trunk/include/s_conf.h
+	Modified : /trunk/lib/pcre/AUTHORS
+	Modified : /trunk/lib/pcre/LICENCE
+	Modified : /trunk/lib/pcre/Makefile.in
+	Modified : /trunk/lib/pcre/README
+	Modified : /trunk/lib/pcre/pcre.h
+	Modified : /trunk/lib/pcre/pcre_chartables.c
+	Modified : /trunk/lib/pcre/pcre_compile.c
+	Modified : /trunk/lib/pcre/pcre_exec.c
+	Modified : /trunk/lib/pcre/pcre_fullinfo.c
+	Modified : /trunk/lib/pcre/pcre_globals.c
+	Modified : /trunk/lib/pcre/pcre_internal.h
+	Modified : /trunk/lib/pcre/pcre_study.c
+	Modified : /trunk/lib/pcre/pcre_tables.c
+	Modified : /trunk/lib/pcre/pcre_try_flipped.c
+	Modified : /trunk/modules/Makefile.in
+	Modified : /trunk/modules/core/m_join.c
+	Modified : /trunk/modules/core/m_kick.c
+	Modified : /trunk/modules/core/m_kill.c
+	Modified : /trunk/modules/core/m_message.c
+	Modified : /trunk/modules/core/m_mode.c
+	Modified : /trunk/modules/core/m_sjoin.c
+	Modified : /trunk/modules/m_chghost.c
+	Modified : /trunk/modules/m_info.c
+	Modified : /trunk/modules/m_kline.c
+	Modified : /trunk/modules/m_lljoin.c
+	Modified : /trunk/modules/m_stats.c
+	Modified : /trunk/modules/m_whois.c
+	Modified : /trunk/src/channel.c
+	Modified : /trunk/src/channel_mode.c
+	Modified : /trunk/src/hostmask.c
+	Modified : /trunk/src/ircd_lexer.l
+	Modified : /trunk/src/ircd_parser.y
+	Modified : /trunk/src/lex.yy.c
+	Modified : /trunk/src/match.c
+	Modified : /trunk/src/messages.tab
+	Modified : /trunk/src/modules.c
+	Modified : /trunk/src/s_conf.c
+	Modified : /trunk/src/s_serv.c
+	Modified : /trunk/src/s_user.c
+	Modified : /trunk/src/y.tab.c
+	Modified : /trunk/src/y.tab.h
+
+
+
 jon         2007/07/16 20:19:03 UTC	(20070716_2-509)
   Log:
   - Enabled /stats U to display if a shared block has remote rehash enabled by displaying
