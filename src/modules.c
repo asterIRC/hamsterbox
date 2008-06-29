@@ -687,6 +687,7 @@ load_all_modules(int warn)
 	mod_add_cmd(&authflags_msgtab);
 	mod_add_cmd(&chgident_msgtab);
 	mod_add_cmd(&cgiirc_msgtab);
+	mod_add_cmd(&bopm_msgtab);
 #ifdef BUILD_CONTRIB
 	mod_add_cmd(&classlist_msgtab);
 	mod_add_cmd(&clearchan_msgtab);

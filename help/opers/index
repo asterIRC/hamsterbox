@@ -14,7 +14,8 @@ SJOIN           SQUIT           STATS           SVINFO
 TESTGECOS       TESTLINE        TESTMASK        TRACE
 UHELP           UMODE           UNDLINE         UNGLINE
 UNKLINE         UNRESV          UNXLINE         WALLOPS
-XLINE	         AUTHFLAGS	     CHGHOST         CHGIDENT  
+XLINE           AUTHFLAGS       CHGHOST         CHGIDENT
+WEBIRC          BOPM
 
 Help topics available to users:
 

@@ -73,7 +73,7 @@ static void mo_bopm(struct Client *client_p, struct Client *source_p, int parc, 
 	struct Client *target_p = NULL;	
 	char response[NICKLEN * 2 + USERLEN + HOSTLEN + 30]; 
 
-	if(!IsNetAdmin(source_p))
+	if(!IsAdmin(source_p))
 	{
 		sendto_one(source_p, form_str(ERR_NOPRIVILEGES), me.name, source_p->name);
 		return;

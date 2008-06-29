@@ -1,3 +1,43 @@
+Celestin         2008/06/29 23:04:13	(20080629_0-514)
+  Log:
+- Added help files for new oper command: BOPM
+	Added : /trunk/help/opers/bopm
+- Added help files for new server command: WEBIRC
+	Added : /trunk/help/opers/webirc
+- Added new help files to Makefile.in
+	Modified : /trunk/help/Makefile.in
+- Modified list of help entries for oper commands 
+	Modified : /trunk/help/opers/index
+- Added new contrib help files to Makefile.in
+	Modified : /trunk/contrib/help/Makefile.in
+- Modified list of help entries for contrib oper commands 
+	Modified : /trunk/contrib/help/opers/index
+- Added BOPM command to get remote user nick!ident@sockhost, spoofs are hostmasked with 255.255.255.255
+	Modified : /trunk/modules/m_bopm.c
+- Added BOPM module to automatic build list
+	Modified : /trunk/modules/Makefile.in
+- Added BOPM module to static modules build list
+	Modified : /trunk/include/modules.h
+	Modified : /trunk/src/modules.c
+- Changed version number to 514
+	Modified : /trunk/include/serno.h
+
+
+  Modified:
+	Added : /trunk/help/opers/webirc
+	Added : /trunk/help/opers/bopm
+
+	Modified : /trunk/help/Makefile.in
+	Modified : /trunk/help/opers/index
+	Modified : /trunk/contrib/help/Makefile.in
+	Modified : /trunk/contrib/help/opers/index
+	Modified : /trunk/modules/Makefile.in
+	Modified : /trunk/include/modules.h
+	Modified : /trunk/src/modules.c
+	Modified : /trunk/include/serno.h
+	Modified : /trunk/modules/m_bopm.c
+
+
 Celestin         2008/04/28 00:26:13	(20080427_0-513)
   Log:
 - Added global UNGLINE system using ENCAP command
