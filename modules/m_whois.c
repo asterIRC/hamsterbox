@@ -459,7 +459,15 @@ whois_person(struct Client *source_p, struct Client *target_p)
 	if(IsOper(source_p) || source_p == target_p)
 	{
 		char ubuf[IRCD_BUFSIZE];
-		send_umode(NULL, target_p, 0, 0xffffffff, ubuf);
+		if(IsOperHiddenAdmin(target_p)
+		{	
+			send_umode(NULL, target_p, 0, (source_p == target_p) ?
+				   0xffffffff : 0xffffffff & ~UMODE_ADMIN, ubuf);
+		}
+		else
+		{
+			send_umode(NULL, target_p, 0, 0xffffffff, ubuf);
+		}
 
 		if(*ubuf == '\0')
 		{

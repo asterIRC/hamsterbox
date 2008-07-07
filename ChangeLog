@@ -1,3 +1,18 @@
+Celestin         2008/07/7 04:02:13	(20080707_0-515)
+  Log:
+- Removed hidden_admin oper flag from /stats o for all opers except yourself.
+	Modified : /trunk/src/s_conf.c
+- Removed showing +a usermode for opers using hidden_admin from whois, unless whoising yourself.
+	Modified : /trunk/modules/m_whois.c
+- Changed version number to 515
+	Modified : /trunk/include/serno.h
+
+  Modified:
+	Modified : /trunk/include/serno.h
+	Modified : /trunk/modules/m_whois.c
+	Modified : /trunk/src/s_conf.c
+
+
 Celestin         2008/06/29 23:04:13	(20080629_0-514)
   Log:
 - Added help files for new oper command: BOPM

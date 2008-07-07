@@ -583,9 +583,10 @@ report_confitem_types(struct Client *source_p, ConfType type, int temp)
 	struct AccessItem *aconf = NULL;
 	struct MatchItem *matchitem = NULL;
 	struct ClassItem *classitem = NULL;
-	char buf[14];
+	char buf[16];
 	char *p = NULL;
 	const char *pfx = NULL;
+	int i,j;
 
 	switch (type)
 	{
@@ -700,10 +701,33 @@ report_confitem_types(struct Client *source_p, ConfType type, int temp)
 
 			/* Don't allow non opers to see oper privs */
 			if(IsOper(source_p))
-				sendto_one(source_p, form_str(RPL_STATSOLINE),
-					   me.name, source_p->name, 'O', aconf->user, aconf->host,
-					   conf->name, oper_privs_as_string(aconf->port),
-					   aconf->class_ptr ? aconf->class_ptr->name : "<default>");
+			{
+				if(MyClient(source_p) && match(aconf->user, source_p->username) && (match(aconf->host, source_p->host)
+					|| match(aconf->host, source_p->realhost) || match(aconf->host, source_p->sockhost)))
+				{
+					sendto_one(source_p, form_str(RPL_STATSOLINE),
+						   me.name, source_p->name, 'O', aconf->user, aconf->host,
+						   conf->name, oper_privs_as_string(aconf->port),
+						   aconf->class_ptr ? aconf->class_ptr->name : "<default>");
+				}
+				else
+				{
+					p = oper_privs_as_string(aconf->port);
+					for(i = 0,j = 0; i < strlen(p); i++)
+					{
+						if((p[i] >= 'A' ) && (p[i] <= 'Z'))
+						{ 
+							buf[j] = p[i];
+							j++;
+						}
+					}
+					buf[j] = '\0';				
+					sendto_one(source_p, form_str(RPL_STATSOLINE),
+						   me.name, source_p->name, 'O', aconf->user, aconf->host,
+						   conf->name, buf,
+						   aconf->class_ptr ? aconf->class_ptr->name : "<default>");
+				}
+			}
 			else
 				sendto_one(source_p, form_str(RPL_STATSOLINE),
 					   me.name, source_p->name, 'O', aconf->user, aconf->host,
