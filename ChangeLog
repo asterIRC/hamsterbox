@@ -1,3 +1,18 @@
+Celestin         2008/07/13 22:23:13	(20080713_0-516)
+  Log:
+- Removed possibility to set empty spoof.
+	Modified : /trunk/src/s_user.c
+- Changed BOPM module to ask remote server for users sockhost only if it is not yet known and user is not spoofed.
+	Modified : /trunk/modules/m_bopm.c
+- Changed version number to 516
+	Modified : /trunk/include/serno.h
+
+  Modified:
+	Modified : /trunk/include/serno.h
+	Modified : /trunk/modules/m_bopm.c
+	Modified : /trunk/src/s_user.c
+
+
 Celestin         2008/07/7 04:02:13	(20080707_0-515)
   Log:
 - Removed hidden_admin oper flag from /stats o for all opers except yourself.

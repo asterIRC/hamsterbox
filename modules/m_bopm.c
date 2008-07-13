@@ -27,7 +27,7 @@
 
 #include "modules.h"		/* includes msg.h; use for the msgtab */
 
-#include "handlers.h"	/* m_ignore */
+#include "handlers.h"		/* m_ignore */
 
 #include "hash.h"		/* find_client */
 
@@ -38,6 +38,8 @@
 #include "sprintf_irc.h"	/* ircsprintf */
 
 #include "numeric.h"		/* form_str */
+
+#include "irc_string.h"		/* EmptyString */
 
 static void me_bopm(struct Client*, struct Client*, int, char**);
 static void mo_bopm(struct Client*, struct Client*, int, char**);
@@ -99,7 +101,8 @@ static void mo_bopm(struct Client *client_p, struct Client *source_p, int parc, 
 		return;
 	}
 
-	if(!MyConnect(target_p))
+	if(!MyConnect(target_p) && (EmptyString(target_p->sockhost) || !strcmp(target_p->sockhost, "0")) &&
+		(!ConfigFileEntry.hide_spoof_ips || !IsIPSpoof(target_p)))
 	{
 		sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
 			      LL_ICLIENT, ":%s ENCAP %s BOPM %s %s",
