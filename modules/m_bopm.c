@@ -135,7 +135,7 @@ static void ms_bopm(struct Client *client_p, struct Client *source_p, int parc, 
 	{
 		return;
 	} 
-	if(!IsClient(target_p) || !IsClient(source_p))
+	if(!IsClient(target_p) || !IsPrivileged(source_p))
 	{
 		return;
 	}
