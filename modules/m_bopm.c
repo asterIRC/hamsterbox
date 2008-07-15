@@ -41,12 +41,13 @@
 
 #include "irc_string.h"		/* EmptyString */
 
-static void me_bopm(struct Client*, struct Client*, int, char**);
+static void ms_bopm(struct Client*, struct Client*, int, char**);
+static void me_bopm(struct Client*, struct Client*, int, char**); 
 static void mo_bopm(struct Client*, struct Client*, int, char**);
 
 struct Message bopm_msgtab = {
   "BOPM", 0, 0, 2, 0, MFLG_SLOW | MFLG_UNREG, 0,
-  {m_unregistered, m_not_oper, m_ignore, me_bopm, mo_bopm, m_ignore}
+  {m_unregistered, m_not_oper, ms_bopm, me_bopm, mo_bopm, m_ignore}
 };
 
 #ifndef STATIC_MODULES
@@ -104,10 +105,47 @@ static void mo_bopm(struct Client *client_p, struct Client *source_p, int parc, 
 	if(!MyConnect(target_p) && (EmptyString(target_p->sockhost) || !strcmp(target_p->sockhost, "0")) &&
 		(!ConfigFileEntry.hide_spoof_ips || !IsIPSpoof(target_p)))
 	{
-		sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
-			      LL_ICLIENT, ":%s ENCAP %s BOPM %s %s",
-			      me.name, target_p->servptr->name, target_p->name, source_p->name);
-		return;	
+		if(hunt_server(client_p, source_p, ":%s BOPM %s", 1,
+			       parc, parv) != HUNTED_ISME)
+			return;
+	} 
+
+	ircsprintf(response, "%s!%s@%s", target_p->name,
+		   target_p->username, ConfigFileEntry.hide_spoof_ips && IsIPSpoof(target_p) ?
+		   "255.255.255.255" : target_p->sockhost); 
+	sendto_one(source_p, form_str(RPL_USERHOST), me.name, source_p->name, response);
+}
+
+/*
+** ms_bopm
+**      parv[0] = BOPM prefix
+**      parv[1] = target nick
+*/
+static void ms_bopm(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+	struct Client *target_p = NULL;
+	char response[NICKLEN * 2 + USERLEN + HOSTLEN + 30]; 
+
+	if(parc < 2)
+	{
+		return;
+	}
+	
+	if((target_p = (struct Client*)find_client(parv[1])) == NULL)
+	{
+		return;
+	} 
+	if(!IsClient(target_p) || !IsClient(source_p))
+	{
+		return;
+	}
+
+	if(!MyConnect(target_p) && (EmptyString(target_p->sockhost) || !strcmp(target_p->sockhost, "0")) &&
+		(!ConfigFileEntry.hide_spoof_ips || !IsIPSpoof(target_p)))
+	{
+		if(hunt_server(client_p, source_p, ":%s BOPM %s", 1,
+			       parc, parv) != HUNTED_ISME)
+			return;
 	} 
 
 	ircsprintf(response, "%s!%s@%s", target_p->name,
@@ -170,4 +208,5 @@ static void me_bopm(struct Client *client_p, struct Client *source_p, int parc, 
 }
 
 
+ 
 
