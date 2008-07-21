@@ -505,7 +505,7 @@ static struct NumericInfo replies[] = {
 /* 474 */  {"ERR_BANNEDFROMCHAN", ":%s 474 %s %s :Cannot join channel (+b)", NULL},
 /* 475 */  {"ERR_BADCHANNELKEY", ":%s 475 %s %s :Cannot join channel (+k)", NULL},
 /* 476 */  {"ERR_OPERONLYCHAN", ":%s 476 %s %s :Cannot join channel (+O)", NULL},
-/* 477 */  {"ERR_NEEDREGGEDNICK", ":%s 477 %s %s :You need to identify to a registered nick to %s that channel", NULL},
+/* 477 */  {"ERR_NEEDREGGEDNICK", ":%s 477 %s %s :You need to identify to a registered nick to %s that channel. Check /msg nickserv help register", NULL},
 /* 478 */  {"ERR_BANLISTFULL", ":%s 478 %s %s %s :Channel ban list is full", NULL},
 /* 479 */  {"ERR_BADCHANNAME", ":%s 479 %s %s :Illegal channel name", NULL},
 /* 480 */  {NULL, NULL, NULL},
