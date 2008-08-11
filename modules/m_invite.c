@@ -183,11 +183,17 @@ m_invite(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 						     ":%s NOTICE %s :%s is inviting %s to %s.",
 						     me.name, chptr->chname, source_p->name,
 						     target_p->name, chptr->chname);
-				sendto_channel_remote(source_p, client_p,
+				sendto_channel_remote(target_p, client_p,
 						      CHFL_OWNER | CHFL_PROTECTED | CHFL_CHANOP |
-						      CHFL_HALFOP, NOCAPS, NOCAPS, chptr,
+						      CHFL_HALFOP, NOCAPS, CAP_TS6, chptr,
 						      ":%s NOTICE %s :%s is inviting %s to %s.",
-						      source_p->name, chptr->chname, source_p->name,
+						      me.name, chptr->chname, source_p->name,
+						      target_p->name, chptr->chname);
+				sendto_channel_remote(target_p, client_p,
+						      CHFL_OWNER | CHFL_PROTECTED | CHFL_CHANOP |
+						      CHFL_HALFOP, CAP_TS6, NOCAPS, chptr,
+						      ":%s NOTICE %s :%s is inviting %s to %s.",
+						      me.name, chptr->chname, source_p->name,
 						      target_p->name, chptr->chname);
 			}
 
