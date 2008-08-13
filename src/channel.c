@@ -741,12 +741,18 @@ find_bmask(const struct Client *who, const dlink_list * const list)
 					if(who->localClient->aftype == AF_INET)
 						if(match_ipv4(&who->localClient->ip, &bp->addr, bp->bits))
 							return 1;
+					if(match(bp->host, who->host) || match(bp->host, who->realhost)
+					   || match(bp->host, who->sockhost))
+						return 1;
 					break;
 #ifdef IPV6
 				case HM_IPV6:
 					if(who->localClient->aftype == AF_INET6)
 						if(match_ipv6(&who->localClient->ip, &bp->addr, bp->bits))
 							return 1;
+					if(match(bp->host, who->host) || match(bp->host, who->realhost)
+					   || match(bp->host, who->sockhost))
+						return 1;
 					break;
 #endif
 				default:

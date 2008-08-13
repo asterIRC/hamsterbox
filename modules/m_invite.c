@@ -152,6 +152,31 @@ m_invite(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 		if(target_p->away)
 			sendto_one(source_p, form_str(RPL_AWAY),
 				   me.name, source_p->name, target_p->name, target_p->away);
+
+ 	    if(chptr->mode.mode & MODE_INVITEONLY)
+		{
+			if(chptr->mode.mode & MODE_PRIVATE)
+			{
+				/* Only do this if channel is set +i AND +p */
+				sendto_channel_local(CHFL_OWNER | CHFL_PROTECTED |
+						     CHFL_CHANOP | CHFL_HALFOP, NO, chptr,
+						     ":%s NOTICE %s :%s is inviting %s to %s.",
+						     source_p->name, chptr->chname, source_p->name,
+						     target_p->name, chptr->chname);
+				sendto_channel_remote(source_p, client_p,
+						      CHFL_OWNER | CHFL_PROTECTED | CHFL_CHANOP |
+						      CHFL_HALFOP, NOCAPS, CAP_TS6, chptr,
+						      ":%s NOTICE %s :%s is inviting %s to %s.",
+						      source_p->name, chptr->chname, source_p->name,
+						      target_p->name, chptr->chname);
+				sendto_channel_remote(source_p, client_p,
+						      CHFL_OWNER | CHFL_PROTECTED | CHFL_CHANOP |
+						      CHFL_HALFOP, CAP_TS6, NOCAPS, chptr,
+						      ":%s NOTICE %s :%s is inviting %s to %s.",
+						      source_p->name, chptr->chname, source_p->name,
+						      target_p->name, chptr->chname);
+			}
+		}
 	}
 	else if(parc > 3 && IsDigit(*parv[3]))
 		if(atoi(parv[3]) > chptr->channelts)
@@ -175,28 +200,6 @@ m_invite(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 
 		if(chptr->mode.mode & MODE_INVITEONLY)
 		{
-			if(chptr->mode.mode & MODE_PRIVATE)
-			{
-				/* Only do this if channel is set +i AND +p */
-				sendto_channel_local(CHFL_OWNER | CHFL_PROTECTED |
-						     CHFL_CHANOP | CHFL_HALFOP, NO, chptr,
-						     ":%s NOTICE %s :%s is inviting %s to %s.",
-						     me.name, chptr->chname, source_p->name,
-						     target_p->name, chptr->chname);
-				sendto_channel_remote(target_p, client_p,
-						      CHFL_OWNER | CHFL_PROTECTED | CHFL_CHANOP |
-						      CHFL_HALFOP, NOCAPS, CAP_TS6, chptr,
-						      ":%s NOTICE %s :%s is inviting %s to %s.",
-						      me.name, chptr->chname, source_p->name,
-						      target_p->name, chptr->chname);
-				sendto_channel_remote(target_p, client_p,
-						      CHFL_OWNER | CHFL_PROTECTED | CHFL_CHANOP |
-						      CHFL_HALFOP, CAP_TS6, NOCAPS, chptr,
-						      ":%s NOTICE %s :%s is inviting %s to %s.",
-						      me.name, chptr->chname, source_p->name,
-						      target_p->name, chptr->chname);
-			}
-
 			/* Add the invite if channel is +i */
 			add_invite(chptr, target_p);
 		}

@@ -1,3 +1,18 @@
+Celestin         2008/08/14 00:11:00	(20080814_0-518)
+  Log:
+- Changed source of notices send to +ip channel to inviter's nick.
+	Modified : /trunk/modules/m_invite.c
+- Fixed bug preventing bans to work on numeric hosts.
+	Modified : /trunk/src/channel.c
+- Changed version number to 518
+	Modified : /trunk/include/serno.h
+
+  Modified:
+	Modified : /trunk/include/serno.h
+	Modified : /trunk/src/channel.c
+	Modified : /trunk/modules/m_invite.c
+
+
 Celestin         2008/08/11 22:23:13	(20080811_0-517)
   Log:
 - Fixed channel paranoid mode (invite only+private) missing notices bug.
