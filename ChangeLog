@@ -1,3 +1,15 @@
+Celestin         2008/10/26 00:11:00	(20080814_0-518)
+  Log:
+- Changed description of +p channel mode in cmode help file.
+	Modified : /trunk/help/opers/cmode
+- Blocked SQUIT for Ulined servers.
+	Modified : /trunk/modules/core/m_squit.c
+
+  Modified:
+	Modified : /trunk/help/opers/cmode
+	Modified : /trunk/modules/core/m_squit.c
+	
+	
 Celestin         2008/08/14 00:11:00	(20080814_0-518)
   Log:
 - Changed source of notices send to +ip channel to inviter's nick.

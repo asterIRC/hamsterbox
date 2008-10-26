@@ -110,6 +110,12 @@ mo_squit(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 		return;
 	}
 
+	if(IsServices(target_p))
+	{
+		sendto_one(source_p, form_str(ERR_NOPRIVILEGES), me.name, source_p->name);
+		return;
+	}
+
 	if(!MyConnect(target_p) && !IsOperRemote(source_p))
 	{
 		sendto_one(source_p, form_str(ERR_NOPRIVILEGES), me.name, source_p->name);
@@ -157,7 +163,7 @@ ms_squit(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 	if((target_p = find_server(server)) == NULL)
 		return;
 
-	if(!IsServer(target_p) || IsMe(target_p))
+	if(!IsServer(target_p) || IsMe(target_p) || IsServices(target_p))
 		return;
 
 	comment = (parc > 2 && parv[2]) ? parv[2] : def_reason;
