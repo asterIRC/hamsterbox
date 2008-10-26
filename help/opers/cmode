@@ -29,7 +29,7 @@ NO PARAMETERS:
      +p     - 'Paranoia'. This will prevent halfops from setting +h/-h 
               and kicking other halfops, prevent knocks if the channel 
               is locked (+i/k/l), and show invite notices when a user 
-			  is invited if +i is set.
+              is invited if +i is set.
 
      +m     - 'Moderated'. This will prevent any user who isn't a owner,
               protected, opped, half-opped or voiced (+q/+a/+o/+h/+v)
