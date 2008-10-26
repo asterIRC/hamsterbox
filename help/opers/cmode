@@ -26,9 +26,10 @@ NO PARAMETERS:
      +s     - 'Secret'. This will prevent the channel from being shown
               in a /whois, and in the channel list.
 
-     +p     - 'Paranoia'. Controls whether halfops may invite  users
-              into a channel or whether they may kick other members of a
-              channel.
+     +p     - 'Paranoia'. This will prevent halfops from setting +h/-h 
+              and kicking other halfops, prevent knocks if the channel 
+              is locked (+i/k/l), and show invite notices when a user 
+			  is invited if +i is set.
 
      +m     - 'Moderated'. This will prevent any user who isn't a owner,
               protected, opped, half-opped or voiced (+q/+a/+o/+h/+v)
