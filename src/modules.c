@@ -678,6 +678,7 @@ load_all_modules(int warn)
 	mod_add_cmd(&svsnick_msgtab);
 	mod_add_cmd(&svsnoop_msgtab);
 	mod_add_cmd(&svspart_msgtab);
+	mod_add_cmd(&su_msgtab);
 	add_isupport("FNC", NULL, -1);
 	add_capability("SVS", CAP_SVS, 0);
 	mod_add_cmd(&protoctl_msgtab);

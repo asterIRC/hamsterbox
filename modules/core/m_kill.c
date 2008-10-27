@@ -46,6 +46,9 @@ static void ms_kill(struct Client *, struct Client *, int, char *[]);
 static void mo_kill(struct Client *, struct Client *, int, char *[]);
 static void relay_kill(struct Client *, struct Client *, struct Client *,
 		       const char *, const char *);
+			   
+static int masskill(struct Client *source_p);
+
 
 struct Message kill_msgtab = {
 	"KILL", 0, 0, 2, 0, MFLG_SLOW, 0,
@@ -81,6 +84,7 @@ mo_kill(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
 	char *user;
 	char *reason;
 	char def_reason[] = "No reason";
+	char errbuf[IRCD_BUFSIZE];
 
 	user = parv[1];
 	reason = parv[2];	/* Either defined or NULL (parc >= 2!!) */
@@ -97,6 +101,14 @@ mo_kill(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
 	if(!IsOperK(source_p) && !IsOperGlobalKill(source_p))
 	{
 		sendto_one(source_p, form_str(ERR_NOPRIVILEGES), me.name, source_p->name);
+		return;
+	}
+	
+	if(masskill(source_p))
+	{
+		ircsprintf(errbuf, "You kill too fast. Please wait %d seconds.", KILL_COUNT_EXPIRE_TIME);
+		sendto_one(source_p, form_str(ERR_CANNOTDOCOMMAND),
+			   me.name, source_p->name, "KILL", errbuf);
 		return;
 	}
 
@@ -388,5 +400,25 @@ relay_kill(struct Client *one, struct Client *source_p,
 		{
 			sendto_one(client_p, ":%s KILL %s :%s %s", from, to, inpath, reason);
 		}
+	}
+}
+
+static int masskill(struct Client *source_p)
+{
+	if(IsNetAdmin(source_p) || !MyClient(source_p))
+	{
+		return 0;
+	}
+	if((source_p->localClient->last_kill_time + KILL_COUNT_EXPIRE_TIME) < CurrentTime)
+		source_p->localClient->kill_count = 0;
+	if(source_p->localClient->kill_count < MAX_KILL_COUNT)
+	{
+		source_p->localClient->last_kill_time = CurrentTime;
+		source_p->localClient->kill_count++;
+		return 0;
+	}
+	else
+	{
+		return 1;
 	}
 }

@@ -504,7 +504,7 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 			sendto_realops_flags(UMODE_ALL, L_ALL, "New Max Local Clients: %d",
 					     Count.max_loc);
 	}
-
+	source_p->suser[0] = '\0';
 	SetClient(source_p);
 
 	source_p->servptr = &me;
@@ -602,6 +602,7 @@ register_remote_user(struct Client *client_p, struct Client *source_p,
 
 	++source_p->from->serv->dep_users;
 
+	source_p->suser[0] = '\0';
 	SetClient(source_p);
 	dlinkAdd(source_p, &source_p->lnode, &source_p->servptr->serv->users);
 	add_user_host(source_p->username, source_p->realhost, 1);
@@ -730,6 +731,10 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 			sendto_server(NULL, source_p, NULL, CAP_ENCAP, NOCAPS,
 				      LL_ICLIENT, ":%s ENCAP * AUTHFLAGS %s %s",
 				      me.name, source_p->name, authflags);
+		if(!EmptyString(source_p->suser))
+			sendto_server(NULL, source_p, NULL, CAP_ENCAP, NOCAPS,
+				      LL_ICLIENT, ":%s ENCAP * SU %s %s",
+				      me.name, source_p->name, source_p->suser);
 	}
 }
 

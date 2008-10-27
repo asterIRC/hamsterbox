@@ -1,13 +1,37 @@
-Celestin         2008/10/26 00:11:00	(20080814_0-518)
+Celestin         2008/10/27 00:11:00	(20081027_0-519)
   Log:
 - Changed description of +p channel mode in cmode help file.
 	Modified : /trunk/help/opers/cmode
 - Blocked SQUIT for Ulined servers.
 	Modified : /trunk/modules/core/m_squit.c
-
+- Added mass kill protection.
+	Modified : /trunk/include/client.h	
+	Modified : /trunk/include/defaults.h	
+	Modified : /trunk/modules/core/m_kill.c
+- Added SU command support for Atheme services.
+	Modified : /trunk/modules/m_services.c
+- Added sending suser status for clients that have it to other servers on server burst
+	Modified : /trunk/src/s_serv.c
+- Added sending suser status for clients that have it to other servers when that new client is connecting
+	Modified : /trunk/src/s_user.c
+- Added SU command message tab to static modules build list
+	Modified : /trunk/include/modules.h
+	Modified : /trunk/src/modules.c
+- Changed version number to 519
+	Modified : /trunk/include/serno.h
+	
   Modified:
+	Modified : /trunk/include/serno.h
 	Modified : /trunk/help/opers/cmode
 	Modified : /trunk/modules/core/m_squit.c
+	Modified : /trunk/include/client.h	
+	Modified : /trunk/include/defaults.h	
+	Modified : /trunk/modules/core/m_kill.c
+	Modified : /trunk/modules/m_services.c
+	Modified : /trunk/src/s_serv.c
+	Modified : /trunk/src/s_user.c
+	Modified : /trunk/include/modules.h
+	Modified : /trunk/src/modules.c
 	
 	
 Celestin         2008/08/14 00:11:00	(20080814_0-518)

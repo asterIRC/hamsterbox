@@ -128,6 +128,7 @@ struct Client
 	 */
 	char name[HOSTLEN + 1];
 	char id[IDLEN + 1];	/* client ID, unique ID per client */
+	char suser[NICKLEN + 1]; /* nick core to which this client is identified in services */
 
 	/*
 	 * client->llname is used to store the clients requested nick
@@ -212,6 +213,9 @@ struct LocalUser
 	int flood_noticed;
 
 	dlink_node lclient_node;
+	
+	time_t last_kill_time; /* when this client last send kill */
+	int kill_count; 
 
 	unsigned int operflags;	/* oper priv flags */
 

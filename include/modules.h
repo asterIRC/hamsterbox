@@ -200,6 +200,7 @@ extern struct Message svsmode_msgtab;
 extern struct Message svsnick_msgtab;
 extern struct Message svsnoop_msgtab;
 extern struct Message svspart_msgtab;
+extern struct Message su_msgtab;
 extern struct Message uncapture_msgtab;
 extern struct Message authflags_msgtab;
 extern struct Message chgident_msgtab;

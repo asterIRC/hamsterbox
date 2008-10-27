@@ -132,6 +132,9 @@
 #define MIN_SPAM_NUM 5
 #define MIN_SPAM_TIME 60
 
+#define KILL_COUNT_EXPIRE_TIME 30
+#define MAX_KILL_COUNT 5
+
 #define SERVICES_NAME_DEFAULT "services.rizon.net"	/* default for services_name */
 
 #endif /* INCLUDED_defaults_h */

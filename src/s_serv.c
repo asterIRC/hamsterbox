@@ -925,6 +925,10 @@ sendnick_TS(struct Client *client_p, struct Client *target_p)
 			sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
 				      LL_ICLIENT, ":%s ENCAP * AUTHFLAGS %s %s",
 				      me.name, target_p->name, authflags);
+		if(!EmptyString(target_p->suser))
+			sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
+				      LL_ICLIENT, ":%s ENCAP * SU %s %s",
+				      me.name, target_p->name, target_p->suser);
 	}
 }
 

@@ -89,6 +89,8 @@ static void get_string(int, char *[], char *);
 static int clean_nick_name(char *, int);
 static void deliver_services_msg(const char *, const char *, struct Client *,
 				 struct Client *, int, char *[]);
+				 
+static int me_su(struct Client *, struct Client *, int, char *[]);
 
 /* SVS commands */
 struct Message svsjoin_msgtab = {
@@ -114,6 +116,11 @@ struct Message svsnoop_msgtab = {
 struct Message svspart_msgtab = {
 	"SVSPART", 0, 0, 3, 0, MFLG_SLOW, 0,
 	{m_ignore, m_ignore, m_ignore, me_svspart, m_ignore, m_ignore}
+};
+
+struct Message su_msgtab = {
+	"SU", 0, 0, 2, 0, MFLG_SLOW, 0,
+	{m_ignore, m_ignore, m_ignore, me_su, m_ignore, m_ignore}
 };
 
 /* Services */
@@ -191,6 +198,7 @@ _modinit(void)
 	mod_add_cmd(&svsnick_msgtab);
 	mod_add_cmd(&svsnoop_msgtab);
 	mod_add_cmd(&svspart_msgtab);
+	mod_add_cmd(&su_msgtab);
 	mod_add_cmd(&botserv_msgtab);
 	mod_add_cmd(&bs_msgtab);
 	mod_add_cmd(&chanserv_msgtab);
@@ -216,6 +224,7 @@ _moddeinit(void)
 	mod_del_cmd(&svsnick_msgtab);
 	mod_del_cmd(&svsnoop_msgtab);
 	mod_del_cmd(&svspart_msgtab);
+	mod_del_cmd(&su_msgtab);
 	mod_del_cmd(&botserv_msgtab);
 	mod_del_cmd(&bs_msgtab);
 	mod_del_cmd(&chanserv_msgtab);
@@ -943,4 +952,36 @@ me_svspart(struct Client *client_p, struct Client *source_p, int parc, char *par
 	sendto_channel_local(ALL_MEMBERS, NO, chptr, ":%s!%s@%s PART %s",
 			     target_p->name, target_p->username, target_p->host, chptr->chname);
 	remove_user_from_channel(member);
+}
+
+/*
+ * me_su
+ *      parv[0] = sender prefix
+ *      parv[1] = nick
+ *      parv[2] = nick core identified to
+ */
+static int
+me_su(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+	struct Client *target_p = NULL;
+
+	if(!IsServer(source_p) || !IsServices(source_p)) 
+		return 0;
+
+	if(parc < 2)
+		return 0;
+
+	if((target_p = (struct Client*)find_client(parv[1])) == NULL)
+		return 0;
+
+
+	if(!IsClient(target_p))
+		return 0;
+
+	if(EmptyString(parv[2]))
+		target_p->suser[0] = '\0';
+	else
+		strlcpy(target_p->suser, parv[2], sizeof(target_p->suser));
+
+	return 0; 
 }
