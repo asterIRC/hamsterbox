@@ -24,6 +24,7 @@ Usermodes: (* designates that the umode is oper only)
        * +b     - Can see possible bot / join flood warnings.
        * +a     - Is marked as a server admin in stats p/o.
        * +N     - Is marked as a network administrator
+       * +q     - Is Routing Team Member, can use SQUITs.
        * +C     - Can see extended client connections and exits.
        * +p     - Hides the output of channels this client is in from WHOIS
                   to non-admins.

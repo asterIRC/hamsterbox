@@ -1,3 +1,27 @@
+Celestin         2008/10/27 17:50:00	(20081027_1-519)
+  Log:
+- Added automatic remove of +q umode when deoppering.
+	Modified : /trunk/contrib/m_samode.c
+- Added routing user mode (+q) to user modes oper help file
+	Modified : /trunk/help/opers/umode
+- Added oper only routing user mode (+q).
+	Modified : /trunk/include/client.h	
+	Modified : /trunk/modules/core/m_squit.c
+	Modified : /trunk/modules/m_services.c
+	Modified : /trunk/src/s_user.c
+- Changed version number to 519 v1.
+	Modified : /trunk/include/serno.h
+	
+  Modified:
+	Modified : /trunk/contrib/m_samode.c
+	Modified : /trunk/help/opers/umode
+	Modified : /trunk/include/client.h	
+	Modified : /trunk/modules/core/m_squit.c
+	Modified : /trunk/modules/m_services.c
+	Modified : /trunk/src/s_user.c
+	Modified : /trunk/include/serno.h
+
+	
 Celestin         2008/10/27 00:11:00	(20081027_0-519)
   Log:
 - Changed description of +p channel mode in cmode help file.

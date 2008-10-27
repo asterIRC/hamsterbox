@@ -340,6 +340,8 @@ me_svsmode(struct Client *client_p, struct Client *source_p, int parc, char *par
 					/* remove their netadmin flag if set */
 					if(IsNetAdmin(target_p))
 						ClearNetAdmin(target_p);
+					if(IsRouting(target_p))
+						ClearRouting(target_p);
 
 					Count.oper--;
 
@@ -427,7 +429,9 @@ me_svsmode(struct Client *client_p, struct Client *source_p, int parc, char *par
 		++Count.invisi;
 	if((setflags & UMODE_INVISIBLE) && !IsInvisible(target_p))
 		--Count.invisi;
-
+	if(IsNetAdmin(target_p) && !IsRouting(target_p))
+		target_p->umodes |= UMODE_ROUTING;
+		
 	if(MyClient(target_p) && (setflags != target_p->umodes))
 	{
 		char buf[IRCD_BUFSIZE];
@@ -600,6 +604,8 @@ me_svsnoop(struct Client *client_p, struct Client *source_p, int parc, char *par
 			/* remove their netadmin flag if set */
 			if(IsNetAdmin(target_p))
 				ClearNetAdmin(target_p);
+			if(IsRouting(target_p))
+				ClearRouting(target_p);
 
 			Count.oper--;
 			detach_conf(target_p, OPER_TYPE);

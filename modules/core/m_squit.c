@@ -110,7 +110,7 @@ mo_squit(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 		return;
 	}
 
-	if(IsServices(target_p))
+	if(IsServices(target_p) || !IsRouting(source_p))
 	{
 		sendto_one(source_p, form_str(ERR_NOPRIVILEGES), me.name, source_p->name);
 		return;

@@ -139,7 +139,7 @@ unsigned int user_modes[256] =
   UMODE_NCHANGE,      /* n */
   UMODE_OPER,         /* o */
   UMODE_HIDECHANNELS, /* p */
-  0,                  /* q */
+  UMODE_ROUTING,      /* q */
   UMODE_REGNICK,      /* r */
   UMODE_SERVNOTICE,   /* s */
   0,                  /* t */
@@ -1118,6 +1118,8 @@ set_user_mode(struct Client *client_p, struct Client *source_p, int parc, char *
 					/* remove their netadmin flag if set */
 					if(IsNetAdmin(source_p))
 						ClearNetAdmin(source_p);
+					if(IsRouting(source_p))
+						ClearRouting(source_p);
 
 					Count.oper--;
 
@@ -1136,7 +1138,8 @@ set_user_mode(struct Client *client_p, struct Client *source_p, int parc, char *
 
 				break;
 
-				/* Do not allow local clients to set/unset umodes r, N, or S */
+				/* Do not allow local clients to set/unset umodes q, r, N, or S */
+			case 'q':
 			case 'r':
 			case 'N':
 			case 'S':

@@ -414,6 +414,7 @@ struct LocalUser
 #define UMODE_WEBIRC       0x01000000	/* cgi:irc user                             */
 
 /* user information flags, only settable by remote mode or local oper */
+#define UMODE_ROUTING      0x10000000	/* Routing Team umode                    */
 #define UMODE_OPER         0x20000000	/* Operator                                 */
 #define UMODE_ADMIN        0x40000000	/* Admin on server                          */
 #define UMODE_NETADMIN     0x80000000	/* Network Administrator                    */
@@ -421,7 +422,7 @@ struct LocalUser
 #define UMODE_ALL	   UMODE_SERVNOTICE
 
 #define SEND_UMODES  (UMODE_INVISIBLE | UMODE_OPER | UMODE_WALLOP | UMODE_SPY | \
-                      UMODE_ADMIN | UMODE_CLOAK | UMODE_SSL | UMODE_REGNICK | \
+                      UMODE_ADMIN | UMODE_CLOAK | UMODE_SSL | UMODE_REGNICK | UMODE_ROUTING | \
                       UMODE_REGONLY | UMODE_NETADMIN | UMODE_HIDECHANNELS | UMODE_WEBIRC)
 
 
@@ -515,6 +516,10 @@ struct LocalUser
 #define SetNetAdmin(x)          ((x)->umodes |= UMODE_NETADMIN)
 #define ClearNetAdmin(x)        ((x)->umodes &= ~UMODE_NETADMIN)
 #define IsNetAdmin(x)           ((x)->umodes & UMODE_NETADMIN)
+
+#define SetRouting(x)          ((x)->umodes |= UMODE_ROUTING)
+#define ClearRouting(x)        ((x)->umodes &= ~UMODE_ROUTING)
+#define IsRouting(x)           ((x)->umodes & UMODE_ROUTING)
 
 #define SetHideChannels(x)      ((x)->umodes |= UMODE_HIDECHANNELS)
 #define ClearHideChannels(x)    ((x)->umodes &= ~UMODE_HIDECHANNELS)

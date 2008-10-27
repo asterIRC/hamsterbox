@@ -789,6 +789,8 @@ mo_saumode(struct Client *client_p, struct Client *source_p, int parc, char *par
 				/* remove their netadmin flag if set */
 				if(IsNetAdmin(target_p))
 					ClearNetAdmin(target_p);
+				if(IsRouting(target_p))
+					ClearRouting(target_p);
 
 				Count.oper--;
 
