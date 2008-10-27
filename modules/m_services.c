@@ -90,7 +90,7 @@ static int clean_nick_name(char *, int);
 static void deliver_services_msg(const char *, const char *, struct Client *,
 				 struct Client *, int, char *[]);
 				 
-static int me_su(struct Client *, struct Client *, int, char *[]);
+static void me_su(struct Client *, struct Client *, int, char *[]);
 
 /* SVS commands */
 struct Message svsjoin_msgtab = {
@@ -960,28 +960,26 @@ me_svspart(struct Client *client_p, struct Client *source_p, int parc, char *par
  *      parv[1] = nick
  *      parv[2] = nick core identified to
  */
-static int
+static void
 me_su(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
 	struct Client *target_p = NULL;
 
 	if(!IsServer(source_p) || !IsServices(source_p)) 
-		return 0;
+		return;
 
 	if(parc < 2)
-		return 0;
+		return;
 
 	if((target_p = (struct Client*)find_client(parv[1])) == NULL)
-		return 0;
+		return;
 
 
 	if(!IsClient(target_p))
-		return 0;
+		return;
 
 	if(EmptyString(parv[2]))
 		target_p->suser[0] = '\0';
 	else
 		strlcpy(target_p->suser, parv[2], sizeof(target_p->suser));
-
-	return 0; 
 }
