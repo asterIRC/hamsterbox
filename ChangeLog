@@ -1,3 +1,15 @@
+Celestin         2008/10/28 17:50:00	(20081028_0-520)
+  Log:
+- Readded back possibility to SQUIT ulines when send from server.
+	Modified : /trunk/modules/core/m_squit.c
+- Changed version number to 520.
+	Modified : /trunk/include/serno.h
+	
+  Modified:
+	Modified : /trunk/modules/core/m_squit.c
+	Modified : /trunk/include/serno.h
+
+	
 Celestin         2008/10/27 17:50:00	(20081027_1-519)
   Log:
 - Added automatic remove of +q umode when deoppering.
