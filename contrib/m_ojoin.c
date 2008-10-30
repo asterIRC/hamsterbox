@@ -77,7 +77,7 @@ mo_ojoin(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 	unsigned int flags = 0;
 
 	/* admins only */
-	if(!IsAdmin(source_p))
+	if(!IsNetAdmin(source_p))
 	{
 		sendto_one(source_p, form_str(ERR_NOPRIVILEGES), me.name, source_p->name);
 		return;
