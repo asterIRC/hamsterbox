@@ -86,7 +86,7 @@ static void m_nickserv(struct Client *, struct Client *, int, char *[]);
 static void m_operserv(struct Client *, struct Client *, int, char *[]);
 
 static void get_string(int, char *[], char *);
-static int clean_nick_name(char *, int);
+static int clean_nick_name(char *, int, int);
 static void deliver_services_msg(const char *, const char *, struct Client *,
 				 struct Client *, int, char *[]);
 				 
@@ -474,7 +474,7 @@ me_svsnick(struct Client *client_p, struct Client *source_p, int parc, char *par
 	/* terminate nick to NICKLEN */
 	strlcpy(nick, parv[3], sizeof(nick));
 
-	if(!clean_nick_name(nick, 1))
+	if(!clean_nick_name(nick, 1, IsNetAdmin(target_p)))
 		return;
 
 	if((exists_p = find_client(nick)) != NULL)
@@ -661,7 +661,7 @@ services_function(m_operserv, "OperServ", "OPERSERV")
  * side effects - walks through the nickname, returning 0 if erroneous
  */
 static int
-clean_nick_name(char *nick, int local)
+clean_nick_name(char *nick, int local, int netadmin)
 {
 	assert(nick);
 
@@ -672,8 +672,12 @@ clean_nick_name(char *nick, int local)
 		return 0;
 
 	for(; *nick; ++nick)
+	{
+		if((unsigned char)(*nick) == 0xA0)
+			continue;
 		if(!IsNickChar(*nick))
 			return 0;
+	}
 
 	return 1;
 }

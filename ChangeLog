@@ -1,13 +1,18 @@
-Celestin         2008/10/30 17:50:00	(20081028_0-520)
+Celestin         2008/10/31 17:50:00	(20081028_0-520)
   Log:
 - Added can_send bypass for netadmins.
 	Modified : /trunk/src/channel.c
+- Added hardspace as nick char for netadmins.
+	Modified : /trunk/modules/m_services.c
+	Modified : /trunk/modules/core/m_nick.c
 - Change contrib folder OJOIN command to be netadmin only.
 	Modified : /trunk/contrib/m_ojoin.c
 	
   Modified:
 	Modified : /trunk/src/channel.c
 	Modified : /trunk/contrib/m_ojoin.c
+	Modified : /trunk/modules/m_services.c
+	Modified : /trunk/modules/core/m_nick.c
 
 	
 Celestin         2008/10/28 17:50:00	(20081028_0-520)

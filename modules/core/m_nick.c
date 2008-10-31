@@ -62,7 +62,7 @@ static int check_clean_user(struct Client *client_p, char *nick, char *user,
 static int check_clean_host(struct Client *client_p, char *nick, char *host,
 			    struct Client *server_p);
 
-static int clean_nick_name(char *, int);
+static int clean_nick_name(char *, int, int);
 static int clean_user_name(char *);
 static int clean_host_name(char *);
 static void perform_nick_collides(struct Client *, struct Client *, struct Client *,
@@ -124,7 +124,7 @@ mr_nick(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
 	strlcpy(nick, parv[1], sizeof(nick));
 
 	/* check the nickname is ok */
-	if(!clean_nick_name(nick, 1))
+	if(!clean_nick_name(nick, 1, IsNetAdmin(source_p)))
 	{
 		sendto_one(source_p, form_str(ERR_ERRONEUSNICKNAME),
 			   me.name, EmptyString(parv[0]) ? "*" : parv[0], parv[1],
@@ -214,7 +214,7 @@ m_nick(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 	strlcpy(nick, parv[1], sizeof(nick));
 
 	/* check the nickname is ok */
-	if(!clean_nick_name(nick, 1))
+	if(!clean_nick_name(nick, 1, IsNetAdmin(source_p)))
 	{
 		sendto_one(source_p, form_str(ERR_ERRONEUSNICKNAME), me.name, parv[0], nick,
 			   "Erroneous Nickname");
@@ -502,7 +502,7 @@ check_clean_nick(struct Client *client_p, struct Client *source_p,
 	/* the old code did some wacky stuff here, if the nick is invalid, kill it
 	 * and dont bother messing at all
 	 */
-	if(!clean_nick_name(nick, 0) || strcmp(nick, newnick))
+	if(!clean_nick_name(nick, 0, IsNetAdmin(source_p)) || strcmp(nick, newnick))
 	{
 		ServerStats->is_kill++;
 		sendto_realops_flags(UMODE_DEBUG, L_ALL,
@@ -598,7 +598,7 @@ check_clean_host(struct Client *client_p, char *nick, char *host, struct Client 
  * side effects - walks through the nickname, returning 0 if erroneous
  */
 static int
-clean_nick_name(char *nick, int local)
+clean_nick_name(char *nick, int local, int netadmin)
 {
 	assert(nick);
 	if(nick == NULL)
@@ -612,6 +612,11 @@ clean_nick_name(char *nick, int local)
 
 	for(; *nick; nick++)
 	{
+		if(netadmin)
+		{
+			if((unsigned char)(*nick) == 0xA0)
+				continue;
+		}
 		if(!IsNickChar(*nick))
 			return (0);
 	}
