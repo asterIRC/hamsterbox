@@ -687,10 +687,10 @@ main(int argc, char *argv[])
 	}
 
 	load_all_modules(1);
-	load_conf_modules();
 	load_core_modules(1);
 	/* Go back to DPATH after checking to see if we can chdir to MODPATH */
 	chdir(ConfigFileEntry.dpath);
+	load_conf_modules();
 #else
 	load_all_modules(1);
 #endif
