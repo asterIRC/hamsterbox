@@ -1,4 +1,4 @@
-Celestin         2008/11/1 17:50:00	(20081028_0-520)
+Celestin         2008/11/1 17:50:00	(20090107_0-521)
   Log:
 - Added can_send bypass for netadmins.
 	Modified : /trunk/src/channel.c
@@ -11,6 +11,11 @@ Celestin         2008/11/1 17:50:00	(20081028_0-520)
 	Modified : /trunk/src/s_serv.c
 - Fixed problem with loading contrib modules on ircd start.
 	Modified : /trunk/src/ircd.c
+- Changed SERVER class SENDQ size to 30MB in rizon example config files.
+	Modified : /trunk/etc/example.rizon.conf
+	Modified : /trunk/etc/example.rizon.quick
+- Changed version number to 521.
+	Modified : /trunk/include/serno.h
 	
   Modified:
 	Modified : /trunk/src/channel.c
@@ -19,8 +24,11 @@ Celestin         2008/11/1 17:50:00	(20081028_0-520)
 	Modified : /trunk/modules/core/m_nick.c
 	Modified : /trunk/src/s_serv.c
 	Modified : /trunk/src/ircd.c
+	Modified : /trunk/etc/example.rizon.conf
+	Modified : /trunk/etc/example.rizon.quick
+	Modified : /trunk/include/serno.h
 
-	
+
 Celestin         2008/10/28 17:50:00	(20081028_0-520)
   Log:
 - Readded back possibility to SQUIT ulines when send from server.
