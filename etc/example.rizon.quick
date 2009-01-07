@@ -59,7 +59,7 @@ class
 	ping_warning = 5 seconds;
 	connectfreq = 15 minutes;
 	max_number = 1;
-	sendq = 15 megabytes;
+	sendq = 30 megabytes;
 };
 
 listen
