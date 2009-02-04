@@ -1,3 +1,12 @@
+Celestin         2009/02/4 19:00:00	(20090204_0-521)
+  Log:
+- Blocked remote server wide notices for everyone except ulines and netadmins.
+	Modified : /trunk/modules/core/m_message.c
+	
+  Modified:
+	Modified : /trunk/modules/core/m_message.c
+
+
 Celestin         2009/01/7 13:50:00	(20090107_0-521)
   Log:
 - Added can_send bypass for netadmins.

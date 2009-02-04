@@ -964,6 +964,19 @@ handle_special(int p_or_n, const char *command, struct Client *client_p,
 	 */
 	if(*nick == '$')
 	{
+		if(*(nick + 1) == '$')
+		{
+			if((((target_p = find_server(nick + 2)) != NULL) && !IsMe(target_p)) || (strchr(nick + 2, '*') != NULL) || (strchr(nick + 2, '?') != NULL))
+			{
+				if(!IsNetAdmin(source_p) && !IsServices(source_p))
+				{
+					sendto_one(source_p, form_str(ERR_NOPRIVILEGES),
+						   ID_or_name(&me, client_p), ID_or_name(source_p, client_p));
+					return;
+				}
+			}
+		}
+		
 		if((*(nick + 1) == '$' || *(nick + 1) == '#'))
 			nick++;
 		else if(MyOper(source_p))
