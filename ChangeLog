@@ -1,3 +1,20 @@
+Celestin         2009/04/14 11:00:00	(20090414_0-522)
+  Log:
+- Added SVSKILL command to be able to kill desync clients.
+	Modified : /trunk/modules/m_services.c
+- Added SVSKILL command message tab to static modules build list
+	Modified : /trunk/include/modules.h
+	Modified : /trunk/src/modules.c
+- Changed version number to 522.
+	Modified : /trunk/include/serno.h
+	
+  Modified:
+	Modified : /trunk/modules/m_services.c
+	Modified : /trunk/include/modules.h
+	Modified : /trunk/src/modules.c
+	Modified : /trunk/include/serno.h
+
+
 Celestin         2009/02/4 19:00:00	(20090204_0-521)
   Log:
 - Blocked remote server wide notices for everyone except ulines and netadmins.
