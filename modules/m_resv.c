@@ -418,7 +418,7 @@ remove_resv(struct Client *source_p, const char *name)
 	{
 		struct MatchItem *resv_p = NULL;
 
-		if((conf = find_exact_name_conf(NRESV_TYPE, name, NULL, NULL)) == NULL)
+		if((conf = find_exact_name_conf(NRESV_TYPE, name, NULL, NULL, NULL)) == NULL)
 		{
 			if(!services)
 				sendto_one(source_p,

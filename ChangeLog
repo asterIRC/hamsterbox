@@ -1,3 +1,81 @@
+Celestin         2009/06/12 22:00:00	(20090612_0-522)
+  Log:
+- Added preview of channel exempt and invex lists for opers.
+	Modified : /trunk/src/channel_mode.c
+- Blocked removal of nonexisting channel bans.
+	Modified : /trunk/include/defaults.h
+- Changed +p umode to be available for anyone.
+	Modified : /trunk/include/channel.h
+	Modified : /trunk/src/s_user.c
+- Changed server count shown in LUSERS command to count all non-hidden servers instead of 1.
+	Modified : /trunk/src/s_user.c
+- Applied Radicant's SSL CERT AUTH patch.
+	Modified : /trunk/include/client.h
+	Modified : /trunk/include/hostmask.h
+	Modified : /trunk/include/numeric.h
+	Modified : /trunk/include/s_conf.h
+	Modified : /trunk/include/s_misc.h
+	Modified : /trunk/modules/m_cgiirc.c
+	Modified : /trunk/modules/m_challenge.c
+	Modified : /trunk/modules/m_kline.c
+	Modified : /trunk/modules/m_oper.c
+	Modified : /trunk/modules/m_resv.c
+	Modified : /trunk/modules/m_stats.c
+	Modified : /trunk/modules/m_testline.c
+	Modified : /trunk/modules/m_whois.c
+	Modified : /trunk/src/hostmask.c
+	Modified : /trunk/src/ircd.c
+	Modified : /trunk/src/ircd_lexer.l
+	Modified : /trunk/src/ircd_parser.y
+	Modified : /trunk/src/lex.yy.c
+	Modified : /trunk/src/messages.tab
+	Modified : /trunk/src/rsa.c
+	Modified : /trunk/src/s_bsd.c
+	Modified : /trunk/src/s_conf.c
+	Modified : /trunk/src/s_gline.c
+	Modified : /trunk/src/s_misc.c
+	Modified : /trunk/src/s_serv.c
+	Modified : /trunk/src/s_user.c
+	Modified : /trunk/src/y.tab.c
+	Modified : /trunk/src/y.tab.h
+- Changed version number to 523.
+	Modified : /trunk/include/serno.h
+	
+  Modified:
+	Modified : /trunk/src/channel_mode.c
+	Modified : /trunk/include/defaults.h
+	Modified : /trunk/include/channel.h
+	Modified : /trunk/include/client.h
+	Modified : /trunk/include/hostmask.h
+	Modified : /trunk/include/numeric.h
+	Modified : /trunk/include/s_conf.h
+	Modified : /trunk/include/s_misc.h
+	Modified : /trunk/modules/m_cgiirc.c
+	Modified : /trunk/modules/m_challenge.c
+	Modified : /trunk/modules/m_kline.c
+	Modified : /trunk/modules/m_oper.c
+	Modified : /trunk/modules/m_resv.c
+	Modified : /trunk/modules/m_stats.c
+	Modified : /trunk/modules/m_testline.c
+	Modified : /trunk/modules/m_whois.c
+	Modified : /trunk/src/hostmask.c
+	Modified : /trunk/src/ircd.c
+	Modified : /trunk/src/ircd_lexer.l
+	Modified : /trunk/src/ircd_parser.y
+	Modified : /trunk/src/lex.yy.c
+	Modified : /trunk/src/messages.tab
+	Modified : /trunk/src/rsa.c
+	Modified : /trunk/src/s_bsd.c
+	Modified : /trunk/src/s_conf.c
+	Modified : /trunk/src/s_gline.c
+	Modified : /trunk/src/s_misc.c
+	Modified : /trunk/src/s_serv.c
+	Modified : /trunk/src/s_user.c
+	Modified : /trunk/src/y.tab.c
+	Modified : /trunk/src/y.tab.h
+	Modified : /trunk/include/serno.h
+
+
 Celestin         2009/04/14 11:00:00	(20090414_0-522)
   Log:
 - Added SVSKILL command to be able to kill desync clients.

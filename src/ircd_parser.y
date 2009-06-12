@@ -42,6 +42,7 @@
 #include "memory.h"
 #include "modules.h"
 #include "s_serv.h" /* for CAP_LL / IsCapable */
+#include "s_misc.h" /* for certfp funcs */
 #include "hostmask.h"
 #include "send.h"
 #include "listener.h"
@@ -156,6 +157,7 @@ unhook_hub_leaf_confs(void)
 %token	CIDR_BITLEN_IPV6
 %token  CIPHER_PREFERENCE
 %token  CLASS
+%token  CLIENTCERT_HASH
 %token  CLOAK_KEY1
 %token  CLOAK_KEY2
 %token  CLOAK_KEY3
@@ -580,7 +582,7 @@ serverinfo_rsa_private_key_file: RSA_PRIVATE_KEY_FILE '=' QSTRING ';'
     ServerInfo.rsa_private_key = (RSA *)PEM_read_bio_RSAPrivateKey(file, NULL,
       0, NULL);
 
-    BIO_set_close(file, BIO_CLOSE);
+    (void)BIO_set_close(file, BIO_CLOSE);
     BIO_free(file);
 
     if (ServerInfo.rsa_private_key == NULL)
@@ -1020,8 +1022,13 @@ oper_entry: OPERATOR
         file = BIO_new_file(yy_aconf->rsa_public_key_file, "r");
         new_aconf->rsa_public_key = (RSA *)PEM_read_bio_RSA_PUBKEY(file, 
 							   NULL, 0, NULL);
-        BIO_set_close(file, BIO_CLOSE);
+        (void)BIO_set_close(file, BIO_CLOSE);
         BIO_free(file);
+      }
+      if (yy_aconf->certfp != NULL)
+      {
+        new_aconf->certfp = MyMalloc(SHA_DIGEST_LENGTH);
+        memcpy(new_aconf->certfp, yy_aconf->certfp, SHA_DIGEST_LENGTH);
       }
 #endif
 
@@ -1058,7 +1065,7 @@ oper_item:      oper_name | oper_user | oper_password | oper_hidden_admin |
                 oper_kline | oper_xline | oper_unkline |
 		oper_gline | oper_nick_changes | oper_remoteban |
                 oper_die | oper_rehash | oper_admin | oper_operwall |
-		oper_encrypted | oper_rsa_public_key_file | oper_spy | 
+		oper_encrypted | oper_rsa_public_key_file | oper_client_certificate_hash | oper_spy | 
                 oper_flags | error ';' ;
 
 oper_name: NAME '=' QSTRING ';'
@@ -1116,6 +1123,25 @@ oper_user: USER '=' QSTRING ';'
 
       dlinkAdd(yy_tmp, &yy_tmp->node, &col_conf_list);
     }
+  }
+};
+
+oper_client_certificate_hash: CLIENTCERT_HASH '=' QSTRING ';'
+{
+  if (ypass == 2)
+  {
+    char tmp[SHA_DIGEST_LENGTH];
+    
+    if(yy_aconf->certfp != NULL)
+      MyFree(yy_aconf->certfp);
+
+    if(base16_decode(tmp, SHA_DIGEST_LENGTH, yylval.string, strlen(yylval.string)) != 0)
+    {
+      yyerror("Invalid client certificate fingerprint provided. Ignoring");
+      break;
+    }
+    yy_aconf->certfp = MyMalloc(SHA_DIGEST_LENGTH);
+    memcpy(yy_aconf->certfp, tmp, SHA_DIGEST_LENGTH);
   }
 };
 
@@ -1178,7 +1204,7 @@ oper_rsa_public_key_file: RSA_PUBLIC_KEY_FILE '=' QSTRING ';'
       break;
     }
 
-    BIO_set_close(file, BIO_CLOSE);
+    (void)BIO_set_close(file, BIO_CLOSE);
     BIO_free(file);
   }
 #endif /* HAVE_LIBCRYPTO */
@@ -1591,7 +1617,7 @@ class_entry: CLASS
       delete_conf_item(yy_conf);
     else
     {
-      cconf = find_exact_name_conf(CLASS_TYPE, yy_class_name, NULL, NULL);
+      cconf = find_exact_name_conf(CLASS_TYPE, yy_class_name, NULL, NULL, NULL);
 
       if (cconf != NULL)		/* The class existed already */
       {
@@ -1882,6 +1908,12 @@ auth_entry: IRCD_AUTH
       DupString(new_aconf->host, yy_tmp->host);
       collapse(new_aconf->host);
 
+      if (yy_aconf->certfp != NULL)
+      {
+        new_aconf->certfp = MyMalloc(SHA_DIGEST_LENGTH);
+        memcpy(new_aconf->certfp, yy_aconf->certfp, SHA_DIGEST_LENGTH);
+      }
+
       conf_add_class_to_conf(new_conf, class_name);
       add_conf_by_address(CONF_CLIENT, new_aconf);
       dlinkDelete(&yy_tmp->node, &col_conf_list);
@@ -1901,7 +1933,7 @@ auth_item:      auth_user | auth_passwd | auth_class | auth_flags |
                 auth_exceed_limit | auth_no_tilde | auth_gline_exempt |
 		auth_spoof | auth_spoof_notice | auth_webirc |
                 auth_redir_serv | auth_redir_port | auth_can_flood |
-                auth_need_password | auth_encrypted | error ';' ;
+		auth_need_password | auth_encrypted | auth_client_certificate_hash | error ';' ;
 
 auth_user: USER '=' QSTRING ';'
 {
@@ -1950,6 +1982,25 @@ auth_passwd: PASSWORD '=' QSTRING ';'
 
     MyFree(yy_aconf->passwd);
     DupString(yy_aconf->passwd, yylval.string);
+  }
+};
+
+auth_client_certificate_hash: CLIENTCERT_HASH '=' QSTRING ';'
+{
+  if (ypass == 2)
+  {
+    char tmp[SHA_DIGEST_LENGTH];
+
+    if(yy_aconf->certfp != NULL)
+      MyFree(yy_aconf->certfp);
+
+    if(base16_decode(tmp, SHA_DIGEST_LENGTH, yylval.string, strlen(yylval.string)) != 0)
+    {
+      yyerror("Invalid client certificate fingerprint provided. Ignoring");
+      break;
+    }
+    yy_aconf->certfp = MyMalloc(SHA_DIGEST_LENGTH);
+    memcpy(yy_aconf->certfp, tmp, SHA_DIGEST_LENGTH);
   }
 };
 
@@ -2825,8 +2876,8 @@ connect_rsa_public_key_file: RSA_PUBLIC_KEY_FILE '=' QSTRING ';'
       yyerror("Ignoring rsa_public_key_file -- Key invalid; check key syntax.");
       break;
     }
-      
-    BIO_set_close(file, BIO_CLOSE);
+
+    (void)BIO_set_close(file, BIO_CLOSE);
     BIO_free(file);
   }
 #endif /* HAVE_LIBCRYPTO */
@@ -3115,7 +3166,7 @@ deny_reason: REASON '=' QSTRING ';'
 exempt_entry: EXEMPT '{' exempt_items '}' ';';
 
 exempt_items:     exempt_items exempt_item | exempt_item;
-exempt_item:      exempt_ip | error;
+exempt_item:      exempt_ip | exempt_client_certificate_hash | error;
 
 exempt_ip: IP '=' QSTRING ';'
 {
@@ -3134,6 +3185,35 @@ exempt_ip: IP '=' QSTRING ';'
     }
   }
 };
+
+exempt_client_certificate_hash: CLIENTCERT_HASH '=' QSTRING ';'
+{
+  if (ypass == 2)
+  {
+    char tmp[SHA_DIGEST_LENGTH];
+
+    yy_conf = make_conf_item(EXEMPTDLINE_TYPE);
+    yy_aconf = map_to_conf(yy_conf);
+  
+    if(base16_decode(tmp, SHA_DIGEST_LENGTH, yylval.string, strlen(yylval.string)) != 0)
+    {
+      yyerror("Invalid client certificate fingerprint provided. Ignoring");
+      break;
+    }
+ 
+    yy_aconf->certfp = MyMalloc(SHA_DIGEST_LENGTH);
+    yy_aconf->host = MyMalloc(SHA_DIGEST_LENGTH);
+    memcpy(yy_aconf->certfp, tmp, SHA_DIGEST_LENGTH);
+    memcpy(yy_aconf->host, tmp, SHA_DIGEST_LENGTH);
+ 
+    add_conf_by_address(CONF_EXEMPTDLINE, yy_aconf);
+
+    yy_conf = NULL;
+    yy_aconf = NULL;
+
+ }
+};
+
 
 /***************************************************************************
  *  section gecos

@@ -137,4 +137,6 @@
 
 #define SERVICES_NAME_DEFAULT "services.rizon.net"	/* default for services_name */
 
+#define NO_BAN_COOKIE 1
+
 #endif /* INCLUDED_defaults_h */

@@ -1820,7 +1820,7 @@ set_autoconn(struct Client *source_p, const char *name, int newval)
 
 	if(name != NULL)
 	{
-		conf = find_exact_name_conf(SERVER_TYPE, name, NULL, NULL);
+		conf = find_exact_name_conf(SERVER_TYPE, name, NULL, NULL, NULL);
 		if(conf != NULL)
 		{
 			aconf = (struct AccessItem *) map_to_conf(conf);

@@ -937,17 +937,7 @@ chm_except(struct Client *client_p, struct Client *source_p,
 		return;
 	}
 
-	if(alev < CHACCESS_HALFOP)
-	{
-		if(!(*errors & SM_ERR_NOOPS))
-			sendto_one(source_p, form_str(alev == CHACCESS_NOTONCHAN ?
-						      ERR_NOTONCHANNEL : ERR_CHANOPRIVSNEEDED),
-				   me.name, source_p->name, chname);
-		*errors |= SM_ERR_NOOPS;
-		return;
-	}
-
-	if(dir == MODE_QUERY || parc <= *parn)
+	if((dir == MODE_QUERY || parc <= *parn) && ((alev >= CHACCESS_HALFOP) || IsOper(source_p)))
 	{
 		dlink_node *ptr = NULL;
 
@@ -967,6 +957,16 @@ chm_except(struct Client *client_p, struct Client *source_p,
 
 		sendto_one(source_p, form_str(RPL_ENDOFEXCEPTLIST), me.name,
 			   source_p->name, chname);
+		return;
+	}
+
+	if(alev < CHACCESS_HALFOP)
+	{
+		if(!(*errors & SM_ERR_NOOPS))
+			sendto_one(source_p, form_str(alev == CHACCESS_NOTONCHAN ?
+						      ERR_NOTONCHANNEL : ERR_CHANOPRIVSNEEDED),
+				   me.name, source_p->name, chname);
+		*errors |= SM_ERR_NOOPS;
 		return;
 	}
 
@@ -1029,17 +1029,7 @@ chm_invex(struct Client *client_p, struct Client *source_p,
 		return;
 	}
 
-	if(alev < CHACCESS_HALFOP)
-	{
-		if(!(*errors & SM_ERR_NOOPS))
-			sendto_one(source_p, form_str(alev == CHACCESS_NOTONCHAN ?
-						      ERR_NOTONCHANNEL : ERR_CHANOPRIVSNEEDED),
-				   me.name, source_p->name, chname);
-		*errors |= SM_ERR_NOOPS;
-		return;
-	}
-
-	if(dir == MODE_QUERY || parc <= *parn)
+	if((dir == MODE_QUERY || parc <= *parn) && ((alev >= CHACCESS_HALFOP) || IsOper(source_p)))
 	{
 		dlink_node *ptr = NULL;
 
@@ -1059,6 +1049,16 @@ chm_invex(struct Client *client_p, struct Client *source_p,
 
 		sendto_one(source_p, form_str(RPL_ENDOFINVITELIST), me.name,
 			   source_p->name, chname);
+		return;
+	}
+
+	if(alev < CHACCESS_HALFOP)
+	{
+		if(!(*errors & SM_ERR_NOOPS))
+			sendto_one(source_p, form_str(alev == CHACCESS_NOTONCHAN ?
+						      ERR_NOTONCHANNEL : ERR_CHANOPRIVSNEEDED),
+				   me.name, source_p->name, chname);
+		*errors |= SM_ERR_NOOPS;
 		return;
 	}
 

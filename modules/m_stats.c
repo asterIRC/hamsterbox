@@ -954,10 +954,12 @@ stats_auth(struct Client *source_p)
 						     CONF_CLIENT,
 						     source_p->localClient->aftype,
 						     source_p->username,
-						     source_p->localClient->passwd);
+						     source_p->localClient->passwd,
+						     source_p->certfp);
 		else
 			aconf = find_conf_by_address(source_p->host, NULL, CONF_CLIENT,
-						     0, source_p->username, NULL);
+						     0, source_p->username, NULL, 
+					             source_p->certfp);
 
 		if(aconf == NULL)
 			return;
@@ -993,10 +995,10 @@ stats_tklines(struct Client *source_p)
 						     &source_p->localClient->ip,
 						     CONF_KILL,
 						     source_p->localClient->aftype,
-						     source_p->username, NULL);
+						     source_p->username, NULL, NULL);
 		else
 			aconf = find_conf_by_address(source_p->host, NULL, CONF_KILL,
-						     0, source_p->username, NULL);
+						     0, source_p->username, NULL, NULL);
 
 		if(aconf == NULL)
 			return;
@@ -1036,10 +1038,10 @@ stats_klines(struct Client *source_p)
 						     &source_p->localClient->ip,
 						     CONF_KILL,
 						     source_p->localClient->aftype,
-						     source_p->username, NULL);
+						     source_p->username, NULL, NULL);
 		else
 			aconf = find_conf_by_address(source_p->host, NULL, CONF_KILL,
-						     0, source_p->username, NULL);
+						     0, source_p->username, NULL, NULL);
 
 		if(aconf == NULL)
 			return;

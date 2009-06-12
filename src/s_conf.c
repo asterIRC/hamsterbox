@@ -954,7 +954,8 @@ verify_access(struct Client *client_p, const char *username)
 		aconf = find_address_conf(client_p->host, client_p->username,
 					  &client_p->localClient->ip,
 					  client_p->localClient->aftype,
-					  client_p->localClient->passwd);
+					  client_p->localClient->passwd,
+					  client_p->certfp);
 	}
 	else
 	{
@@ -962,7 +963,8 @@ verify_access(struct Client *client_p, const char *username)
 		aconf = find_address_conf(client_p->host, non_ident,
 					  &client_p->localClient->ip,
 					  client_p->localClient->aftype,
-					  client_p->localClient->passwd);
+					  client_p->localClient->passwd,
+					  client_p->certfp);
 	}
 
 	uhi[0] = IsGotId(client_p) ? client_p->username : non_ident;
@@ -1673,7 +1675,8 @@ find_matching_name_conf(ConfType type, const char *name, const char *user,
  * side effects - looks for an exact match on name field
  */
 struct ConfItem *
-find_exact_name_conf(ConfType type, const char *name, const char *user, const char *host)
+find_exact_name_conf(ConfType type, const char *name,
+		     const char *user, const char *host, const char *certfp)
 {
 	dlink_node *ptr = NULL;
 	struct AccessItem *aconf;
@@ -1720,6 +1723,9 @@ find_exact_name_conf(ConfType type, const char *name, const char *user, const ch
 			if(irccmp(conf->name, name) == 0)
 			{
 				if((user == NULL && (host == NULL)))
+					return (conf);
+				if((certfp != NULL && aconf->certfp != NULL) &&
+				   (memcmp(aconf->certfp, certfp, SHA_DIGEST_LENGTH) == 0))
 					return (conf);
 				if(EmptyString(aconf->user) || EmptyString(aconf->host))
 					return (conf);
@@ -2132,7 +2138,8 @@ find_kill(struct Client *client_p)
 	assert(client_p != NULL);
 
 	aconf = find_kline_conf(client_p->realhost, client_p->username,
-				&client_p->localClient->ip, client_p->localClient->aftype);
+					client_p->certfp, &client_p->localClient->ip,
+					client_p->localClient->aftype);
 	if(aconf == NULL)
 		aconf = find_regexp_kline(uhi);
 
@@ -2924,7 +2931,7 @@ find_class(const char *classname)
 {
 	struct ConfItem *conf;
 
-	if((conf = find_exact_name_conf(CLASS_TYPE, classname, NULL, NULL)) != NULL)
+	if((conf = find_exact_name_conf(CLASS_TYPE, classname, NULL, NULL, NULL)) != NULL)
 		return conf;
 
 	return class_default;

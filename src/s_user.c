@@ -185,6 +185,8 @@ void
 show_lusers(struct Client *source_p)
 {
 	const char *from, *to;
+	dlink_node *ptr;
+	int leafservers = 0;
 
 	if(!MyConnect(source_p) && IsCapable(source_p->from, CAP_TS6) && HasID(source_p))
 	{
@@ -202,8 +204,16 @@ show_lusers(struct Client *source_p)
 			   from, to, (Count.total - Count.invisi),
 			   Count.invisi, dlink_list_length(&global_serv_list));
 	else
+	{
+		DLINK_FOREACH(ptr, global_serv_list.head)
+		{
+			struct Client *server = ptr->data;
+			if(!IsHidden(server))
+				leafservers++;
+		}
 		sendto_one(source_p, form_str(RPL_LUSERCLIENT), from, to,
-			   (Count.total - Count.invisi), Count.invisi, 1);
+			   (Count.total - Count.invisi), Count.invisi, leafservers);
+	}
 
 	if(Count.oper > 0)
 		sendto_one(source_p, form_str(RPL_LUSEROP), from, to, Count.oper);
@@ -1186,12 +1196,12 @@ set_user_mode(struct Client *client_p, struct Client *source_p, int parc, char *
 		source_p->umodes &= ~UMODE_NCHANGE;	/* only tcm's really need this */
 	}
 
-	if(MyConnect(source_p) && (source_p->umodes & (UMODE_ADMIN | UMODE_HIDECHANNELS)) &&
+	if(MyConnect(source_p) && (source_p->umodes & (UMODE_ADMIN)) &&
 	   !IsOperAdmin(source_p) && !IsOperHiddenAdmin(source_p))
 	{
 		sendto_one(source_p, ":%s NOTICE %s :*** You have no admin flag;",
 			   me.name, source_p->name);
-		source_p->umodes &= ~(UMODE_ADMIN | UMODE_HIDECHANNELS);
+		source_p->umodes &= ~(UMODE_ADMIN);
 	}
 
 	if(!(setflags & UMODE_INVISIBLE) && IsInvisible(source_p))
@@ -1324,9 +1334,21 @@ user_welcome(struct Client *source_p)
 #endif
 
 #ifdef HAVE_LIBCRYPTO
-	if(IsSSL(source_p))
+	if(IsSSL(source_p)) {
 		sendto_one(source_p, ":%s NOTICE %s :*** Connected securely via %s",
 			   me.name, source_p->name, ssl_get_cipher(source_p->localClient->fd.ssl));
+		
+		if(!EmptyString(source_p->certfp))
+		{
+			char buf[SHA_DIGEST_LENGTH*2+1]; 
+
+			base16_encode(buf, SHA_DIGEST_LENGTH*2+1, source_p->certfp,
+				      SHA_DIGEST_LENGTH);
+			sendto_one(source_p,
+				   ":%s NOTICE %s :*** Your client certificate fingerprint is %s",
+				   me.name, source_p->name, buf);
+		}
+	}
 #endif
 
 	if(IsCloaked(source_p))

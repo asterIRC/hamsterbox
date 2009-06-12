@@ -145,6 +145,7 @@ cidr_bitlen_ipv4	{ return CIDR_BITLEN_IPV4; }
 cidr_bitlen_ipv6	{ return CIDR_BITLEN_IPV6; }
 cipher_preference { return CIPHER_PREFERENCE; }
 class		{ return CLASS; }
+client_certificate_hash	{ return CLIENTCERT_HASH; }
 client_flood	{ return T_CLIENT_FLOOD; }
 cloak_key1	{ return CLOAK_KEY1; }
 cloak_key2	{ return CLOAK_KEY2; }

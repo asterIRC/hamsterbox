@@ -104,7 +104,7 @@ m_oper(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 	if((conf = find_password_conf(name, source_p)) == NULL)
 	{
 		sendto_one(source_p, form_str(ERR_NOOPERHOST), me.name, source_p->name);
-		conf = find_exact_name_conf(OPER_TYPE, name, NULL, NULL);
+		conf = find_exact_name_conf(OPER_TYPE, name, NULL, NULL, NULL);
 		failed_oper_notice(source_p, name, (conf != NULL) ?
 				   "host mismatch" : "no oper {} block");
 		log_oper_action(LOG_FAILED_OPER_TYPE, source_p, "%s\n", name);
@@ -164,19 +164,21 @@ find_password_conf(const char *name, struct Client *source_p)
 	struct ConfItem *conf = NULL;
 
 	if((conf = find_exact_name_conf(OPER_TYPE,
-					name, source_p->username, source_p->host)) != NULL)
+					name, source_p->username, source_p->host, source_p->certfp)) != NULL)
 	{
 		return (conf);
 	}
 
 	if((conf = find_exact_name_conf(OPER_TYPE,
-					name, source_p->username, source_p->realhost)) != NULL)
+					name, source_p->username, source_p->realhost,
+     					source_p->certfp)) != NULL)
 	{
 		return (conf);
 	}
 
 	if((conf = find_exact_name_conf(OPER_TYPE,
-					name, source_p->username, source_p->sockhost)) != NULL)
+					name, source_p->username, source_p->sockhost,
+     					source_p->certfp)) != NULL)
 	{
 		return (conf);
 	}

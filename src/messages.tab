@@ -698,7 +698,7 @@ static struct NumericInfo replies[] = {
 /* 667 */  {NULL, NULL, NULL},
 /* 668 */  {NULL, NULL, NULL},
 /* 669 */  {NULL, NULL, NULL},
-/* 670 */  {NULL, NULL, NULL},
+/* 670 */  {"RPL_WHOISCERTFP", ":%s 670 %s %s :is using a client certificate", NULL},
 /* 671 */  {"RPL_WHOISSSL", ":%s 671 %s %s :is using a secure connection", NULL},
 /* 672 */  {"RPL_WHOISCGI", ":%s 672 %s %s :is a CGI:IRC client %s", NULL},
 /* 673 */  {NULL, NULL, NULL},

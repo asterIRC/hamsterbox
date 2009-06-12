@@ -291,26 +291,44 @@ static void
 ssl_handshake(int fd, struct Client *client_p)
 {
 	int ret = SSL_accept(client_p->localClient->fd.ssl);
+  X509 *cert;
 
-	if(ret <= 0)
-		switch (SSL_get_error(client_p->localClient->fd.ssl, ret))
-		{
-		case SSL_ERROR_WANT_WRITE:
-			comm_setselect(&client_p->localClient->fd, COMM_SELECT_WRITE,
-				       (PF *) ssl_handshake, client_p, 0);
-			return;
+  if ((cert = SSL_get_peer_certificate(client_p->localClient->fd.ssl)) != NULL)
+  {
+    int res = SSL_get_verify_result(client_p->localClient->fd.ssl);
+    if (res == X509_V_OK || res == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN ||
+        res == X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE ||
+        res == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT)
+    {
+      /* The client sent a certificate which verified OK */
+      memcpy(client_p->certfp, cert->sha1_hash, sizeof(client_p->certfp));
+    }
+    else
+    {
+      ilog(L_WARN, "Client %s!%s@%s gave bad SSL client certificate: %d",
+          client_p->name, client_p->username, client_p->host, res);
+    }
+  }
 
-		case SSL_ERROR_WANT_READ:
-			comm_setselect(&client_p->localClient->fd, COMM_SELECT_READ,
-				       (PF *) ssl_handshake, client_p, 0);
-			return;
+  if (ret <= 0)
+    switch (SSL_get_error(client_p->localClient->fd.ssl, ret))
+    {
+      case SSL_ERROR_WANT_WRITE:
+        comm_setselect(&client_p->localClient->fd, COMM_SELECT_WRITE,
+	               (PF *) ssl_handshake, client_p, 0);
+        return;
 
-		default:
-			exit_client(client_p, client_p, "Error during SSL handshake");
-			return;
-		}
+      case SSL_ERROR_WANT_READ:
+        comm_setselect(&client_p->localClient->fd, COMM_SELECT_READ,
+	               (PF *) ssl_handshake, client_p, 0);
+        return;
 
-	execute_callback(auth_cb, client_p);
+      default:
+        exit_client(client_p, client_p, "Error during SSL handshake");
+        return;
+    }
+
+  execute_callback(auth_cb, client_p);
 }
 #endif
 
@@ -375,7 +393,6 @@ add_connection(struct Listener *listener, struct irc_ssaddr *irn, int fd)
 			exit_client(new_client, new_client, "SSL_new failed");
 			return;
 		}
-
 		SSL_set_fd(new_client->localClient->fd.ssl, fd);
 		ssl_handshake(0, new_client);
 	}

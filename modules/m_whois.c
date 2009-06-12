@@ -439,9 +439,16 @@ whois_person(struct Client *source_p, struct Client *target_p)
 		sendto_one(source_p, form_str(RPL_WHOISREGNICK),
 			   me.name, source_p->name, target_p->name);
 
-	if(IsSSL(target_p))
+	if(IsSSL(target_p)) {
 		sendto_one(source_p, form_str(RPL_WHOISSSL),
 			   me.name, source_p->name, target_p->name);
+		
+		if ((target_p == source_p || IsOper (source_p)) &&
+		    !EmptyString (target_p->certfp)) {
+			sendto_one(source_p, form_str(RPL_WHOISCERTFP),
+				   me.name, source_p->name, target_p->name);
+		}
+	}
 
 	if(IsWebIrc(target_p))
 	{	
@@ -515,7 +522,7 @@ whois_person(struct Client *source_p, struct Client *target_p)
 				   target_p->username, target_p->realhost,
 				   hide_ip ? "255.255.255.255" : target_p->sockhost);
 	}
-
+	
 	if(!IsHideChannels(target_p) || IsAdmin(source_p) || source_p == target_p)
 	{
 		if(MyClient(target_p))	/* Can't do any of this if not local! db */

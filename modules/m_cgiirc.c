@@ -108,7 +108,8 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 		aconf = find_address_conf(source_p->host, source_p->username,
 					  &source_p->localClient->ip,
 					  source_p->localClient->aftype,
-					  source_p->localClient->passwd);
+					  source_p->localClient->passwd,
+					  source_p->certfp);
 	}
 	else
 	{
@@ -116,7 +117,8 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 		aconf = find_address_conf(source_p->host, non_ident,
 					  &source_p->localClient->ip,
 					  source_p->localClient->aftype,
-					  source_p->localClient->passwd);
+					  source_p->localClient->passwd,
+					  source_p->certfp);
 	} 	
 	
 	if((!aconf) || (!aconf->class_ptr) || (!IsConfClient(aconf)) || (!IsConfWebIrc(aconf)) ||

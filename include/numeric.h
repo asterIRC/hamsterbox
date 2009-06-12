@@ -457,6 +457,7 @@ extern const char *get_locale(void);
 	RPL_EODUMP	     642	unreal
 */
 
+#define RPL_WHOISCERTFP      670
 #define RPL_WHOISSSL         671
 #define RPL_WHOISCGI         672
 

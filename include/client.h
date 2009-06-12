@@ -184,6 +184,8 @@ struct Client
 	dlink_list channel;	/* chain of channel pointer blocks */
 
 	struct LocalUser *localClient;
+
+	char certfp[SHA_DIGEST_LENGTH]; /* cert fingerprint */
 };
 
 struct LocalUser
