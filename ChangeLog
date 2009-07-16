@@ -1,4 +1,13 @@
-Celestin         2009/06/12 22:00:00	(20090612_0-522)
+Celestin         2009/07/16 15:00:00	(20090716_0-523)
+  Log:
+- Added timeout to SSL_handshake call when it fails.
+	Modified : /trunk/src/s_bsd.c
+	
+  Modified:
+	Modified : /trunk/src/s_bsd.c
+
+
+Celestin         2009/06/12 22:00:00	(20090612_0-523)
   Log:
 - Added preview of channel exempt and invex lists for opers.
 	Modified : /trunk/src/channel_mode.c
@@ -9,7 +18,7 @@ Celestin         2009/06/12 22:00:00	(20090612_0-522)
 	Modified : /trunk/src/s_user.c
 - Changed server count shown in LUSERS command to count all non-hidden servers instead of 1.
 	Modified : /trunk/src/s_user.c
-- Applied Radicant's SSL CERT AUTH patch.
+- Applied Radicand's SSL CERT AUTH patch.
 	Modified : /trunk/include/client.h
 	Modified : /trunk/include/hostmask.h
 	Modified : /trunk/include/numeric.h
