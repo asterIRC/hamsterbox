@@ -366,6 +366,10 @@ find_client(const char *name)
 	unsigned int hashv = strhash(name);
 	struct Client *client_p;
 
+	/* hybrid's TS6 is so fucking broken. *grumble* --moogle. */
+	if (IsDigit(*name))
+		return hash_find_id(name);
+
 	if((client_p = clientTable[hashv]) != NULL)
 	{
 		if(irccmp(name, client_p->name))
