@@ -18,3 +18,4 @@ Usermodes:
                   clients who have identified to their nickname.
          +S     - Designates this client as having connected via SSL.
          +W     - Designates this client as having connected via CGI:IRC.
+         +p     - Hides the output of channels this client is in from WHOIS.

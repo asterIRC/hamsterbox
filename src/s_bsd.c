@@ -314,21 +314,13 @@ ssl_handshake(int fd, struct Client *client_p)
     switch (SSL_get_error(client_p->localClient->fd.ssl, ret))
     {
       case SSL_ERROR_WANT_WRITE:
-        if(&client_p->localClient->fd.timeout > 0)
-            comm_setselect(&client_p->localClient->fd, COMM_SELECT_WRITE,
-	                   (PF *) ssl_handshake, client_p, 0);
-        else
-            comm_setselect(&client_p->localClient->fd, COMM_SELECT_WRITE,
-	                   (PF *) ssl_handshake, client_p, 600000);
+        comm_setselect(&client_p->localClient->fd, COMM_SELECT_WRITE,
+	               (PF *) ssl_handshake, client_p, 0);
         return;
 
       case SSL_ERROR_WANT_READ:
-        if(&client_p->localClient->fd.timeout > 0)
-            comm_setselect(&client_p->localClient->fd, COMM_SELECT_WRITE,
-	                   (PF *) ssl_handshake, client_p, 0);
-        else
-            comm_setselect(&client_p->localClient->fd, COMM_SELECT_READ,
-	                   (PF *) ssl_handshake, client_p, 600000);
+        comm_setselect(&client_p->localClient->fd, COMM_SELECT_READ,
+	               (PF *) ssl_handshake, client_p, 0);
         return;
 
       default:

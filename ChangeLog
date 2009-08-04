@@ -1,3 +1,14 @@
+Celestin         2009/08/04 9:30:00	(20090804_0-523)
+  Log:
+- Fixed umode +p help files.
+	Modified : /trunk/help/users/umode
+	Modified : /trunk/help/opers/umode
+
+  Modified:
+	Modified : /trunk/help/users/umode
+	Modified : /trunk/help/opers/umode
+
+
 moogle           2009/07/17 13:53:24    (20090717_0-523)
   Log:
 - find_client(): Make behaviour match charybdis and ratbox.
@@ -6,15 +17,6 @@ moogle           2009/07/17 13:53:24    (20090717_0-523)
 
   Modified:
 	Modified : /trunk/src/hash.c
-
-
-Celestin         2009/07/16 15:00:00	(20090716_0-523)
-  Log:
-- Added timeout to SSL_handshake call when it fails.
-	Modified : /trunk/src/s_bsd.c
-	
-  Modified:
-	Modified : /trunk/src/s_bsd.c
 
 
 Celestin         2009/06/12 22:00:00	(20090612_0-523)

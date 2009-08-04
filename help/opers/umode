@@ -26,7 +26,7 @@ Usermodes: (* designates that the umode is oper only)
        * +N     - Is marked as a network administrator
        * +q     - Is Routing Team Member, can use SQUITs.
        * +C     - Can see extended client connections and exits.
-       * +p     - Hides the output of channels this client is in from WHOIS
+         +p     - Hides the output of channels this client is in from WHOIS
                   to non-admins.
          +D     - "deaf": don't receive channel messages
          +G     - "soft caller id": block private messages from people not on
