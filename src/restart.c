@@ -67,7 +67,8 @@ server_die(const char *mesg, int rboot)
 	{
 		target_p = ptr->data;
 
-		sendto_one(target_p, ":%s NOTICE %s :%s", me.name, target_p->name, buffer);
+		if(IsOper(target_p))
+			sendto_one(target_p, ":%s NOTICE %s :%s", me.name, target_p->name, buffer);
 	}
 
 	DLINK_FOREACH(ptr, serv_list.head)

@@ -1,3 +1,12 @@
+Celestin         2009/09/18 20:00:00	(20090918_0-523)
+  Log:
+- Blocked SIGNAL notices for nonopers.
+	Modified : /trunk/src/restart.c
+
+  Modified:
+	Modified : /trunk/src/restart.c
+
+
 Celestin         2009/08/04 9:30:00	(20090804_0-523)
   Log:
 - Fixed umode +p help files.
