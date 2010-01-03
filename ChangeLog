@@ -1,3 +1,15 @@
+Radicand         2010/01/03 22:31:00    (20100103_0-524)
+  Log:
+- Updated Changelog and Version to 524.
+	Modified : /trunk/include/serno.h
+
+
+Radicand         2010/01/03 22:30:00    (20100103_0-523)
+  Log:
+- CERTFP services integration (autoidentify).
+	Modified : /trunk/src/s_user.c
+
+
 Celestin         2009/09/18 20:00:00	(20090918_0-523)
   Log:
 - Blocked SIGNAL notices for nonopers.
