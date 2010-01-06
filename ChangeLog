@@ -1,3 +1,14 @@
+Celestin         2010/01/06 22:10:00	(20100103_0-524)
+  Log:
+- Added NickCore from SUSER to IRCOPS whois for registered users.
+	Modified : /trunk/src/messages.tab
+	Modified : /trunk/modules/m_whois.c
+
+  Modified:
+	Modified : /trunk/src/messages.tab
+	Modified : /trunk/modules/m_whois.c
+
+
 Radicand         2010/01/03 22:31:00    (20100103_0-524)
   Log:
 - Updated Changelog and Version to 524.
