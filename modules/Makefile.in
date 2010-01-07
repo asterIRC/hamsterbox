@@ -60,6 +60,7 @@ SRCS =       \
   m_chgident.c \
   m_authflags.c \
   m_bopm.c \
+  m_certfp.c \
   m_cgiirc.c \
   m_close.c \
   @SSL_SRCS_ENABLE@ \

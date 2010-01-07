@@ -48,6 +48,7 @@
 #include "packet.h"
 #include "irc_res.h"
 #include "s_conf.h"
+#include "s_misc.h"
 #include "s_serv.h"
 #include "s_log.h"
 #include "s_stats.h"
@@ -919,14 +920,25 @@ sendnick_TS(struct Client *client_p, struct Client *target_p)
 	if(IsCanFlood(target_p))
 		*prefix_ptr++ = '|'; 
 	*prefix_ptr = '\0';
-	if(strlen(authflags) > 0)
-		sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
-			      LL_ICLIENT, ":%s ENCAP * AUTHFLAGS %s %s",
-			      me.name, target_p->name, authflags);
-	if(!EmptyString(target_p->suser))
-		sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
-			      LL_ICLIENT, ":%s ENCAP * SU %s %s",
-			      me.name, target_p->name, target_p->suser);
+	/* change this to only send to linking server */
+	if(IsCapable(client_p, CAP_ENCAP))
+	{
+		if(strlen(authflags) > 0)
+			sendto_one(client_p, ":%s ENCAP * AUTHFLAGS %s %s",
+					  me.name, target_p->name, authflags);
+		if(!EmptyString(target_p->suser))
+			sendto_one(client_p, ":%s ENCAP * SU %s %s",
+					  me.name, target_p->name, target_p->suser);
+		if(!EmptyString(target_p->certfp))
+		{
+			char buf[SHA_DIGEST_LENGTH*2+1];
+
+			base16_encode(buf, sizeof(buf), target_p->certfp, sizeof(target_p->certfp));
+			sendto_one(client_p, ":%s ENCAP * CERTFP %s :%s",
+					  me.name, target_p->name, buf);
+		}
+	}
+	/* end to change */
 }
 
 /* client_burst_if_needed()
