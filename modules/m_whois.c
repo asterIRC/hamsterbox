@@ -443,7 +443,7 @@ whois_person(struct Client *source_p, struct Client *target_p)
 		}
 		else
 		sendto_one(source_p, form_str(RPL_WHOISREGNICK),
-			   me.name, source_p->name, target_p->name, " ");
+			   me.name, source_p->name, target_p->name, "this nick");
 	}
 
 	if(IsSSL(target_p)) {
