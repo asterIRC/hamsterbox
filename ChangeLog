@@ -1,3 +1,9 @@
+Radicand         2010/01/09 14:00:00	(20100109_0-524)
+  Log:
+- Update oper umode help to reflect +q being SA and not RT
+	Modified : /trunk/help/opers/umode
+
+
 Radicand         2010/01/07 01:15:00	(20100107_0-524)
   Log:
 - Fix services-related ENCAPs to only go out in the direction of the linking
@@ -7,6 +13,7 @@ server.
 	Modified : /trunk/src/s_server.c
 	Modified : /trunk/modules/Makefile.in
 	Added : /trunk/modules/m_certfp.c
+
 
 Celestin         2010/01/06 22:10:00	(20100103_0-524)
   Log:
