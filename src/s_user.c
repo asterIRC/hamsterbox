@@ -719,15 +719,6 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 					   source_p->realhost, source_p->info);
 		}
 	}
-#ifdef HAVE_LIBCRYPTO
-   if(!EmptyString(source_p->certfp))
-   {
-		   char buf[SHA_DIGEST_LENGTH*2+1];
-
-		   base16_encode(buf, sizeof(buf), source_p->certfp, sizeof(source_p->certfp));
-		   sendto_match_servs(source_p, "*", CAP_ENCAP, "ENCAP * CERTFP %s :%s", source_p->name, buf);
-   }
-#endif
 	if(MyClient(source_p))
 	{
 		prefix_ptr = authflags;
@@ -754,6 +745,15 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 			sendto_server(NULL, source_p, NULL, CAP_ENCAP, NOCAPS,
 				      LL_ICLIENT, ":%s ENCAP * SU %s %s",
 				      me.name, source_p->name, source_p->suser);
+	   if(!EmptyString(source_p->certfp))
+	   {
+			   char buf[SHA_DIGEST_LENGTH*2+1];
+
+			   base16_encode(buf, sizeof(buf), source_p->certfp, sizeof(source_p->certfp));
+			   sendto_server(NULL, source_p, NULL, CAP_ENCAP, NOCAPS,
+			          LL_ICLIENT, ":%s ENCAP * CERTFP %s :%s",
+			          me.name, source_p->name, buf);
+	   }
 	}
 }
 

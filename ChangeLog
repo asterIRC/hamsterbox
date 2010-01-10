@@ -1,3 +1,11 @@
+Radicand         2010/01/09 23:45:00	(20100109_0-524)
+  Log:
+- Fix: Updated whois numeric properly
+- Relocated CERTFP/onconnect broadcast
+	Modified : /trunk/include/numeric.h
+	Modified : /trunk/src/s_user.c
+
+
 Radicand         2010/01/09 14:00:00	(20100109_0-524)
   Log:
 - Update oper umode help to reflect +q being SA and not RT

@@ -163,6 +163,8 @@ extern const char *get_locale(void);
 #define RPL_LOCALUSERS       265
 #define RPL_GLOBALUSERS      266
 
+#define RPL_WHOISCERTFP      276
+
 #define RPL_ACCEPTLIST	     281
 #define RPL_ENDOFACCEPT      282
 
@@ -457,7 +459,6 @@ extern const char *get_locale(void);
 	RPL_EODUMP	     642	unreal
 */
 
-#define RPL_WHOISCERTFP      670
 #define RPL_WHOISSSL         671
 #define RPL_WHOISCGI         672
 
