@@ -103,7 +103,9 @@ clean_string(char *dest, const unsigned char *src, size_t len)
 		}
 		else
 			*d++ = *src;
-		++src, --len;
+		if (len > 0) {
+			++src, --len;
+		}
 	}
 	*d = '\0';
 	return dest;
