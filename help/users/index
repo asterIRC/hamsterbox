@@ -10,4 +10,4 @@ NOTICE          OPER            PART            PASS
 PING            PONG            PRIVMSG         QUIT
 STATS           TIME            TOPIC           UMODE
 USER            USERHOST        USERS           VERSION
-WHO             WHOIS           WHOWAS
+WEBIRC          WHO             WHOIS           WHOWAS

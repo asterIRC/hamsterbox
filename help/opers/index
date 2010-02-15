@@ -13,9 +13,9 @@ RKLINE          RXLINE          SERVER          SET
 SJOIN           SQUIT           STATS           SVINFO
 TESTGECOS       TESTLINE        TESTMASK        TRACE
 UHELP           UMODE           UNDLINE         UNGLINE
-UNKLINE         UNRESV          UNXLINE         WALLOPS
-XLINE           AUTHFLAGS       CHGHOST         CHGIDENT
-WEBIRC          BOPM
+UNKLINE         UNRESV          UNRKLINE        UNRXLINE
+UNXLINE         WALLOPS         XLINE           AUTHFLAGS
+CHGHOST         CHGIDENT        WEBIRC          BOPM
 
 Help topics available to users:
 
@@ -28,4 +28,4 @@ NOTICE          OPER            PART            PASS
 PING            PONG            PRIVMSG         QUIT
 STATS           TIME            TOPIC           UMODE
 USER            USERHOST        USERS           VERSION
-WHO             WHOIS           WHOWAS
+WEBIRC          WHO             WHOIS           WHOWAS

@@ -14,8 +14,7 @@ ohelpdir	= ${prefix}/help/opers
 SYMLINKS	= topic accept cmode admin names links away whowas \
 		version kick who invite quit join list nick oper part \
 		time motd userhost users whois ison lusers user help \
-		challenge map pass error knock ping pong authflags \
-		chghost chgident webirc bopm
+		challenge map pass error knock ping pong webirc
 all:
 build:
 clean:
