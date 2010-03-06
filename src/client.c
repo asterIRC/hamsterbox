@@ -412,6 +412,8 @@ check_conf_klines(void)
 		if((aconf = find_dline_conf(&client_p->localClient->ip,
 					    client_p->localClient->aftype)) != NULL)
 		{
+			if(aconf->status & CONF_EXEMPTDLINE)
+				continue;
 			if(IsExemptKline(client_p))
 			{
 				sendto_realops_flags(UMODE_ALL, L_ALL,
@@ -419,8 +421,6 @@ check_conf_klines(void)
 						     get_client_name(client_p, HIDE_IP));
 				continue;
 			}
-			if(aconf->status & CONF_EXEMPTDLINE)
-				continue;
 
 			conf = unmap_conf_item(aconf);
 			ban_them(client_p, conf);
