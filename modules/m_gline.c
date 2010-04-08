@@ -612,7 +612,7 @@ me_ungline(struct Client *client_p, struct Client *source_p, int parc, char *par
 	if(remove_gline_match(user, host))
 	{
 		ilog(L_NOTICE, "%s removed G-Line for [%s@%s]",
-		     get_oper_name(source_p), user, host);
+		     source_p->name, user, host);
 	}
 }
 

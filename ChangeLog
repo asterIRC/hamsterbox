@@ -1,3 +1,12 @@
+Celestin         2010/04/08 09:00:00	(20100215_0-524)
+  Log:
+- Fixed bug in ungline command for remote servers.
+	Modified : /trunk/modules/m_gline.c
+
+  Modified:
+	Modified : /trunk/modules/m_gline.c
+
+
 Celestin         2010/02/15 09:00:00	(20100215_0-524)
   Log:
 - Fixed bug in links command.
