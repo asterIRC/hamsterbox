@@ -502,7 +502,7 @@ check_clean_nick(struct Client *client_p, struct Client *source_p,
 	/* the old code did some wacky stuff here, if the nick is invalid, kill it
 	 * and dont bother messing at all
 	 */
-	if(!clean_nick_name(nick, 0, IsNetAdmin(source_p)) || strcmp(nick, newnick))
+	if(!clean_nick_name(nick, 0, 1) || strcmp(nick, newnick))
 	{
 		ServerStats->is_kill++;
 		sendto_realops_flags(UMODE_DEBUG, L_ALL,

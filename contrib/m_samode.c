@@ -96,8 +96,12 @@ static void mo_saumode(struct Client *, struct Client *, int, char *[]);
 static void me_samode(struct Client *, struct Client *, int, char *[]);
 static void mo_operup(struct Client *, int parc, char *parv[]);
 
+static void ms_smode(struct Client *, struct Client *, int, char *[]);
+
 static char* last0(struct Client *, struct Client *, char*);
 static int check_rban(struct Client *client_p, struct Client *source_p, int parc, char *parv[]);
+static void send_sumode_out(struct Client *source_p, unsigned int old);
+
 
 /*
  * Show the commands this module can handle in a msgtab
@@ -121,6 +125,12 @@ struct Message samode_msgtab = {
 	{m_unregistered, m_not_oper, m_ignore, me_samode, mo_samode, m_ignore}
 };
 
+struct Message smode_msgtab = {
+
+	"SMODE", 0, 0, 2, 0, MFLG_SLOW, 0,
+	{m_ignore, m_ignore, ms_smode, m_ignore, m_ignore, m_ignore}
+};
+
 /* That's the msgtab finished */
 
 #ifndef STATIC_MODULES
@@ -131,6 +141,7 @@ _modinit(void)
 	mod_add_cmd(&sajoin_msgtab);
 	mod_add_cmd(&sapart_msgtab);
 	mod_add_cmd(&samode_msgtab);
+	mod_add_cmd(&smode_msgtab);
 }
 
 void
@@ -140,6 +151,7 @@ _moddeinit(void)
 	mod_del_cmd(&sajoin_msgtab);
 	mod_del_cmd(&sapart_msgtab);
 	mod_del_cmd(&samode_msgtab);
+	mod_del_cmd(&smode_msgtab);
 }
 
 const char *_version = "$Revision: 1.0 $";
@@ -830,6 +842,8 @@ mo_saumode(struct Client *client_p, struct Client *source_p, int parc, char *par
 		++Count.invisi;
 	if((setflags & UMODE_INVISIBLE) && !IsInvisible(target_p))
 		--Count.invisi;
+	if(IsNetAdmin(target_p) && !IsRouting(target_p))
+		target_p->umodes |= UMODE_ROUTING;
 
 	/*
 	 * compare new flags with old flags and send string which
@@ -837,8 +851,7 @@ mo_saumode(struct Client *client_p, struct Client *source_p, int parc, char *par
 	 */
 	if(setflags != target_p->umodes)
 	{
-		char buf[IRCD_BUFSIZE]; 
-		send_umode(target_p, target_p, setflags, 0xffffffff, buf); 
+		send_sumode_out(target_p, setflags); 
 	}
 }
 
@@ -998,6 +1011,196 @@ mo_operup(struct Client *source_p, int parc, char *parv[])
 		   me.name, source_p->name, (*newoflags != '\0') ? newoflags : "[none]");
 	send_message_file(source_p, &ConfigFileEntry.opermotd);
 } 
+
+static void 
+ms_smode(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+	unsigned int flag, setflags;
+	char **p, *m;
+	struct Client *target_p;
+	int what = MODE_ADD;
+
+	if((parc < 3) || (*parv[1] == '\0'))
+	{
+		return;
+	}
+
+	/* Now, try to find the channel in question */
+	if(IsChanPrefix(*parv[1]))
+	{
+		return;
+	}
+	
+	if((target_p = find_person(client_p, parv[1])) == NULL)
+	{
+		return;
+	}
+	
+	if(!IsServer(source_p))
+	{
+		return;
+	} 
+
+	if(target_p->from != source_p)
+	{
+		return;
+	} 
+
+	/* find flags already set for user */
+	setflags = target_p->umodes;
+
+	/* parse mode change string(s) */
+	for(p = &parv[2]; p && *p; p++)
+	{
+		for(m = *p; *m; m++)
+		{
+			switch (*m)
+			{
+			case '+':
+				what = MODE_ADD;
+				break;
+			case '-':
+				what = MODE_DEL;
+				break;
+
+			case 'x':
+				if(what == MODE_ADD)
+				{
+					int localclient = MyClient(target_p);
+
+					if(localclient)
+						if(!ConfigFileEntry.enable_cloak_system ||
+						   IsIPSpoof(target_p))
+							break;
+
+					if(IsCloaked(target_p))
+						break;
+
+					SetCloaked(target_p);
+
+					if(!localclient)
+						break;
+
+					if(ConfigChannel.cycle_on_hostchange)
+						do_hostchange_quits(target_p);
+
+					make_virthost(target_p->realhost, target_p->host);
+
+					sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
+						      LL_ICLIENT, ":%s ENCAP * CHGHOST %s %s",
+						      me.name, target_p->name, target_p->host);
+
+					if(ConfigChannel.cycle_on_hostchange)
+						do_hostchange_joins(target_p);
+
+					sendto_one(target_p, form_str(RPL_VISIBLEHOST), me.name,
+						   target_p->name, target_p->host);
+				}
+				else
+				{
+					if(!IsCloaked(target_p))
+						break;
+
+					ClearCloaked(target_p);
+
+					if(!MyClient(target_p))
+						break;
+
+					if(ConfigChannel.cycle_on_hostchange)
+						do_hostchange_quits(target_p);
+
+					strlcpy(target_p->host, target_p->realhost,
+						sizeof(target_p->host));
+
+					sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
+						      LL_ICLIENT, ":%s ENCAP * CHGHOST %s %s",
+						      me.name, target_p->name, target_p->host);
+
+					if(ConfigChannel.cycle_on_hostchange)
+						do_hostchange_joins(target_p);
+
+					sendto_one(target_p, form_str(RPL_VISIBLEHOST), me.name,
+						   target_p->name, target_p->host);
+				}
+				break;
+
+			case 'o':
+				if(what == MODE_ADD)
+				{
+					if(IsServer(client_p) && !IsOper(target_p))
+					{
+						++Count.oper;
+						SetOper(target_p);
+					}
+				}
+				else
+				{
+					/* Only decrement the oper counts if an oper to begin with
+					 * found by Pat Szuta, Perly , perly@xnet.com 
+					 */
+					if(!IsOper(target_p))
+						break;
+
+					ClearOper(target_p);
+					target_p->umodes &= ~ConfigFileEntry.oper_only_umodes;
+
+					/* remove their netadmin flag if set */
+					if(IsNetAdmin(target_p))
+						ClearNetAdmin(target_p);
+					if(IsRouting(target_p))
+						ClearRouting(target_p);
+
+					Count.oper--;
+
+					if(MyConnect(target_p))
+					{
+						dlink_node *dm;
+
+						detach_conf(target_p, OPER_TYPE);
+						ClearOperFlags(target_p);
+
+						if((dm =
+						    dlinkFindDelete(&oper_list, target_p)) != NULL)
+							free_dlink_node(dm);
+					}
+				}
+
+				break;
+
+				/* we may not get these,
+				 * but they shouldnt be in default
+				 */
+			case ' ':
+			case '\n':
+			case '\r':
+			case '\t':
+				break;
+
+			default:
+				if((flag = user_modes[(unsigned char) *m]))
+				{
+					if(what == MODE_ADD)
+						target_p->umodes |= flag;
+					else
+						target_p->umodes &= ~flag;
+				}
+				break;
+			}
+		}
+	}
+
+	if(!(setflags & UMODE_INVISIBLE) && IsInvisible(target_p))
+		++Count.invisi;
+	if((setflags & UMODE_INVISIBLE) && !IsInvisible(target_p))
+		--Count.invisi;
+	if(IsNetAdmin(target_p) && !IsRouting(target_p))
+		target_p->umodes |= UMODE_ROUTING;
+	/*
+	 * compare new flags with old flags and send string which
+	 * will cause servers to update correctly.
+	 */
+	send_sumode_out(target_p, setflags);
+}
 
 /* do_join_0()
  *
@@ -1218,3 +1421,33 @@ check_rban(struct Client *client_p, struct Client *source_p, int parc, char *par
 	return 0;
 }
 
+void
+send_sumode_out(struct Client *source_p, unsigned int old)
+{
+	char buf[IRCD_BUFSIZE] = { '\0' };
+	dlink_node *ptr = NULL;
+
+	send_umode(NULL, source_p, old, IsOperHiddenAdmin(source_p) ?
+		   SEND_UMODES & ~UMODE_ADMIN : SEND_UMODES, buf);
+
+	if(buf[0])
+	{
+		DLINK_FOREACH(ptr, serv_list.head)
+		{
+			struct Client *targetsrv_p = ptr->data;
+
+			if(targetsrv_p != source_p)
+			{
+				if((!(ServerInfo.hub && IsCapable(targetsrv_p, CAP_LL))) ||
+				   (targetsrv_p->localClient->serverMask &
+				    source_p->lazyLinkClientExists))
+					sendto_one(targetsrv_p, ":%s SMODE %s :%s",
+						   ID_or_name(source_p->servptr, targetsrv_p),
+						   ID_or_name(source_p, targetsrv_p), buf);
+			}
+		}
+	}
+
+	if(source_p && MyClient(source_p))
+		send_umode(source_p, source_p, old, 0xffffffff, buf);
+}

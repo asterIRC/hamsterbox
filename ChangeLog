@@ -1,3 +1,18 @@
+Celestin         2010/06/22 09:00:00	(20100622_0-524)
+  Log:
+- Fixed bug in handling &nbsp nicks on bursts.
+	Modified : /trunk/modules/core/m_nick.c
+- Fixed spreading of SEND_UMODES to rest of the network after SAMODE was used.
+	Modified : /trunk/contrib/m_samode.c
+- Updated Changelog and Version date.
+	Modified : /trunk/include/serno.h
+
+  Modified:
+	Modified : /trunk/modules/core/m_nick.c
+	Modified : /trunk/contrib/m_samode.c
+	Modified : /trunk/include/serno.h
+
+
 Celestin         2010/04/08 09:00:00	(20100215_0-524)
   Log:
 - Fixed bug in ungline command for remote servers.
