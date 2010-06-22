@@ -1436,7 +1436,7 @@ send_sumode_out(struct Client *source_p, unsigned int old)
 		{
 			struct Client *targetsrv_p = ptr->data;
 
-			if(targetsrv_p != source_p)
+			if((targetsrv_p != source_p) && (targetsrv_p != source_p->servptr))
 			{
 				if((!(ServerInfo.hub && IsCapable(targetsrv_p, CAP_LL))) ||
 				   (targetsrv_p->localClient->serverMask &
