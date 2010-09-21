@@ -635,6 +635,7 @@ extern void del_from_accept(struct Client *, struct Client *);
 extern void del_all_accepts(struct Client *);
 extern void del_all_their_accepts(struct Client *);
 extern void change_local_nick(struct Client *, struct Client *, const char *);
+extern void change_local_host(struct Client *, const char *, const char *);
 extern void dead_link_on_write(struct Client *, int);
 extern void dead_link_on_read(struct Client *, int);
 extern void exit_aborted_clients(void);

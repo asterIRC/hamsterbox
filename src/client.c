@@ -1497,3 +1497,31 @@ change_local_nick(struct Client *client_p, struct Client *source_p, const char *
 	/* fd_desc is long enough */
 	fd_note(&client_p->localClient->fd, "Nick: %s", nick);
 }
+
+/* change_local_host()
+ *
+ * inputs	- pointer to client
+ *              - new username
+ *              - new hostname
+ * output	- 
+ * side effects	- changes username and/or hostname of a LOCAL user
+ */
+void change_local_host(struct Client *client_p, const char *username, const char *hostname)
+{
+	if(!client_p || (!username && !hostname))
+		return;
+
+	if(ConfigChannel.cycle_on_hostchange)
+		do_hostchange_quits(client_p);
+	
+	if(username)
+		strlcpy(client_p->username, username, sizeof(client_p->username));
+	if(hostname)
+		strlcpy(client_p->host, hostname, sizeof(client_p->host));
+	
+	clear_ban_cache_client(client_p);
+
+	if(ConfigChannel.cycle_on_hostchange)
+		do_hostchange_joins(client_p);
+}
+

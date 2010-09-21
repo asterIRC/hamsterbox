@@ -87,16 +87,8 @@ me_chgident(struct Client *client_p, struct Client *source_p, int parc, char *pa
 	if(strlen(parv[2]) > USERLEN || !*parv[2] || !valid_username(parv[2]))
 		return;
 
-	if(!strcmp(target_p->username, parv[2]))
-		return;
-
-	if(ConfigChannel.cycle_on_hostchange)
-		do_hostchange_quits(target_p);
-
-	strlcpy(target_p->username, parv[2], sizeof(target_p->username));
-
-	if(ConfigChannel.cycle_on_hostchange)
-		do_hostchange_joins(target_p);
+	if(strcmp(target_p->username, parv[2]))
+		change_local_host(target_p, parv[2], NULL);
 }
 
 static void
@@ -148,15 +140,6 @@ mo_chgident(struct Client *client_p, struct Client *source_p, int parc, char *pa
 		      LL_ICLIENT, ":%s ENCAP * CHGIDENT %s %s",
 		      me.name, target_p->name, parv[2]);
 
-	if(!strcmp(target_p->username, parv[2]))
-		return;
-
-	if(ConfigChannel.cycle_on_hostchange)
-		do_hostchange_quits(target_p);
-
-	strlcpy(target_p->username, parv[2], sizeof(target_p->username));
-
-	if(ConfigChannel.cycle_on_hostchange)
-		do_hostchange_joins(target_p);
-
+	if(strcmp(target_p->username, parv[2]))
+		change_local_host(target_p, parv[2], NULL);
 }

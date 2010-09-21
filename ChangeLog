@@ -1,3 +1,18 @@
+Adam             2010/09/21 17:00:00    (20100921_0-525)
+  Log:
+- Fixed bug with not clearing users ban cache whenever their host is changed.
+
+  Modified:
+	Modified : /trunk/include/client.h
+	Modified : /trunk/include/serno.h
+	Modified : /trunk/src/s_user.c
+	Modified : /trunk/src/client.c
+	Modifeid : /contrib/m_samode.c
+	Modified : /trunk/modules/m_services.c
+	Modified : /trunk/modules/m_chgident.c
+	Modified : /trunk/modules/m_chghost.c
+
+
 Celestin         2010/06/22 09:00:00	(20100622_0-524)
   Log:
 - Fixed bug in handling &nbsp nicks on bursts.

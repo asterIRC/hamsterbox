@@ -87,16 +87,8 @@ me_chghost(struct Client *client_p, struct Client *source_p, int parc, char *par
 	if(strlen(parv[2]) > HOSTLEN || !*parv[2] || !valid_hostname(parv[2]))
 		return;
 
-	if(!strcmp(target_p->host, parv[2]))
-		return;
-
-	if(ConfigChannel.cycle_on_hostchange)
-		do_hostchange_quits(target_p);
-
-	strlcpy(target_p->host, parv[2], sizeof(target_p->host));
-
-	if(ConfigChannel.cycle_on_hostchange)
-		do_hostchange_joins(target_p);
+	if(strcmp(target_p->host, parv[2]))
+		change_local_host(target_p, NULL, parv[2]);
 }
 
 static void
@@ -148,15 +140,6 @@ mo_chghost(struct Client *client_p, struct Client *source_p, int parc, char *par
 		      LL_ICLIENT, ":%s ENCAP * CHGHOST %s %s",
 		      me.name, target_p->name, parv[2]);
 	
-	if(!strcmp(target_p->host, parv[2]))
-		return;
-
-	if(ConfigChannel.cycle_on_hostchange)
-		do_hostchange_quits(target_p);
-
-	strlcpy(target_p->host, parv[2], sizeof(target_p->host));
-
-	if(ConfigChannel.cycle_on_hostchange)
-		do_hostchange_joins(target_p);
-
+	if(strcmp(target_p->host, parv[2]))
+		change_local_host(target_p, NULL, parv[2]);
 }

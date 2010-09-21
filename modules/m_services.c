@@ -387,18 +387,11 @@ me_svsmode(struct Client *client_p, struct Client *source_p, int parc, char *par
 					if(!MyClient(target_p))
 						break;
 
-					if(ConfigChannel.cycle_on_hostchange)
-						do_hostchange_quits(target_p);
-
-					strlcpy(target_p->host, target_p->realhost,
-						sizeof(target_p->host));
+					change_local_host(target_p, NULL, target_p->realhost);
 
 					sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
 						      LL_ICLIENT, ":%s ENCAP * CHGHOST %s %s",
 						      me.name, target_p->name, target_p->host);
-
-					if(ConfigChannel.cycle_on_hostchange)
-						do_hostchange_joins(target_p);
 
 					sendto_one(target_p, form_str(RPL_VISIBLEHOST),
 						   me.name, target_p->name, target_p->host);

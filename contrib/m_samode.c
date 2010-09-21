@@ -731,6 +731,8 @@ mo_saumode(struct Client *client_p, struct Client *source_p, int parc, char *par
 		case 'x':
 			if(what == MODE_ADD)
 			{
+				char cloaked_host[HOSTLEN + 1] = "";
+
 				if(IsCloaked(target_p))
 					break;
 
@@ -739,17 +741,12 @@ mo_saumode(struct Client *client_p, struct Client *source_p, int parc, char *par
 				if(!MyClient(target_p))
 					break;
 
-				if(ConfigChannel.cycle_on_hostchange)
-					do_hostchange_quits(target_p);
-
-				make_virthost(target_p->realhost, target_p->host); 
+				make_virthost(target_p->realhost, cloaked_host);
+				change_local_host(target_p, NULL, cloaked_host);
 
 				sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
 					      LL_ICLIENT, ":%s ENCAP * CHGHOST %s %s",
 					      me.name, target_p->name, target_p->host);
-
-				if(ConfigChannel.cycle_on_hostchange)
-					do_hostchange_joins(target_p);
 
 				sendto_one(target_p, form_str(RPL_VISIBLEHOST), me.name,
 					   target_p->name, target_p->host);
@@ -764,18 +761,11 @@ mo_saumode(struct Client *client_p, struct Client *source_p, int parc, char *par
 				if(!MyClient(target_p))
 					break;
 
-				if(ConfigChannel.cycle_on_hostchange)
-					do_hostchange_quits(target_p);
-
-				strlcpy(target_p->host, target_p->realhost,
-					sizeof(target_p->host));
+				change_local_host(target_p, NULL, target_p->realhost);
 
 				sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
 					      LL_ICLIENT, ":%s ENCAP * CHGHOST %s %s",
 					      me.name, target_p->name, target_p->host);
-
-				if(ConfigChannel.cycle_on_hostchange)
-					do_hostchange_joins(target_p);
 
 				sendto_one(target_p, form_str(RPL_VISIBLEHOST), me.name,
 					   target_p->name, target_p->host);
@@ -1067,6 +1057,7 @@ ms_smode(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 				if(what == MODE_ADD)
 				{
 					int localclient = MyClient(target_p);
+					char cloaked_host[HOSTLEN + 1] = "";
 
 					if(localclient)
 						if(!ConfigFileEntry.enable_cloak_system ||
@@ -1081,17 +1072,12 @@ ms_smode(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 					if(!localclient)
 						break;
 
-					if(ConfigChannel.cycle_on_hostchange)
-						do_hostchange_quits(target_p);
-
-					make_virthost(target_p->realhost, target_p->host);
+					make_virthost(target_p->realhost, cloaked_host);
+					change_local_host(target_p, NULL, cloaked_host);
 
 					sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
 						      LL_ICLIENT, ":%s ENCAP * CHGHOST %s %s",
 						      me.name, target_p->name, target_p->host);
-
-					if(ConfigChannel.cycle_on_hostchange)
-						do_hostchange_joins(target_p);
 
 					sendto_one(target_p, form_str(RPL_VISIBLEHOST), me.name,
 						   target_p->name, target_p->host);
@@ -1106,18 +1092,11 @@ ms_smode(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 					if(!MyClient(target_p))
 						break;
 
-					if(ConfigChannel.cycle_on_hostchange)
-						do_hostchange_quits(target_p);
-
-					strlcpy(target_p->host, target_p->realhost,
-						sizeof(target_p->host));
+					change_local_host(target_p, NULL, target_p->realhost);
 
 					sendto_server(NULL, target_p, NULL, CAP_ENCAP, NOCAPS,
 						      LL_ICLIENT, ":%s ENCAP * CHGHOST %s %s",
 						      me.name, target_p->name, target_p->host);
-
-					if(ConfigChannel.cycle_on_hostchange)
-						do_hostchange_joins(target_p);
 
 					sendto_one(target_p, form_str(RPL_VISIBLEHOST), me.name,
 						   target_p->name, target_p->host);
