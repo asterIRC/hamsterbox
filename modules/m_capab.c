@@ -66,7 +66,7 @@ mr_capab(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 {
 	int i;
 	int cap;
-	char *p;
+	char *p = NULL;
 	char *s;
 #ifdef HAVE_LIBCRYPTO
 	struct EncCapability *ecap;

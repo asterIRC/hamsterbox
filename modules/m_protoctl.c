@@ -69,7 +69,7 @@ static void
 m_protoctl(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
 	int i;
-	char *p;
+	char *p = NULL;
 	char *s;
 
 	/* ummm, this shouldn't happen. Could argue this should be logged etc. */

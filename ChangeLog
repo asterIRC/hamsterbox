@@ -1,3 +1,20 @@
+Adam             2011/1/21 17:00:00    (20110121_0-525)
+  Log:
+- Fixed many compiler warnings and a resource leak in mkpasswd.
+
+  Modified:
+	Modified : /modules/core/m_message.c
+	Modified : /modules/core/m_part.c
+	Modified : /modules/core/m_sjoin.c
+	Modified : /modules/m_capab.c
+	Modified : /modules/m_ison.c
+	Modified : /modules/m_list.c
+	Modified : /modules/m_protoctl.c
+	Modified : /src/restart.c
+	Modified : /src/s_bsd_win32.c
+	Modified : /tools/mkpasswd.c
+
+
 Adam             2010/09/21 17:00:00    (20100921_0-525)
   Log:
 - Fixed bug with not clearing users ban cache whenever their host is changed.
@@ -7,7 +24,7 @@ Adam             2010/09/21 17:00:00    (20100921_0-525)
 	Modified : /trunk/include/serno.h
 	Modified : /trunk/src/s_user.c
 	Modified : /trunk/src/client.c
-	Modifeid : /contrib/m_samode.c
+	Modified : /trunk/contrib/m_samode.c
 	Modified : /trunk/modules/m_services.c
 	Modified : /trunk/modules/m_chgident.c
 	Modified : /trunk/modules/m_chghost.c

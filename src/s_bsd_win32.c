@@ -317,7 +317,7 @@ gethost_byaddr(const struct irc_ssaddr *addr, struct DNSQuery *query)
 #ifdef IPV6
 					      addr.ss.ss_family ==
 					      AF_INET6 ? &((struct sockaddr_in6 *) addr)->
-					      sin6_addr) :
+					      sin6_addr :
 #endif
 		&((struct sockaddr_in *) addr)->sin_addr,
 #ifdef IPV6

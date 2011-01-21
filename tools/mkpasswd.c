@@ -326,9 +326,12 @@ static char *generate_random_salt(char *salt, int length)
   buf = calloc(1, length);
   if(read(fd, buf, length) != length)
   {
+    close(fd);
     free(buf);
     return(generate_poor_salt(salt, length));
   }
+
+  close(fd);
 	
   for(i = 0; i < length; i++)
   {
