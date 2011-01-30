@@ -1,3 +1,12 @@
+Adam             2011/1/30 16:00:00    (20110130_0-526)
+
+  Log:
+- Issue #2 - Allow IRC Operators to view idle times on +p users
+
+  Modified:
+	Modified : /modules/m_whois.c
+
+
 Adam             2011/1/21 17:00:00    (20110121_0-525)
   Log:
 - Fixed many compiler warnings and a resource leak in mkpasswd.

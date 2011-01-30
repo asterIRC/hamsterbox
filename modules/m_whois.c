@@ -530,7 +530,7 @@ whois_person(struct Client *source_p, struct Client *target_p)
 				   hide_ip ? "255.255.255.255" : target_p->sockhost);
 	}
 	
-	if(!IsHideChannels(target_p) || IsAdmin(source_p) || source_p == target_p)
+	if(!IsHideChannels(target_p) || IsOper(source_p) || source_p == target_p)
 	{
 		if(MyClient(target_p))	/* Can't do any of this if not local! db */
 			sendto_one(source_p, form_str(RPL_WHOISIDLE),
