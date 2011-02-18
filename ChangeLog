@@ -1,3 +1,21 @@
+Adam             2011/2/18 18:00:00    (20110218_0-527)
+
+  Log:
+Ported and merged in ratbox's revisions 25354 and 25364
+
+Fixes some problems with the kqueue event engine,
+including a bug when flushing the event queue a
+closed FD would cause the kernel to ignore any events
+for FDs after it resulting in ignoring read and write for
+certain sockets.
+
+For more information see the comments in libratbox's
+kqueue engine.
+
+  Modified:
+	Modified : /src/s_bsd_kqueue.c
+
+
 Adam             2011/1/30 16:00:00    (20110130_0-526)
 
   Log:

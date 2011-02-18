@@ -31,8 +31,6 @@
 #include "s_bsd.h"
 #include "s_log.h"
 
-#define KE_LENGTH 128
-
 /* jlemon goofed up and didn't add EV_SET until fbsd 4.3 */
 
 #ifndef EV_SET
@@ -47,7 +45,8 @@
 #endif
 
 static fde_t kqfd;
-static struct kevent kq_fdlist[KE_LENGTH];	/* kevent buffer */
+static int kq_maxfds;
+static struct kevent *kq_fdlist, *kq_elist;	/* kevent buffers */
 static int kqoff;		/* offset into the buffer */
 void init_netio(void);
 
@@ -68,6 +67,10 @@ init_netio(void)
 		exit(115);	/* Whee! */
 	}
 
+	kq_maxfds = getdtablesize();
+	kq_fdlist = MyMalloc(sizeof(struct kevent) * kq_maxfds);
+	kq_elist = MyMalloc(sizeof(struct kevent) * kq_maxfds);
+
 	fd_open(&kqfd, fd, 0, "kqueue() file descriptor");
 }
 
@@ -82,9 +85,14 @@ kq_update_events(int fd, int filter, int what)
 
 	EV_SET(kep, (uintptr_t) fd, (short) filter, what, 0, 0, NULL);
 
-	if(++kqoff == KE_LENGTH)
+	if(++kqoff == kq_maxfds)
 	{
-		kevent(kqfd.fd, kq_fdlist, kqoff, NULL, 0, &zero_timespec);
+		/** Add the fds one at a time incase there are closed fds.
+		 * For more information see ratbox commits 25354 and 25364 - Adam
+		 */
+		int i;
+		for (i = 0; i < kqoff; ++i)
+			kevent(kqfd.fd, kq_fdlist + i, 1, NULL, 0, &zero_timespec);
 		kqoff = 0;
 	}
 }
@@ -142,7 +150,6 @@ void
 comm_select(void)
 {
 	int num, i;
-	static struct kevent ke[KE_LENGTH];
 	struct timespec poll_time;
 	PF *hdl;
 	fde_t *F;
@@ -154,7 +161,7 @@ comm_select(void)
 	 */
 	poll_time.tv_sec = 0;
 	poll_time.tv_nsec = SELECT_DELAY * 1000000;
-	num = kevent(kqfd.fd, kq_fdlist, kqoff, ke, KE_LENGTH, &poll_time);
+	num = kevent(kqfd.fd, kq_fdlist, kqoff, kq_elist, kq_maxfds, &poll_time);
 	kqoff = 0;
 
 	set_time();
@@ -169,11 +176,11 @@ comm_select(void)
 
 	for(i = 0; i < num; i++)
 	{
-		F = lookup_fd(ke[i].ident);
-		if(F == NULL || !F->flags.open || (ke[i].flags & EV_ERROR))
+		F = lookup_fd(kq_elist[i].ident);
+		if(F == NULL || !F->flags.open || (kq_elist[i].flags & EV_ERROR))
 			continue;
 
-		if(ke[i].filter == EVFILT_READ)
+		if(kq_elist[i].filter == EVFILT_READ)
 			if((hdl = F->read_handler) != NULL)
 			{
 				F->read_handler = NULL;
@@ -182,7 +189,7 @@ comm_select(void)
 					continue;
 			}
 
-		if(ke[i].filter == EVFILT_WRITE)
+		if(kq_elist[i].filter == EVFILT_WRITE)
 			if((hdl = F->write_handler) != NULL)
 			{
 				F->write_handler = NULL;
