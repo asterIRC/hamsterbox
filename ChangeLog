@@ -1,3 +1,12 @@
+Adam             2011/2/18 13:00:00    (20110607_1-527)
+
+  Log:
+- Fixed error reply in /set max if the new limit is over MAXCLIENTS
+
+  Modified:
+	Modified : /modules/m_set.c
+
+
 Adam             2011/2/18 18:00:00    (20110218_0-527)
 
   Log:
