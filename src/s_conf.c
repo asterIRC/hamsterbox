@@ -66,6 +66,7 @@ dlink_list server_items = { NULL, NULL, 0 };
 dlink_list cluster_items = { NULL, NULL, 0 };
 dlink_list hub_items = { NULL, NULL, 0 };
 dlink_list leaf_items = { NULL, NULL, 0 };
+dlink_list dnsbl_items = { NULL, NULL, 0 };
 dlink_list oconf_items = { NULL, NULL, 0 };
 dlink_list uconf_items = { NULL, NULL, 0 };
 dlink_list xconf_items = { NULL, NULL, 0 };
@@ -221,6 +222,7 @@ make_conf_item(ConfType type)
 	struct ConfItem *conf = NULL;
 	struct AccessItem *aconf = NULL;
 	struct ClassItem *aclass = NULL;
+	struct DnsblItem *dconf = NULL;
 	int status = 0;
 
 	switch (type)
@@ -347,6 +349,14 @@ make_conf_item(ConfType type)
 		MaxSendq(aclass) = DEFAULT_SENDQ;
 
 		break;
+	case DNSBL_TYPE:
+		conf = MyMalloc(sizeof(struct ConfItem) + sizeof(struct DnsblItem));
+		dlinkAdd(conf, &conf->node, &dnsbl_items);
+
+		dconf = map_to_conf(conf);
+		dconf->duration = DEFAULT_DNSBL_DURATION;
+
+		break;
 
 	default:
 		conf = NULL;
@@ -365,6 +375,7 @@ delete_conf_item(struct ConfItem *conf)
 	dlink_node *m = NULL;
 	struct MatchItem *match_item;
 	struct AccessItem *aconf;
+	struct DnsblItem *dconf;
 	ConfType type = conf->type;
 
 	MyFree(conf->name);
@@ -540,6 +551,15 @@ delete_conf_item(struct ConfItem *conf)
 
 	case CLASS_TYPE:
 		dlinkDelete(&conf->node, &class_items);
+		MyFree(conf);
+		break;
+
+	case DNSBL_TYPE:
+		dlinkDelete(&conf->node, &dnsbl_items);
+
+		dconf = map_to_conf(conf);
+
+		MyFree(dconf->reason);
 		MyFree(conf);
 		break;
 
@@ -824,6 +844,7 @@ report_confitem_types(struct Client *source_p, ConfType type, int temp)
 	case CRESV_TYPE:
 	case NRESV_TYPE:
 	case CLUSTER_TYPE:
+	case DNSBL_TYPE:
 		break;
 	}
 }
@@ -1578,6 +1599,9 @@ map_to_list(ConfType type)
 		break;
 	case CLUSTER_TYPE:
 		return (&cluster_items);
+		break;
+	case DNSBL_TYPE:
+		return (&dnsbl_items);
 		break;
 	case CONF_TYPE:
 	case GLINE_TYPE:
@@ -2590,7 +2614,7 @@ clear_out_old_conf(void)
 	struct ClassItem *cltmp;
 	struct MatchItem *match_item;
 	dlink_list *free_items[] = {
-		&server_items, &oconf_items, &hub_items, &leaf_items,
+		&server_items, &oconf_items, &hub_items, &leaf_items, &dnsbl_items,
 		&uconf_items, &xconf_items, &rxconf_items, &rkconf_items,
 		&nresv_items, &cluster_items, &gdeny_items, NULL
 	};

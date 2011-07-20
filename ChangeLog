@@ -1,3 +1,29 @@
+Adam             2011/7/19 3:00:00    (20110719_0-528)
+
+  Log:
+- Added in a dns blacklist checker
+
+  Modified:
+	Modified : ChangeLog
+	Modified : etc/example.conf
+	Modified : etc/example.rizon.conf
+	Modified : include/client.h
+	Modified : include/defaults.h
+	Modified : include/s_conf.h
+	Modified : include/serno.h
+	Modified : modules/m_whois.c
+	Modified : src/csvlib.c
+	Modified : src/hostmask.c
+	Modified : src/ircd_lexer.l
+	Modified : src/ircd_parser.y
+	Modified : src/lex.yy.c
+	Modified : src/s_conf.c
+	Modified : src/s_serv.c
+	Modified : src/s_user.c
+	Modified : src/y.tab.c
+	Modified : src/y.tab.h
+
+
 Adam             2011/2/18 13:00:00    (20110607_1-527)
 
   Log:

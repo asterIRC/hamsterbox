@@ -61,6 +61,7 @@ static struct ConfItem *yy_conf = NULL;
 static struct AccessItem *yy_aconf = NULL;
 static struct MatchItem *yy_match_item = NULL;
 static struct ClassItem *yy_class = NULL;
+static struct DnsblItem *yy_dconf = NULL;
 static char *yy_class_name = NULL;
 
 static dlink_list col_conf_list  = { NULL, NULL, 0 };
@@ -179,6 +180,8 @@ unhook_hub_leaf_confs(void)
 %token  DISABLE_HIDDEN
 %token  DISABLE_LOCAL_CHANNELS
 %token  DISABLE_REMOTE_COMMANDS
+%token  DNSBL
+%token  DNSBL_EXEMPT
 %token  DOT_IN_IP6_ADDR
 %token  DOTS_IN_IDENT
 %token	DURATION
@@ -428,6 +431,7 @@ conf_item:        admin_entry
 		| gline_entry
                 | gecos_entry
                 | modules_entry
+                | dnsbl_entry
                 | error ';'
                 | error '}'
         ;
@@ -500,6 +504,59 @@ modules_path: PATH '=' QSTRING ';'
   if (ypass == 2)
     mod_add_path(yylval.string);
 #endif
+};
+
+/***************************************************************************
+ *  section dnsbl
+ ***************************************************************************/
+
+dnsbl_entry: DNSBL
+{
+  if (ypass == 2)
+  {
+    yy_conf = make_conf_item(DNSBL_TYPE);
+    yy_dconf = map_to_conf(yy_conf);
+  }
+  else
+  {
+    MyFree(class_name);
+    class_name = NULL;
+  }
+}  '{' dnsbl_items '}' ';'
+{
+  if (ypass == 2)
+  {
+    if (yy_dconf->reason == NULL)
+      delete_conf_item(yy_conf);
+  }
+};
+
+dnsbl_items:            dnsbl_items dnsbl_item | dnsbl_item;
+
+dnsbl_item:             dnsbl_name | dnsbl_duration | dnsbl_reason | error ';';
+
+dnsbl_name: NAME '=' QSTRING ';'
+{
+  if (ypass == 2)
+  {
+    MyFree(yy_conf->name);
+    DupString(yy_conf->name, yylval.string);
+  }
+};
+
+dnsbl_duration: DURATION '=' timespec ';'
+{
+  if (ypass == 2)
+    yy_dconf->duration = $3;
+};
+
+dnsbl_reason: REASON '=' QSTRING ';'
+{
+  if (ypass == 2)
+  {
+    MyFree(yy_dconf->reason);
+    DupString(yy_dconf->reason, yylval.string);
+  }
 };
 
 /***************************************************************************
@@ -2106,6 +2163,13 @@ auth_flags_item_atom: SPOOF_NOTICE
   {
     if (not_atom) yy_aconf->flags &= ~CONF_FLAGS_EXEMPTRESV;
     else yy_aconf->flags |= CONF_FLAGS_EXEMPTRESV;
+  }
+} | DNSBL_EXEMPT
+{
+  if (ypass == 2)
+  {
+    if (not_atom) yy_aconf->flags &= ~CONF_FLAGS_EXEMPTDNSBL;
+    else yy_aconf->flags |= CONF_FLAGS_EXEMPTDNSBL;
   }
 } | IS_WEBIRC
 {

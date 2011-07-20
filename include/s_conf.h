@@ -62,7 +62,8 @@ typedef enum
 	GLINE_TYPE,
 	CRESV_TYPE,
 	NRESV_TYPE,
-	GDENY_TYPE
+	GDENY_TYPE,
+	DNSBL_TYPE
 } ConfType;
 
 struct split_nuh_item
@@ -162,6 +163,12 @@ struct CidrItem
 	dlink_node node;
 };
 
+struct DnsblItem
+{
+	int duration;
+	char *reason;
+};
+
 #define ConFreq(x)	((x)->con_freq)
 #define PingFreq(x)	((x)->ping_freq)
 #define PingWarning(x)  ((x)->ping_warning)
@@ -243,6 +250,7 @@ struct CidrItem
 #define CONF_FLAGS_CAN_FLOOD            0x00100000
 #define CONF_FLAGS_NEED_PASSWORD        0x00200000
 #define CONF_FLAGS_WEBIRC	        0x02000000
+#define CONF_FLAGS_EXEMPTDNSBL          0x04000000
 /* server flags */
 #define CONF_FLAGS_ALLOW_AUTO_CONN      0x00004000
 #define CONF_FLAGS_LAZY_LINK            0x00008000
@@ -266,6 +274,7 @@ struct CidrItem
 #define IsConfExemptLimits(x)   ((x)->flags & CONF_FLAGS_NOLIMIT)
 #define IsConfExemptGline(x)    ((x)->flags & CONF_FLAGS_EXEMPTGLINE)
 #define IsConfExemptResv(x)     ((x)->flags & CONF_FLAGS_EXEMPTRESV)
+#define IsConfExemptDnsbl(x)    ((x)->flags & CONF_FLAGS_EXEMPTDNSBL)
 #define IsConfIdlelined(x)      ((x)->flags & CONF_FLAGS_IDLE_LINED)
 #define IsConfDoIdentd(x)       ((x)->flags & CONF_FLAGS_DO_IDENTD)
 #define IsConfDoSpoofIp(x)      ((x)->flags & CONF_FLAGS_SPOOF_IP)
@@ -492,6 +501,7 @@ extern dlink_list hub_items;
 extern dlink_list rxconf_items;
 extern dlink_list rkconf_items;
 extern dlink_list leaf_items;
+extern dlink_list dnsbl_items;
 extern dlink_list temporary_klines;
 extern dlink_list temporary_dlines;
 extern dlink_list temporary_glines;

@@ -189,6 +189,7 @@ parse_csv_file(FBFILE * file, ConfType conf_type)
 		case ULINE_TYPE:
 		case EXEMPTDLINE_TYPE:
 		case CLASS_TYPE:
+		case DNSBL_TYPE:
 			break;
 		}
 	}

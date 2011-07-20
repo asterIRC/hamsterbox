@@ -387,6 +387,7 @@ struct LocalUser
 #define FLAGS_PINGWARNING   0x0000000040000000ULL	/* unreplied ping warning already sent      */
 #define FLAGS_FINISHED_AUTH 0x0000000080000000ULL	/* Client has been released from auth       */
 #define FLAGS_SERVICES      0x0000000100000000ULL	/* client is a services server or client    */
+#define FLAGS_EXEMPTDNSBL   0x0000000200000000ULL	/* client is exempt from dnsbl checks       */
 
 /* umodes, settable flags */
 #define UMODE_SERVNOTICE   0x00000001	/* server notices such as kill              */
@@ -566,6 +567,8 @@ struct LocalUser
 #define SetExemptGline(x)       ((x)->flags |= FLAGS_EXEMPTGLINE)
 #define IsExemptResv(x)         ((x)->flags & FLAGS_EXEMPTRESV)
 #define SetExemptResv(x)        ((x)->flags |= FLAGS_EXEMPTRESV)
+#define IsExemptDnsbl(x)        ((x)->flags & FLAGS_EXEMPTDNSBL)
+#define SetExemptDnsbl(x)       ((x)->flags |= FLAGS_EXEMPTDNSBL)
 #define SetIPSpoof(x)           ((x)->flags |= FLAGS_IP_SPOOFING)
 #define IsIPSpoof(x)            ((x)->flags & FLAGS_IP_SPOOFING)
 

@@ -915,6 +915,8 @@ sendnick_TS(struct Client *client_p, struct Client *target_p)
 		*prefix_ptr++ = '_';
 	if(IsExemptLimits(target_p))
 		*prefix_ptr++ = '>';
+	if(IsExemptDnsbl(target_p))
+		*prefix_ptr++ = '~';
 	if(IsIdlelined(target_p))
 		*prefix_ptr++ = '<';
 	if(IsCanFlood(target_p))
