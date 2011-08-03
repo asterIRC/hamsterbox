@@ -1,3 +1,15 @@
+Adam             2011/08/03 8:00:00    (20110803_0-528)
+
+  Log:
+- Do not allow oper blocks without a valid user entry
+
+  Modified:
+	Modified : ChangeLog
+	Modified : include/serno.h
+	Modified : src/ircd_parser.y
+	Modified : src/y.tab.c
+
+
 Adam             2011/7/19 3:00:00    (20110719_0-528)
 
   Log:

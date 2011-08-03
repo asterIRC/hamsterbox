@@ -1036,7 +1036,10 @@ oper_entry: OPERATOR
     dlink_node *ptr;
     dlink_node *next_ptr;
 
-    conf_add_class_to_conf(yy_conf, class_name);
+    if (yy_aconf->user && yy_aconf->host)
+      conf_add_class_to_conf(yy_conf, class_name);
+    else
+      delete_conf_item(yy_conf);
 
     /* Now, make sure there is a copy of the "base" given oper
      * block in each of the collected copies
