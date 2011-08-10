@@ -1,3 +1,14 @@
+Celestin          2011/08/10 19:00:00   (20110810_0-528)
+
+  Log:
+- Prevent override of caller id by soft caller id
+
+  Modified:
+	Modified : ChangeLog
+	Modified : include/serno.h
+	Modified : src/client.c
+
+
 Adam             2011/08/03 8:00:00    (20110803_0-528)
 
   Log:

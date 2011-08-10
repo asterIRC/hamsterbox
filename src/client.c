@@ -1254,7 +1254,7 @@ accept_message(struct Client *source, struct Client *target)
 			return (1);
 	}
 
-	if(IsSoftCallerId(target))
+	if(IsSoftCallerId(target) && !IsCallerId(target))
 	{
 		DLINK_FOREACH(ptr, target->channel.head)
 			if(IsMember(source, ((struct Membership *) ptr->data)->chptr))
