@@ -43,7 +43,7 @@
 
 #define USERLEN         10
 #define REALLEN         50
-#define KILLLEN         90
+#define KILLLEN         250
 #define LOCAL_CHANNELLEN 50
 #define CHANNELLEN      200
 #define REASONLEN       120

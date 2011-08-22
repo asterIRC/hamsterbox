@@ -1,3 +1,13 @@
+Adam              2011/08/21 21:00:00    (20110821_1-528)
+
+  Log:
+- Upped the KILLLEN default to 250
+
+  Modified:
+	Modified : ChangeLog
+	Modified : include/ircd_defs.h
+
+
 Adam              2011/08/21 21:00:00    (20110821_0-528)
 
   Log:
