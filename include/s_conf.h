@@ -167,6 +167,7 @@ struct DnsblItem
 {
 	int duration;
 	char *reason;
+	unsigned long hits;
 };
 
 #define ConFreq(x)	((x)->con_freq)

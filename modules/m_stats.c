@@ -97,6 +97,7 @@ static void stats_L(struct Client *, char *, int, int, char);
 static void stats_L_list(struct Client *s, char *, int, int, dlink_list *, char);
 
 static void stats_dns_servers(struct Client *);
+static void stats_dnsbl(struct Client *);
 static void stats_connect(struct Client *);
 static void stats_deny(struct Client *);
 static void stats_tdeny(struct Client *);
@@ -142,6 +143,10 @@ static const struct StatsStruct
 	'a', stats_dns_servers, 1, 1,},
 	{
 	'A', stats_dns_servers, 1, 1,},
+	{
+	'b', stats_dnsbl, 1, 0,},
+	{
+	'B', stats_dnsbl, 1, 0,},
 	{
 	'c', stats_connect, 1, 0,},
 	{
@@ -691,6 +696,12 @@ static void
 stats_dns_servers(struct Client *source_p)
 {
 	report_dns_servers(source_p);
+}
+
+static void
+stats_dnsbl(struct Client *source_p)
+{
+	report_confitem_types(source_p, DNSBL_TYPE, 0);
 }
 
 static void

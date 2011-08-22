@@ -121,6 +121,7 @@ extern const char *get_locale(void);
 #define RPL_STATSFLINE       224
 #define RPL_STATSDLINE       225
 #define RPL_STATSALINE	     226
+#define RPL_STATSBLINE       227
 
 /*	RPL_RULES	     232	unreal */
 

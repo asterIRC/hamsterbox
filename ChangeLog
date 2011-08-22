@@ -1,4 +1,24 @@
-Celestin          2011/08/10 19:00:00   (20110810_0-528)
+Adam              2011/08/21 21:00:00    (20110821_0-528)
+
+  Log:
+- Added /stats B which allows viewing active DNS blacklists and how many
+"hits" are on it.
+- Updated /help whois to reflect new DNSBL exempt status.
+
+  Modified:
+	Modified : ChangeLog
+	Modified : help/opers/stats
+	Modified : help/opers/whois
+	Modified : include/numeric.h
+	Modified : include/s_conf.h
+	Modified : include/serno.h
+	Modified : modules/m_stats.c
+	Modified : src/messages.tab
+	Modified : src/s_conf.c
+	Modified : src/s_user.c
+
+
+Celestin          2011/08/10 19:00:00    (20110810_0-528)
 
   Log:
 - Prevent override of caller id by soft caller id
@@ -9,7 +29,7 @@ Celestin          2011/08/10 19:00:00   (20110810_0-528)
 	Modified : src/client.c
 
 
-Adam             2011/08/03 8:00:00    (20110803_0-528)
+Adam              2011/08/03 08:00:00    (20110803_0-528)
 
   Log:
 - Do not allow oper blocks without a valid user entry
@@ -21,7 +41,7 @@ Adam             2011/08/03 8:00:00    (20110803_0-528)
 	Modified : src/y.tab.c
 
 
-Adam             2011/7/19 3:00:00    (20110719_0-528)
+Adam              2011/07/19 03:00:00    (20110719_0-528)
 
   Log:
 - Added in a dns blacklist checker

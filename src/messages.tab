@@ -255,7 +255,7 @@ static struct NumericInfo replies[] = {
 /* 224 */  {NULL, NULL, NULL},
 /* 225 */  {"RPL_STATSDLINE", ":%s 225 %s %c %s :%s | %s", NULL},
 /* 226 */  {"RPL_STATSALINE", ":%s 226 %s %s", NULL},
-/* 227 */  {NULL, NULL, NULL},
+/* 227 */  {"RPL_STATSBLINE", ":%s 227 %s %c %s %lu", NULL},
 /* 228 */  {NULL, NULL, NULL},
 /* 229 */  {NULL, NULL, NULL},
 /* 230 */  {NULL, NULL, NULL},

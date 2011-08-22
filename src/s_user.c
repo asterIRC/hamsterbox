@@ -1618,6 +1618,7 @@ dnsbl_callback(void *ptr, struct DNSReply *reply)
 		struct sockaddr_in *addr = (struct sockaddr_in *) &reply->addr;
 		if ((addr->sin_addr.s_addr & 0xF0FFFFFF) == 0x7F && find_conf_by_address(dnsbl->user_ip, &dnsbl->user_addr, CONF_KILL, AF_INET, "*", NULL, NULL) == NULL)
 		{
+			struct ConfItem *dnsbl_aconf = find_conf_name(&dnsbl_items, dnsbl->dnsbl_host, DNSBL_TYPE);
 			int result = addr->sin_addr.s_addr >> 24;
 			char reason_buffer[512] = "Blacklisted IP";
 			const char *current_date = smalldate(CurrentTime);
@@ -1668,6 +1669,12 @@ dnsbl_callback(void *ptr, struct DNSReply *reply)
 				aconf->user, aconf->host, aconf->reason);
 
 			rehashed_klines = 1;
+
+			if (dnsbl_aconf != NULL)
+			{
+				struct DnsblItem *dnsbl_item = map_to_conf(dnsbl_aconf);
+				++dnsbl_item->hits;
+			}
 		}
 	}
 

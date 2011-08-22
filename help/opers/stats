@@ -9,6 +9,7 @@ server parameter is given) for info corresponding to
 LETTER (* = Oper only.)
 ------ (^ = Can be configured to be oper only.)
 X A - Shows the ADNS DNS servers in use
+* B - Shows DNSBL stats
 * c - Shows connect blocks
 * d - Shows temporary D lines
 * D - Shows D lines

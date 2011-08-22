@@ -355,6 +355,8 @@ make_conf_item(ConfType type)
 
 		dconf = map_to_conf(conf);
 		dconf->duration = DEFAULT_DNSBL_DURATION;
+		dconf->reason = NULL;
+		dconf->hits = 0;
 
 		break;
 
@@ -603,6 +605,7 @@ report_confitem_types(struct Client *source_p, ConfType type, int temp)
 	struct AccessItem *aconf = NULL;
 	struct MatchItem *matchitem = NULL;
 	struct ClassItem *classitem = NULL;
+	struct DnsblItem *dnsblitem = NULL;
 	char buf[16];
 	char *p = NULL;
 	const char *pfx = NULL;
@@ -837,6 +840,15 @@ report_confitem_types(struct Client *source_p, ConfType type, int temp)
 		}
 		break;
 
+	case DNSBL_TYPE:
+		DLINK_FOREACH(ptr, dnsbl_items.head)
+		{
+			conf = ptr->data;
+			dnsblitem = map_to_conf(conf);
+			sendto_one(source_p, form_str(RPL_STATSBLINE), me.name, source_p->name, 'B', conf->name, dnsblitem->hits);
+		}
+		break;
+
 	case GLINE_TYPE:
 	case KLINE_TYPE:
 	case DLINE_TYPE:
@@ -844,7 +856,6 @@ report_confitem_types(struct Client *source_p, ConfType type, int temp)
 	case CRESV_TYPE:
 	case NRESV_TYPE:
 	case CLUSTER_TYPE:
-	case DNSBL_TYPE:
 		break;
 	}
 }
