@@ -1,3 +1,18 @@
+Adam              2011/08/22 22:00:00    (20110822_0-529)
+
+  Log:
+- Added all of the signals we listen for to every signal's sigmask to prevent
+possibly having signals called within signals, which can inadvertently cause
+the global signal mask to be altered, resulting in the ircd ignoring signals.
+
+This fixes the infamous SIGHUP rehash bug.
+
+  Modified:
+	Modified : ChangeLog
+	Modified : include/serno.h
+	Modified : src/ircd_signal.c
+
+
 Adam              2011/08/21 21:00:00    (20110821_1-528)
 
   Log:
