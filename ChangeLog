@@ -1,3 +1,14 @@
+Adam              2011/08/31 14:00:00    (20110831_0-529)
+
+  Log:
+- Prevent restarting the IRCd via SIGINT from blocking signals.
+
+  Modified:
+  	Modified : ChangeLog
+	Modified : include/serno.h
+	Modified : src/ircd_signal.c
+
+
 Adam              2011/08/22 22:00:00    (20110822_0-529)
 
   Log:

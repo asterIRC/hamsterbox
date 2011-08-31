@@ -137,4 +137,6 @@ setup_signals(void)
 
 	act.sa_handler = sigchld_handler;
 	sigaction(SIGCHLD, &act, 0);
+
+	sigprocmask(SIG_UNBLOCK, &act.sa_mask, NULL);
 }
