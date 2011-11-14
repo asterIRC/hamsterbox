@@ -1,3 +1,14 @@
+Adam              2011/11/14 16:00:00    (20111114_0-529)
+
+  Log:
+- Respect server hide settings when processing BMASK
+
+  Modified:
+  	Modified : ChangeLog
+	Modified : include/serno.h
+	Modified : modules/core/m_mode.c
+
+
 Adam              2011/08/31 14:00:00    (20110831_0-529)
 
   Log:
