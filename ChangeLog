@@ -1,3 +1,21 @@
+Adam              2011/11/23 00:00:00    (20111123_0-529)
+
+  Log:
+- Fixed detecting OpenSSL cipher methods on Ubuntu 11
+
+  Modified:
+	Modified : ChangeLog
+	Modified : configure
+	Modified : configure.ac
+	Modified : contrib/setup-win32.h
+	Modified : include/s_serv.h
+	Modified : include/serno.h
+	Modified : include/setup.h.in
+	Modified : servlink/control.c
+	Modified : src/s_serv.c
+	Modified : tools/encspeed.c
+
+
 Adam              2011/11/14 16:00:00    (20111114_0-529)
 
   Log:
