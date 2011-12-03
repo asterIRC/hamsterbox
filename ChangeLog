@@ -1,3 +1,17 @@
+Adam              2011/12/02 23:00:00    (20111202_0-529)
+
+  Log:
+- Allow exceed_limit users to exceed channel limit
+
+  Modified:
+	Modified : ChangeLog
+	Modified : etc/example.conf
+	Modified : etc/example.rizon.conf
+	Modified : etc/example.rizon.quick
+	Modified : include/serno.h
+	Modified : modules/core/m_join.c
+	Modified : modules/m_lljoin.c
+
 Adam              2011/11/23 00:00:00    (20111123_0-529)
 
   Log:

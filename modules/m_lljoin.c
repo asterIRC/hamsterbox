@@ -168,9 +168,7 @@ ms_lljoin(struct Client *client_p, struct Client *source_p, int parc, char *parv
 		return;
 	}
 
-	if((dlink_list_length(&target_p->channel) >= ConfigChannel.max_chans_per_user) &&
-	   (!IsOper(target_p) || (dlink_list_length(&target_p->channel) >=
-				  ConfigChannel.max_chans_per_user * 3)))
+	if(!IsExemptLimits(target_p) && dlink_list_length(&target_p->channel) >= ConfigChannel.max_chans_per_user)
 	{
 		sendto_one(target_p, form_str(ERR_TOOMANYCHANNELS), me.name, nick, chptr->chname);
 		return;

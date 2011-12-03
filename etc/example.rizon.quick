@@ -86,7 +86,7 @@ auth
 	 *                ('&' prefix on /stats I if disabled)
 	 * need_ident:    require the user to have identd to connect ('+' prefix on /stats I)
 	 * spoof_notice:  enable spoofing notification to admins
-	 * exceed_limit:  allow a user to exceed class limits ('>' prefix on /stats I)
+	 * exceed_limit:  allow a user to exceed limits ('>' prefix on /stats I)
 	 * kline_exempt:  exempt this user from k/glines ('^' prefix on /stats I)
 	 * gline_exempt:  exempt this user from glines ('_' prefix on /stats I)
 	 * resv_exempt:   exempt this user from resvs ('$' prefix on /stats I)
