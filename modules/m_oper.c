@@ -162,23 +162,28 @@ static struct ConfItem *
 find_password_conf(const char *name, struct Client *source_p)
 {
 	struct ConfItem *conf = NULL;
+#ifdef HAVE_LIBCRYPTO
+	const char *certfp = source_p->certfp;
+#else
+	const char *certfp = NULL;
+#endif
 
 	if((conf = find_exact_name_conf(OPER_TYPE,
-					name, source_p->username, source_p->host, source_p->certfp)) != NULL)
+					name, source_p->username, source_p->host, certfp)) != NULL)
 	{
 		return (conf);
 	}
 
 	if((conf = find_exact_name_conf(OPER_TYPE,
 					name, source_p->username, source_p->realhost,
-     					source_p->certfp)) != NULL)
+     					certfp)) != NULL)
 	{
 		return (conf);
 	}
 
 	if((conf = find_exact_name_conf(OPER_TYPE,
 					name, source_p->username, source_p->sockhost,
-     					source_p->certfp)) != NULL)
+     					certfp)) != NULL)
 	{
 		return (conf);
 	}

@@ -508,13 +508,16 @@ find_conf_by_address(const char *name, struct irc_ssaddr *addr, int type,
 				if((arec->type == (type & ~0x1)) &&
 				   arec->precedence > hprecv &&
 				   arec->masktype == HM_HOST) {
+#ifdef HAVE_LIBCRYPTO
 					if (arec->aconf->certfp != NULL) {
 						if (memcmp(arec->aconf->certfp, certfp,
 						    SHA_DIGEST_LENGTH) != 0) {
 							continue;
 						}
 					}
-					else if (!match(arec->Mask.hostname, name)) {
+					else
+#endif
+					if (!match(arec->Mask.hostname, name)) {
 						continue;
 					}
 					if ((type & 0x1 || match(arec->username, username)) &&
@@ -535,13 +538,16 @@ find_conf_by_address(const char *name, struct irc_ssaddr *addr, int type,
 			if((arec->type == (type & ~0x1)) &&
 			   arec->precedence > hprecv &&
 			   arec->masktype == HM_HOST) {
+#ifdef HAVE_LIBCRYPTO
 				if (arec->aconf->certfp != NULL) {
 					if (memcmp(arec->aconf->certfp, certfp,
 					    SHA_DIGEST_LENGTH) != 0) {
 						    continue;
 					}
 				}
-				else if (!match(arec->Mask.hostname, name)) {
+				else
+#endif
+				if (!match(arec->Mask.hostname, name)) {
 					continue;
 				}
 				if ((type & 0x1 || match(arec->username, username)) &&
@@ -692,9 +698,11 @@ add_conf_by_address(int type, struct AccessItem *aconf)
 	else
 	{
 		arec->Mask.hostname = address;
+#ifdef HAVE_LIBCRYPTO
 		if(aconf->certfp != NULL)
 			arec->next = atable[(hv = get_mask_hash("*"))];
 		else
+#endif
 			arec->next = atable[(hv = get_mask_hash(address))];
 		atable[hv] = arec;
 	}

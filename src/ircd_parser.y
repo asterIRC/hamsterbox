@@ -1190,6 +1190,7 @@ oper_client_certificate_hash: CLIENTCERT_HASH '=' QSTRING ';'
 {
   if (ypass == 2)
   {
+#ifdef HAVE_LIBCRYPTO
     char tmp[SHA_DIGEST_LENGTH];
     
     if(yy_aconf->certfp != NULL)
@@ -1202,6 +1203,7 @@ oper_client_certificate_hash: CLIENTCERT_HASH '=' QSTRING ';'
     }
     yy_aconf->certfp = MyMalloc(SHA_DIGEST_LENGTH);
     memcpy(yy_aconf->certfp, tmp, SHA_DIGEST_LENGTH);
+#endif
   }
 };
 
@@ -1968,11 +1970,13 @@ auth_entry: IRCD_AUTH
       DupString(new_aconf->host, yy_tmp->host);
       collapse(new_aconf->host);
 
+#ifdef HAVE_LIBCRYPTO
       if (yy_aconf->certfp != NULL)
       {
         new_aconf->certfp = MyMalloc(SHA_DIGEST_LENGTH);
         memcpy(new_aconf->certfp, yy_aconf->certfp, SHA_DIGEST_LENGTH);
       }
+#endif
 
       conf_add_class_to_conf(new_conf, class_name);
       add_conf_by_address(CONF_CLIENT, new_aconf);
@@ -2049,6 +2053,7 @@ auth_client_certificate_hash: CLIENTCERT_HASH '=' QSTRING ';'
 {
   if (ypass == 2)
   {
+#ifdef HAVE_LIBCRYPTO
     char tmp[SHA_DIGEST_LENGTH];
 
     if(yy_aconf->certfp != NULL)
@@ -2061,6 +2066,7 @@ auth_client_certificate_hash: CLIENTCERT_HASH '=' QSTRING ';'
     }
     yy_aconf->certfp = MyMalloc(SHA_DIGEST_LENGTH);
     memcpy(yy_aconf->certfp, tmp, SHA_DIGEST_LENGTH);
+#endif
   }
 };
 
@@ -3257,6 +3263,7 @@ exempt_client_certificate_hash: CLIENTCERT_HASH '=' QSTRING ';'
 {
   if (ypass == 2)
   {
+#ifdef HAVE_LIBCRYPTO
     char tmp[SHA_DIGEST_LENGTH];
 
     yy_conf = make_conf_item(EXEMPTDLINE_TYPE);
@@ -3277,7 +3284,7 @@ exempt_client_certificate_hash: CLIENTCERT_HASH '=' QSTRING ';'
 
     yy_conf = NULL;
     yy_aconf = NULL;
-
+#endif
  }
 };
 

@@ -185,7 +185,9 @@ struct Client
 
 	struct LocalUser *localClient;
 
+#ifdef HAVE_LIBCRYPTO
 	char certfp[SHA_DIGEST_LENGTH]; /* cert fingerprint */
+#endif
 };
 
 struct LocalUser

@@ -931,6 +931,7 @@ sendnick_TS(struct Client *client_p, struct Client *target_p)
 		if(!EmptyString(target_p->suser))
 			sendto_one(client_p, ":%s ENCAP * SU %s %s",
 					  me.name, target_p->name, target_p->suser);
+#ifdef HAVE_LIBCRYPTO
 		if(!EmptyString(target_p->certfp))
 		{
 			char buf[SHA_DIGEST_LENGTH*2+1];
@@ -939,6 +940,7 @@ sendnick_TS(struct Client *client_p, struct Client *target_p)
 			sendto_one(client_p, ":%s ENCAP * CERTFP %s :%s",
 					  me.name, target_p->name, buf);
 		}
+#endif
 	}
 	/* end to change */
 }

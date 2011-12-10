@@ -446,6 +446,7 @@ whois_person(struct Client *source_p, struct Client *target_p)
 			   me.name, source_p->name, target_p->name, "this nick");
 	}
 
+#ifdef HAVE_LIBCRYPTO
 	if(IsSSL(target_p)) {
 		sendto_one(source_p, form_str(RPL_WHOISSSL),
 			   me.name, source_p->name, target_p->name);
@@ -456,6 +457,7 @@ whois_person(struct Client *source_p, struct Client *target_p)
 				   me.name, source_p->name, target_p->name);
 		}
 	}
+#endif
 
 	if(IsWebIrc(target_p))
 	{	

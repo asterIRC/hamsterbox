@@ -109,7 +109,11 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 					  &source_p->localClient->ip,
 					  source_p->localClient->aftype,
 					  source_p->localClient->passwd,
+#ifdef HAVE_LIBCRYPTO
 					  source_p->certfp);
+#else
+					  NULL);
+#endif
 	}
 	else
 	{
@@ -118,7 +122,11 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 					  &source_p->localClient->ip,
 					  source_p->localClient->aftype,
 					  source_p->localClient->passwd,
+#ifdef HAVE_LIBCRYPTO
 					  source_p->certfp);
+#else
+					  NULL);
+#endif
 	} 	
 	
 	if((!aconf) || (!aconf->class_ptr) || (!IsConfClient(aconf)) || (!IsConfWebIrc(aconf)) ||

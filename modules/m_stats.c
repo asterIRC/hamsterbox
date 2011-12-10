@@ -966,11 +966,19 @@ stats_auth(struct Client *source_p)
 						     source_p->localClient->aftype,
 						     source_p->username,
 						     source_p->localClient->passwd,
+#ifdef HAVE_LIBCRYPTO
 						     source_p->certfp);
+#else
+						     NULL);
+#endif
 		else
 			aconf = find_conf_by_address(source_p->host, NULL, CONF_CLIENT,
 						     0, source_p->username, NULL, 
-					             source_p->certfp);
+#ifdef HAVE_LIBCRYPTO
+						     source_p->certfp);
+#else
+						     NULL);
+#endif
 
 		if(aconf == NULL)
 			return;

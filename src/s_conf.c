@@ -987,7 +987,11 @@ verify_access(struct Client *client_p, const char *username)
 					  &client_p->localClient->ip,
 					  client_p->localClient->aftype,
 					  client_p->localClient->passwd,
+#ifdef HAVE_LIBCRYPTO
 					  client_p->certfp);
+#else
+					  NULL);
+#endif
 	}
 	else
 	{
@@ -996,7 +1000,11 @@ verify_access(struct Client *client_p, const char *username)
 					  &client_p->localClient->ip,
 					  client_p->localClient->aftype,
 					  client_p->localClient->passwd,
+#ifdef HAVE_LIBCRYPTO
 					  client_p->certfp);
+#else
+					  NULL);
+#endif
 	}
 
 	uhi[0] = IsGotId(client_p) ? client_p->username : non_ident;
@@ -1759,9 +1767,11 @@ find_exact_name_conf(ConfType type, const char *name,
 			{
 				if((user == NULL && (host == NULL)))
 					return (conf);
+#ifdef HAVE_LIBCRYPTO
 				if((certfp != NULL && aconf->certfp != NULL) &&
 				   (memcmp(aconf->certfp, certfp, SHA_DIGEST_LENGTH) == 0))
 					return (conf);
+#endif
 				if(EmptyString(aconf->user) || EmptyString(aconf->host))
 					return (conf);
 				if(match(aconf->user, user) && match(aconf->host, host))
@@ -2173,7 +2183,12 @@ find_kill(struct Client *client_p)
 	assert(client_p != NULL);
 
 	aconf = find_kline_conf(client_p->realhost, client_p->username,
-					client_p->certfp, &client_p->localClient->ip,
+#ifdef HAVE_LIBCRYPTO
+					client_p->certfp,
+#else
+					NULL,
+#endif
+					&client_p->localClient->ip,
 					client_p->localClient->aftype);
 	if(aconf == NULL)
 		aconf = find_regexp_kline(uhi);

@@ -751,6 +751,7 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 			sendto_server(NULL, source_p, NULL, CAP_ENCAP, NOCAPS,
 				      LL_ICLIENT, ":%s ENCAP * SU %s %s",
 				      me.name, source_p->name, source_p->suser);
+#ifdef HAVE_LIBCRYPTO
 	   if(!EmptyString(source_p->certfp))
 	   {
 			   char buf[SHA_DIGEST_LENGTH*2+1];
@@ -760,6 +761,7 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 			          LL_ICLIENT, ":%s ENCAP * CERTFP %s :%s",
 			          me.name, source_p->name, buf);
 	   }
+#endif
 	}
 }
 
