@@ -285,6 +285,8 @@ struct LocalUser
 
 	char *response;		/* expected response from client */
 	char *auth_oper;	/* Operator to become if they supply the response. */
+
+	dlink_list dnsbl_queries; /* Pending DNS queries blocking registration */
 };
 
 /*
@@ -297,9 +299,10 @@ struct LocalUser
 #define STAT_SERVER             0x10
 #define STAT_CLIENT             0x20
 
-#define REG_NEED_USER 0x1
-#define REG_NEED_NICK 0x2
-#define REG_NEED_CAP  0x4
+#define REG_NEED_USER  0x1
+#define REG_NEED_NICK  0x2
+#define REG_NEED_CAP   0x4
+#define REG_NEED_DNSBL 0x8
 #define REG_INIT (REG_NEED_USER|REG_NEED_NICK)
 
 #define HasID(x)		((x)->id[0] != '\0')

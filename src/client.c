@@ -53,6 +53,7 @@
 #include "listener.h"
 #include "irc_res.h"
 #include "userhost.h"
+#include "dnsbl.h"
 
 dlink_list listing_client_list = { NULL, NULL, 0 };
 
@@ -179,6 +180,8 @@ free_client(struct Client *client_p)
 
 		dbuf_clear(&client_p->localClient->buf_recvq);
 		dbuf_clear(&client_p->localClient->buf_sendq);
+
+		clear_dnsbl_lookup(client_p);
 
 		BlockHeapFree(lclient_heap, client_p->localClient);
 	}
@@ -490,7 +493,7 @@ check_conf_klines(void)
 			if(aconf->status & CONF_EXEMPTDLINE)
 				continue;
 
-			exit_client(client_p, &me, "D-lined");
+			exit_client(client_p, &me, aconf->reason ? aconf->reason : "D-lined");
 		}
 	}
 }

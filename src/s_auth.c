@@ -53,6 +53,7 @@
 #include "s_stats.h"
 #include "send.h"
 #include "memory.h"
+#include "dnsbl.h"
 
 static const char *HeaderMessages[] = {
 	":%s NOTICE AUTH :*** Looking up your hostname...",
@@ -401,6 +402,8 @@ start_auth(va_list args)
 	client->localClient->dns_query = MyMalloc(sizeof(struct DNSQuery));
 	client->localClient->dns_query->ptr = auth;
 	client->localClient->dns_query->callback = auth_dns_callback;
+
+	start_dnsbl_lookup(client);
 
 	sendheader(client, REPORT_DO_DNS);
 

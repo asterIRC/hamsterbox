@@ -1,3 +1,22 @@
+Adam              2011/12/17 21:00:00    (20111217_2-529)
+
+  Log:
+- Change DNSBL queries to be sent earlier, during registration, and block
+registration until the DNSBL queries come back or time out.
+
+  Modified:
+	Modified : ChangeLog
+	Modified : include/client.h
+	Modified : include/serno.h
+	Modified : modules/m_cgiirc.c
+	Modified : modules/m_stats.c
+	Modified : src/Makefile.in
+	Modified : src/client.c
+	Modified : src/s_auth.c
+	Modified : src/s_user.c
+	Added : include/dnsbl.h
+	Added : src/dnsbl.c
+
 Adam              2011/12/17 21:00:00    (20111217_1-529)
 
   Log:

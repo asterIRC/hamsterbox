@@ -39,6 +39,8 @@
 
 #include "numeric.h"		/* form_str */
 
+#include "dnsbl.h"
+
 static void mr_cgiirc(struct Client*, struct Client*, int, char**);
 
 struct Message cgiirc_msgtab = {
@@ -172,6 +174,8 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 			return;	
 	}
 
+	clear_dnsbl_lookup(source_p);
+
 	strlcpy(source_p->localClient->cgisockhost, source_p->sockhost, sizeof(source_p->localClient->cgisockhost)); 
 	parse_netmask(parv[4], &source_p->localClient->ip, &bits);
 	strlcpy(source_p->host, parv[3], sizeof(source_p->host));
@@ -179,6 +183,9 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 	strlcpy(source_p->sockhost, parv[4], sizeof(source_p->sockhost)); 
 	SetWebIrc(source_p);
 	sendto_one(source_p, ":%s NOTICE AUTH :*** CGI:IRC Host spoofing active", me.name);
+
+	/* Restart DNSBL lookups for the new IP */
+	start_dnsbl_lookup(source_p);
 }
 
 

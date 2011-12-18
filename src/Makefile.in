@@ -58,6 +58,7 @@ BASE_SRCS =	\
  @CRYPT_C@ \
  csvlib.c \
  dbuf.c	\
+ dnsbl.c \
  @DYNLINK_C@ \
  event.c \
  fdlist.c \

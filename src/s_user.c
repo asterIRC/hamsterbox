@@ -71,7 +71,6 @@ static void report_and_set_user_flags(struct Client *, const struct AccessItem *
 static int check_xline(struct Client *);
 static void introduce_client(struct Client *, struct Client *);
 static void *uid_get(va_list);
-static void dnsbl_check(struct Client *);
 
 /* Used for building up the isupport string,
  * used with init_isupport, add_isupport, delete_isupport
@@ -388,8 +387,6 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 
 	/* report if user has &^>= etc. and set flags as needed in source_p */
 	report_and_set_user_flags(source_p, aconf);
-
-	dnsbl_check(source_p);
 
 	/* Limit clients -
 	 * We want to be able to have servers and F-line clients
@@ -1571,147 +1568,6 @@ uid_get(va_list args)
 {
 	add_one_to_uid(TOTALSIDUID - 1);	/* index from 0 */
 	return new_uid;
-}
-
-struct DnsblInfo
-{
-	struct DNSQuery query;
-	char *dnsbl_host;
-	char *user_ip;
-	int duration;
-	char *reason;
-	struct irc_ssaddr user_addr;
-};
-
-/*
- * dnsbl_callback
- *
- * inputs       - A DnsblInfo structure
- * reply        - DNS reply
- * side effects - May Kline the IP being queried
- */
-static void
-dnsbl_callback(void *ptr, struct DNSReply *reply)
-{
-	struct DnsblInfo *dnsbl = (struct DnsblInfo *) ptr;
-
-	if (reply != NULL)
-	{
-		struct sockaddr_in *addr = (struct sockaddr_in *) &reply->addr;
-		if ((addr->sin_addr.s_addr & 0xF0FFFFFF) == 0x7F && find_conf_by_address(dnsbl->user_ip, &dnsbl->user_addr, CONF_KILL, AF_INET, "*", NULL, NULL) == NULL)
-		{
-			struct ConfItem *dnsbl_aconf = find_conf_name(&dnsbl_items, dnsbl->dnsbl_host, DNSBL_TYPE);
-			int result = addr->sin_addr.s_addr >> 24;
-			char reason_buffer[512] = "Blacklisted IP";
-			const char *current_date = smalldate(CurrentTime);
-
-			struct ConfItem *conf = make_conf_item(KLINE_TYPE);
-			struct AccessItem *aconf = map_to_conf(conf);
-
-			DupString(aconf->user, "*");
-			DupString(aconf->host, dnsbl->user_ip);
-			aconf->hold = CurrentTime + dnsbl->duration;
-
-			if (dnsbl->reason != NULL && dnsbl->user_ip != NULL)
-			{
-				int i = 0, written = 0, len = strlen(dnsbl->reason), ip_len = strlen(dnsbl->user_ip), date_len = strlen(current_date);
-				for (; i < len && written < sizeof(reason_buffer) - 1; ++i)
-				{
-					if (dnsbl->reason[i] == '%' && dnsbl->reason[i + 1] == 'i' && written + ip_len < sizeof(reason_buffer) - 1)
-					{
-						memcpy(&reason_buffer[written], dnsbl->user_ip, ip_len);
-						written += ip_len;
-						++i;
-					}
-					else if (dnsbl->reason[i] == '%' && dnsbl->reason[i + 1] == 'd' && written + date_len < sizeof(reason_buffer) - 1)
-					{
-						memcpy(&reason_buffer[written], current_date, date_len);
-						written += date_len;
-						++i;
-					}
-					else if (dnsbl->reason[i] == '%' && dnsbl->reason[i + 1] == 'c')
-					{
-						reason_buffer[written++] += result + 48;
-						++i;
-					}
-					else
-						reason_buffer[written++] = dnsbl->reason[i];
-				}
-
-				reason_buffer[written++] = 0;
-			}
-
-			DupString(aconf->reason, reason_buffer);
-
-			add_temp_line(conf);
-			ilog(L_TRACE, "%s added temporary %d min. K-Line for [%s@%s] [%s]",
-				me.name, dnsbl->duration / 60, aconf->user, aconf->host, aconf->reason);
-			sendto_realops_flags(UMODE_ALL, L_ALL, "%s added temporary %d min. K-Line for [%s@%s] [%s]",
-				me.name, dnsbl->duration / 60,
-				aconf->user, aconf->host, aconf->reason);
-
-			rehashed_klines = 1;
-
-			if (dnsbl_aconf != NULL)
-			{
-				struct DnsblItem *dnsbl_item = map_to_conf(dnsbl_aconf);
-				++dnsbl_item->hits;
-			}
-		}
-	}
-
-	MyFree(dnsbl->dnsbl_host);
-	MyFree(dnsbl->user_ip);
-	MyFree(dnsbl->reason);
-	MyFree(dnsbl);
-}
-
-/*
- * dnsbl_check
- *
- * inputs       - struct Client *
- * side effects - The client is checked for being on the DNS blacklists.
- */
-static void
-dnsbl_check(struct Client *cptr)
-{
-	struct sockaddr_in *addr;
-	unsigned long ip;
-	struct in_addr lookup_addr;
-	char reverse_ip[INET_ADDRSTRLEN];
-
-	if (!MyConnect(cptr) || cptr->localClient->ip.ss.ss_family != AF_INET)
-		return;
-
-	addr = (struct sockaddr_in *) &cptr->localClient->ip;
-	ip = addr->sin_addr.s_addr;
-
-	lookup_addr.s_addr = (ip << 24) | ((ip & 0xFF00) << 8) | ((ip & 0xFF0000) >> 8) | (ip >> 24);
-
-	if (inet_ntop(AF_INET, &lookup_addr, reverse_ip, sizeof(reverse_ip)) != NULL)
-	{
-		dlink_node *ptr = NULL;
-		DLINK_FOREACH(ptr, dnsbl_items.head)
-		{
-			struct ConfItem *conf = (struct ConfItem *) ptr->data;
-			struct DnsblItem *d_conf = map_to_conf(conf);
-
-			struct DnsblInfo *info = MyMalloc(sizeof(struct DnsblInfo));
-			char host_buf[128];
-
-			ircsprintf(host_buf, "%s.%s", reverse_ip, conf->name);
-
-			DupString(info->dnsbl_host, conf->name);
-			DupString(info->user_ip, cptr->sockhost);
-			info->duration = d_conf->duration;
-			DupString(info->reason, d_conf->reason);
-			info->user_addr = cptr->localClient->ip;
-
-			info->query.ptr = info;
-			info->query.callback = dnsbl_callback;
-			gethost_byname_type(host_buf, &info->query, T_A);
-		}
-	}
 }
 
 /*

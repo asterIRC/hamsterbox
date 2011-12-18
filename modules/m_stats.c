@@ -775,8 +775,8 @@ stats_tdeny(struct Client *source_p)
 				conf = unmap_conf_item(aconf);
 
 				sendto_one(source_p, form_str(RPL_STATSDLINE),
-					   from, to, 'd', aconf->host, aconf->reason,
-					   aconf->oper_reason);
+					   from, to, 'd', aconf->host, aconf->reason ? aconf->reason : "D-lined",
+					   aconf->oper_reason ? aconf->oper_reason : "");
 			}
 		}
 	}
