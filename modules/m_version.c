@@ -152,7 +152,7 @@ ms_version(struct Client *client_p, struct Client *source_p, int parc, char *par
 static char *
 confopts(struct Client *source_p)
 {
-	static char result[12];
+	static char result[13];
 	char *p = result;
 
 	if(ConfigChannel.use_except)
@@ -171,6 +171,8 @@ confopts(struct Client *source_p)
 		*p++ = 'I';
 	if(ConfigChannel.use_knock)
 		*p++ = 'K';
+	if(ConfigChannel.use_noctcp)
+		*p++ = 'C';
 	*p++ = 'M';
 
 	if(ConfigFileEntry.ignore_bogus_ts)

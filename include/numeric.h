@@ -402,7 +402,7 @@ extern const char *get_locale(void);
 /*      ERR_TSLESSCHAN       488           IRCnet extension (?) */
 /*	ERR_VOICENEEDED      489           Undernet extension */
 #define ERR_NOOPERHOST       491
-/*      ERR_NOSERVICEHOST    492 	   IRCnet extension */
+#define ERR_NOCTCP           492
 
 #define ERR_CHANOWNPRIVNEEDED 499
 #define ERR_UMODEUNKNOWNFLAG 501

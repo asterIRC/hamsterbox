@@ -414,7 +414,7 @@ struct LocalUser
 #define UMODE_SSL          0x00080000	/* client is connected via SSL              */
 #define UMODE_REGNICK      0x00100000	/* client has identified for their nick     */
 #define UMODE_REGONLY      0x00200000	/* only accept privmsgs from +r users       */
-#define UMODE_CCONN_FULL   0x00400000	/* add unused fields to connection monitoring */
+#define UMODE_NOCTCP       0x00400000	/* block ctcp messages to user */
 #define UMODE_HIDECHANNELS 0x00800000	/* suppress output of channel list on WHOIS */
 #define UMODE_WEBIRC       0x01000000	/* cgi:irc user                             */
 
@@ -500,7 +500,7 @@ struct LocalUser
 #define IsSoftCallerId(x)       ((x)->umodes & UMODE_SOFTCALLERID)
 #define IsCallerId(x)           ((x)->umodes & UMODE_CALLERID)
 #define IsDeaf(x)               ((x)->umodes & UMODE_DEAF)
-#define IsFull(x)               ((x)->umodes & UMODE_CCONN_FULL)
+#define IsNoCTCP(x)             ((x)->umodes & UMODE_NOCTCP)
 
 #define SetCloaked(x)           ((x)->umodes |= UMODE_CLOAK)
 #define ClearCloaked(x)         ((x)->umodes &= ~UMODE_CLOAK)

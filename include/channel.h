@@ -103,6 +103,8 @@ extern int is_banned(struct Channel *, struct Client *);
 extern int can_join(struct Client *, struct Channel *, const char *);
 extern int has_member_flags(struct Membership *, unsigned int);
 extern int is_bwsave(struct Channel *, struct Client *);
+extern int is_noctcp(struct Client *, struct Client *);
+extern int msg_is_ctcp(const char *);
 
 extern void remove_ban(struct Ban *, dlink_list *);
 extern void init_channels(void);

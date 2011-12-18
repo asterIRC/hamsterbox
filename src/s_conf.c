@@ -1921,6 +1921,7 @@ set_default_conf(void)
 	ConfigChannel.use_invex = YES;
 	ConfigChannel.use_except = YES;
 	ConfigChannel.use_knock = YES;
+	ConfigChannel.use_noctcp = NO;
 	ConfigChannel.knock_delay = 300;
 	ConfigChannel.knock_delay_channel = 60;
 	ConfigChannel.max_chans_per_user = 15;
@@ -2572,13 +2573,13 @@ read_conf_files(int cold)
 	ircsprintf(chanlimit, "%s:%d", ConfigChannel.disable_local_channels ? "#" : "#&",
 		   ConfigChannel.max_chans_per_user);
 	add_isupport("CHANLIMIT", chanlimit, -1);
-	ircsprintf(chanmodes, "%s%s%s", ConfigChannel.use_except ? "e" : "",
-		   ConfigChannel.use_invex ? "I" : "", "b,k,l,BMNORScimnpstz");
 	add_isupport("CHANNELLEN", NULL, LOCAL_CHANNELLEN);
 	if(ConfigChannel.use_except)
 		add_isupport("EXCEPTS", "e", -1);
 	if(ConfigChannel.use_invex)
 		add_isupport("INVEX", "I", -1);
+
+	ircsprintf(chanmodes, "b%s%s,k,l,%s", ConfigChannel.use_except ? "e" : "", ConfigChannel.use_invex ? "I" : "", build_chanmode_string());
 	add_isupport("CHANMODES", chanmodes, -1);
 
 	/*

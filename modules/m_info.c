@@ -188,6 +188,11 @@ static const struct InfoStruct info_table[] = {
 	 &ConfigChannel.use_knock,
 	 "Enable /KNOCK"},
 	{
+	 "use_noctcp",
+	 OUTPUT_BOOLEAN_YN,
+	 &ConfigChannel.use_noctcp,
+	 "Enable chanmode +C"},
+	{
 	 "knock_delay",
 	 OUTPUT_DECIMAL,
 	 &ConfigChannel.knock_delay,

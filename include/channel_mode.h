@@ -39,6 +39,7 @@
 #define CAN_SEND_OPV	    2
 #define CAN_SEND_NOREGNICK -1
 #define CAN_SEND_NOCTRLS   -2
+#define CAN_SEND_NOCTCP    -3
 
 /* Channel related flags */
 #define CHFL_OWNER      0x0001	/* Channel owner */
@@ -66,6 +67,7 @@
 #define MODE_BWSAVER    0x0800
 #define MODE_NONOTICES  0x1000
 #define MODE_PERSIST	0x2000
+#define MODE_NOCTCP     0x4000
 
 /* cache flags for silence on ban */
 #define CHFL_BAN_CHECKED  0x0080
@@ -94,6 +96,16 @@
 
 #define PersistChannel(x)       (((x)->mode.mode & MODE_PERSIST))	
 
+struct channel_mode
+{
+	void (*func) (struct Client * client_p, struct Client * source_p,
+		      struct Channel * chptr, int parc, int *parn, char **parv,
+		      int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname);
+	unsigned int mode;
+	unsigned char letter;
+	int *enabled;
+};
+
 struct ChModeChange
 {
 	char letter;
@@ -113,6 +125,8 @@ struct ChCapCombo
 	int cap_no;
 };
 
+extern const struct channel_mode channel_mode_info[];
+extern const char *build_chanmode_string();
 extern int add_id(struct Client *, struct Channel *, char *, int);
 extern void set_channel_mode(struct Client *, struct Client *, struct Channel *,
 			     struct Membership *, int, char **, char *);

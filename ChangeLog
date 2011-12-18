@@ -1,3 +1,42 @@
+Adam              2011/12/17 21:00:00    (20111217_0-529)
+
+  Log:
+- Added channel mode +C and user mode +C to block CTCPs
+
+  Modified:
+	Modified : ChangeLog
+	Modified : etc/example.conf
+	Modified : etc/example.conf.quick
+	Modified : etc/example.rizon.conf
+	Modified : etc/example.rizon.quick
+	Modified : help/opers/cmode
+	Modified : help/opers/umode
+	Modified : help/users/umode
+	Modified : include/channel.h
+	Modified : include/channel_mode.h
+	Modified : include/client.h
+	Modified : include/numeric.h
+	Modified : include/s_conf.h
+	Modified : include/serno.h
+	Modified : modules/core/m_join.c
+	Modified : modules/core/m_message.c
+	Modified : modules/core/m_sjoin.c
+	Modified : modules/m_etrace.c
+	Modified : modules/m_info.c
+	Modified : modules/m_version.c
+	Modified : src/channel.c
+	Modified : src/channel_mode.c
+	Modified : src/client.c
+	Modified : src/ircd_lexer.l
+	Modified : src/ircd_parser.y
+	Modified : src/lex.yy.c
+	Modified : src/messages.tab
+	Modified : src/s_conf.c
+	Modified : src/s_user.c
+	Modified : src/send.c
+	Modified : src/y.tab.c
+	Modified : src/y.tab.h
+
 Adam              2011/12/10 03:00:00    (20111210_0-529)
 
   Log:

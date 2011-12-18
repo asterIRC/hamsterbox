@@ -99,7 +99,7 @@ unsigned int user_modes[256] =
   0,                  /* @ */
   0,                  /* A */
   0,                  /* B */
-  UMODE_CCONN_FULL,   /* C */
+  UMODE_NOCTCP,       /* C */
   UMODE_DEAF,         /* D */
   0,                  /* E */
   0,                  /* F */
@@ -475,17 +475,6 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 			     ConfigFileEntry.hide_spoof_ips && IsIPSpoof(source_p) ?
 			     "255.255.255.255" : ipaddr, get_client_class(source_p),
 			     source_p->info);
-
-	sendto_realops_flags(UMODE_CCONN_FULL, L_ALL,
-			     "CLICONN %s %s %s %s %s %s %s 0 %s",
-			     nick, source_p->username, source_p->realhost,
-			     ConfigFileEntry.hide_spoof_ips && IsIPSpoof(source_p) ?
-			     "255.255.255.255" : ipaddr,
-			     get_client_class(source_p),
-			     ConfigFileEntry.hide_spoof_ips && IsIPSpoof(source_p) ?
-			     "<hidden>" : source_p->client_host,
-			     ConfigFileEntry.hide_spoof_ips && IsIPSpoof(source_p) ?
-			     "<hidden>" : source_p->client_server, source_p->info);
 
 	/* If they have died in send_* don't do anything. */
 	if(IsDead(source_p))

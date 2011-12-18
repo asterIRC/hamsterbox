@@ -52,33 +52,33 @@ static char *fix_key(char *);
 static char *fix_key_old(char *);
 static void chm_nosuch(struct Client *, struct Client *,
 		       struct Channel *, int, int *, char **, int *, int,
-		       int, char, void *, const char *);
+		       int, char, const struct channel_mode *, const char *);
 static void chm_simple(struct Client *, struct Client *, struct Channel *,
-		       int, int *, char **, int *, int, int, char, void *, const char *);
+		       int, int *, char **, int *, int, int, char, const struct channel_mode *, const char *);
 static void chm_limit(struct Client *, struct Client *, struct Channel *,
-		      int, int *, char **, int *, int, int, char, void *, const char *);
+		      int, int *, char **, int *, int, int, char, const struct channel_mode *, const char *);
 static void chm_key(struct Client *, struct Client *, struct Channel *,
-		    int, int *, char **, int *, int, int, char, void *, const char *);
+		    int, int *, char **, int *, int, int, char, const struct channel_mode *, const char *);
 #ifdef CHANAQ
 static void chm_owner(struct Client *, struct Client *, struct Channel *, int,
-		      int *, char **, int *, int, int, char, void *, const char *);
+		      int *, char **, int *, int, int, char, const struct channel_mode *, const char *);
 static void chm_protect(struct Client *, struct Client *, struct Channel *, int,
-			int *, char **, int *, int, int, char, void *, const char *);
+			int *, char **, int *, int, int, char, const struct channel_mode *, const char *);
 #endif
 static void chm_op(struct Client *, struct Client *, struct Channel *, int,
-		   int *, char **, int *, int, int, char, void *, const char *);
+		   int *, char **, int *, int, int, char, const struct channel_mode *, const char *);
 #ifdef HALFOPS
 static void chm_hop(struct Client *, struct Client *, struct Channel *, int,
-		    int *, char **, int *, int, int, char, void *, const char *);
+		    int *, char **, int *, int, int, char, const struct channel_mode *, const char *);
 #endif
 static void chm_voice(struct Client *, struct Client *, struct Channel *,
-		      int, int *, char **, int *, int, int, char, void *, const char *);
+		      int, int *, char **, int *, int, int, char, const struct channel_mode *, const char *);
 static void chm_ban(struct Client *, struct Client *, struct Channel *, int,
-		    int *, char **, int *, int, int, char, void *, const char *);
+		    int *, char **, int *, int, int, char, const struct channel_mode *, const char *);
 static void chm_except(struct Client *, struct Client *, struct Channel *,
-		       int, int *, char **, int *, int, int, char, void *, const char *);
+		       int, int *, char **, int *, int, int, char, const struct channel_mode *, const char *);
 static void chm_invex(struct Client *, struct Client *, struct Channel *,
-		      int, int *, char **, int *, int, int, char, void *, const char *);
+		      int, int *, char **, int *, int, int, char, const struct channel_mode *, const char *);
 static void send_cap_mode_changes(struct Client *, struct Client *, struct Channel *, int, int);
 //static void send_mode_changes(struct Client *, struct Client *, struct Channel *, char *);
 
@@ -98,6 +98,84 @@ static int simple_modes_mask;	/* bit mask of simple modes already set */
 static int channel_capabs[] = { CAP_EX, CAP_IE, CAP_TS6 };
 static struct ChCapCombo chcap_combos[NCHCAP_COMBOS];
 extern BlockHeap *ban_heap;
+
+/* *INDENT-OFF* */
+const struct channel_mode channel_mode_info[] = 
+{
+  {chm_nosuch, 0, 0, NULL},
+  {chm_nosuch, 0, 0, NULL},                                              /* A */
+  {chm_simple, MODE_BWSAVER, 'B', NULL},                                 /* B */
+  {chm_simple, MODE_NOCTCP, 'C', &ConfigChannel.use_noctcp},             /* C */
+  {chm_nosuch, 0, 0, NULL},                                              /* D */
+  {chm_nosuch, 0, 0, NULL},                                              /* E */
+  {chm_nosuch, 0, 0, NULL},                                              /* F */
+  {chm_nosuch, 0, 0, NULL},                                              /* G */
+  {chm_nosuch, 0, 0, NULL},                                              /* H */
+  {chm_invex, 0, 0, NULL},                                               /* I */
+  {chm_nosuch, 0, 0, NULL},                                              /* J */
+  {chm_nosuch, 0, 0, NULL},                                              /* K */
+  {chm_nosuch, 0, 0, NULL},                                              /* L */
+  {chm_simple, MODE_MODREG, 'M', NULL},                                  /* M */
+  {chm_simple, MODE_NONOTICES, 'N', NULL},                               /* N */
+  {chm_simple, MODE_OPERONLY, 'O', NULL},                                /* O */
+  {chm_nosuch, 0, 0, NULL},                                              /* P */
+  {chm_nosuch, 0, 0, NULL},                                              /* Q */
+  {chm_simple, MODE_REGONLY, 'R', NULL},                                 /* R */
+  {chm_simple, MODE_SSLONLY, 'S', NULL},                                 /* S */
+  {chm_nosuch, 0, 0, NULL},                                              /* T */
+  {chm_nosuch, 0, 0, NULL},                                              /* U */
+  {chm_nosuch, 0, 0, NULL},                                              /* V */
+  {chm_nosuch, 0, 0, NULL},                                              /* W */
+  {chm_nosuch, 0, 0, NULL},                                              /* X */
+  {chm_nosuch, 0, 0, NULL},                                              /* Y */
+  {chm_nosuch, 0, 0, NULL},                                              /* Z */
+  {chm_nosuch, 0, 0, NULL},
+  {chm_nosuch, 0, 0, NULL},
+  {chm_nosuch, 0, 0, NULL},
+  {chm_nosuch, 0, 0, NULL},
+  {chm_nosuch, 0, 0, NULL},
+  {chm_nosuch, 0, 0, NULL},
+#ifdef CHANAQ
+  {chm_protect, 0, 0, NULL},                                             /* a */
+#else
+  {chm_nosuch, 0, 0, NULL},                                              /* a */
+#endif
+  {chm_ban, 0, 0, NULL},                                                 /* b */
+  {chm_simple, MODE_NOCTRL, 'c', NULL},                                  /* c */
+  {chm_nosuch, 0, 0, NULL},                                              /* d */
+  {chm_except, 0, 0, NULL},                                              /* e */
+  {chm_nosuch, 0, 0, NULL},                                              /* f */
+  {chm_nosuch, 0, 0, NULL},                                              /* g */
+#ifdef HALFOPS
+  {chm_hop, 0, 0, NULL},                                                 /* h */
+#else
+  {chm_nosuch, 0, 0, NULL},                                              /* h */
+#endif
+  {chm_simple, MODE_INVITEONLY, 'i', NULL},                              /* i */
+  {chm_nosuch, 0, 0, NULL},                                              /* j */
+  {chm_key, 0, 0, NULL},                                                 /* k */
+  {chm_limit, 0, 0, NULL},                                               /* l */
+  {chm_simple, MODE_MODERATED, 'm', NULL},                               /* m */
+  {chm_simple, MODE_NOPRIVMSGS, 'n', NULL},                              /* n */
+  {chm_op, 0, 0, NULL},                                                  /* o */
+  {chm_simple, MODE_PRIVATE, 'p', NULL},                                 /* p */
+#ifdef CHANAQ
+  {chm_owner, 0, 0, NULL},                                               /* q */
+#else
+  {chm_nosuch, 0, 0, NULL},                                              /* q */
+#endif
+  {chm_nosuch, 0, 0, NULL},                                              /* r */
+  {chm_simple, MODE_SECRET, 's', NULL},                                  /* s */
+  {chm_simple, MODE_TOPICLIMIT, 't', NULL},                              /* t */
+  {chm_nosuch, 0, 0, NULL},                                              /* u */
+  {chm_voice, 0, 0, NULL},                                               /* v */
+  {chm_nosuch, 0, 0, NULL},                                              /* w */
+  {chm_nosuch, 0, 0, NULL},                                              /* x */
+  {chm_nosuch, 0, 0, NULL},                                              /* y */
+  {chm_simple, MODE_PERSIST, 'z', NULL},                                 /* z */
+  {NULL, 0, 0, NULL},
+};
+/* *INDENT-ON* */
 
 
 /* XXX check_string is propably not longer required in add_id and del_id */
@@ -129,6 +207,25 @@ check_string(char *s)
 	}
 
 	return str;
+}
+
+const char *
+build_chanmode_string()
+{
+	static char *modebuf = NULL;
+	char temp_modebuf[64], *p = temp_modebuf;
+	int i, count;
+
+	MyFree(modebuf);
+
+	for (i = 0, count = 0; channel_mode_info[i].func != NULL; ++i)
+		if ((channel_mode_info[i].enabled == NULL || *channel_mode_info[i].enabled) && channel_mode_info[i].letter)
+			*p++ = channel_mode_info[i].letter;
+	*p++ = 0;
+
+	DupString(modebuf, temp_modebuf);
+
+	return modebuf;
 }
 
 /*
@@ -483,31 +580,6 @@ del_id(struct Channel *chptr, char *banid, int type)
 	return 0;
 }
 
-/* *INDENT-OFF* */
-static const struct mode_letter
-{
-	const unsigned int mode;
-	const unsigned char letter;
-} flags[] =
-{
-	{MODE_BWSAVER, 'B'},
-	{MODE_MODREG, 'M'},
-	{MODE_NONOTICES, 'N'},
-	{MODE_OPERONLY, 'O'},
-	{MODE_REGONLY, 'R'},
-	{MODE_SSLONLY, 'S'},
-	{MODE_NOCTRL, 'c'},
-	{MODE_INVITEONLY, 'i'},
-	{MODE_MODERATED, 'm'},
-	{MODE_NOPRIVMSGS, 'n'},
-	{MODE_PRIVATE, 'p'},
-	{MODE_SECRET, 's'},
-	{MODE_TOPICLIMIT, 't'},
-	{MODE_PERSIST, 'z'},
-	{0, '\0'}
-};
-/* *INDENT-ON* */
-
 /* channel_modes()
  *
  * inputs       - pointer to channel
@@ -526,9 +598,9 @@ channel_modes(struct Channel *chptr, struct Client *client_p, char *mbuf, char *
 	*mbuf++ = '+';
 	*pbuf = '\0';
 
-	for(i = 0; flags[i].mode; ++i)
-		if(chptr->mode.mode & flags[i].mode)
-			*mbuf++ = flags[i].letter;
+	for(i = 0; channel_mode_info[i].func != NULL; ++i)
+		if(chptr->mode.mode & channel_mode_info[i].mode)
+			*mbuf++ = channel_mode_info[i].letter;
 
 	if(chptr->mode.limit)
 	{
@@ -711,7 +783,7 @@ unset_chcap_usage_counts(struct Client *serv_p)
 static void
 chm_nosuch(struct Client *client_p, struct Client *source_p,
 	   struct Channel *chptr, int parc, int *parn,
-	   char **parv, int *errors, int alev, int dir, char c, void *d, const char *chname)
+	   char **parv, int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname)
 {
 	if(*errors & SM_ERR_UNKNOWN)
 		return;
@@ -723,13 +795,12 @@ chm_nosuch(struct Client *client_p, struct Client *source_p,
 static void
 chm_simple(struct Client *client_p, struct Client *source_p, struct Channel *chptr,
 	   int parc, int *parn, char **parv, int *errors, int alev, int dir,
-	   char c, void *d, const char *chname)
+	   char c, const struct channel_mode *mode, const char *chname)
 {
-	long mode_type;
+	if (alev < CHACCESS_REMOTE && dir == MODE_ADD && mode->enabled != NULL && *mode->enabled == 0)
+		return chm_nosuch(client_p, source_p, chptr, parc, parn, parv, errors, alev, dir, c, mode, chname);
 
-	mode_type = (long) d;
-
-	if((alev < CHACCESS_HALFOP) || ((mode_type == MODE_PRIVATE) && (alev < CHACCESS_CHANOP)))
+	if((alev < CHACCESS_HALFOP) || ((mode->mode == MODE_PRIVATE) && (alev < CHACCESS_CHANOP)))
 	{
 		if(!(*errors & SM_ERR_NOOPS))
 			sendto_one(source_p,
@@ -740,7 +811,7 @@ chm_simple(struct Client *client_p, struct Client *source_p, struct Channel *chp
 		return;
 	}
 
-	if((mode_type == MODE_OPERONLY) && (alev < CHACCESS_REMOTE) && !IsOper(source_p))
+	if((mode->mode == MODE_OPERONLY) && (alev < CHACCESS_REMOTE) && !IsOper(source_p))
 	{
 		if(!(*errors & SM_ERR_NOTOPER))
 			sendto_one(source_p, form_str(ERR_NOPRIVS), me.name, source_p->name,
@@ -749,7 +820,7 @@ chm_simple(struct Client *client_p, struct Client *source_p, struct Channel *chp
 		return;
 	}
 
-	if((mode_type == MODE_PERSIST) && (alev < CHACCESS_REMOTE))
+	if((mode->mode == MODE_PERSIST) && (alev < CHACCESS_REMOTE))
 	{
 		if(!(*errors & SM_ERR_NOTOPER))
 			sendto_one(source_p, form_str(ERR_NOPRIVS), me.name, source_p->name,
@@ -759,7 +830,7 @@ chm_simple(struct Client *client_p, struct Client *source_p, struct Channel *chp
 	}
 
 	/* Disallow setting of +S on a channel if there are any non-SSL users in it. */
-	if((mode_type == MODE_SSLONLY) && (dir == MODE_ADD) && (alev < CHACCESS_REMOTE))
+	if((mode->mode == MODE_SSLONLY) && (dir == MODE_ADD) && (alev < CHACCESS_REMOTE))
 	{
 #ifdef HAVE_LIBCRYPTO
 		dlink_node *ptr;
@@ -799,15 +870,15 @@ chm_simple(struct Client *client_p, struct Client *source_p, struct Channel *chp
 	}
 
 	/* If have already dealt with this simple mode, ignore it */
-	if(simple_modes_mask & mode_type)
+	if(simple_modes_mask & mode->mode)
 		return;
 
-	simple_modes_mask |= mode_type;
+	simple_modes_mask |= mode->mode;
 
 	/* setting + */
-	if((dir == MODE_ADD) && !(chptr->mode.mode & mode_type))
+	if((dir == MODE_ADD) && !(chptr->mode.mode & mode->mode))
 	{
-		chptr->mode.mode |= mode_type;
+		chptr->mode.mode |= mode->mode;
 
 		mode_changes[mode_count].letter = c;
 		mode_changes[mode_count].dir = MODE_ADD;
@@ -817,11 +888,11 @@ chm_simple(struct Client *client_p, struct Client *source_p, struct Channel *chp
 		mode_changes[mode_count].mems = ALL_MEMBERS;
 		mode_changes[mode_count++].arg = NULL;
 	}
-	else if((dir == MODE_DEL) && (chptr->mode.mode & mode_type))
+	else if((dir == MODE_DEL) && (chptr->mode.mode & mode->mode))
 	{
 		/* setting - */
 
-		chptr->mode.mode &= ~mode_type;
+		chptr->mode.mode &= ~mode->mode;
 
 		mode_changes[mode_count].letter = c;
 		mode_changes[mode_count].dir = MODE_DEL;
@@ -836,7 +907,7 @@ chm_simple(struct Client *client_p, struct Client *source_p, struct Channel *chp
 static void
 chm_ban(struct Client *client_p, struct Client *source_p,
 	struct Channel *chptr, int parc, int *parn,
-	char **parv, int *errors, int alev, int dir, char c, void *d, const char *chname)
+	char **parv, int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname)
 {
 	char *mask = NULL;
 
@@ -920,7 +991,7 @@ chm_ban(struct Client *client_p, struct Client *source_p,
 static void
 chm_except(struct Client *client_p, struct Client *source_p,
 	   struct Channel *chptr, int parc, int *parn,
-	   char **parv, int *errors, int alev, int dir, char c, void *d, const char *chname)
+	   char **parv, int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname)
 {
 	char *mask = NULL;
 
@@ -1012,7 +1083,7 @@ chm_except(struct Client *client_p, struct Client *source_p,
 static void
 chm_invex(struct Client *client_p, struct Client *source_p,
 	  struct Channel *chptr, int parc, int *parn,
-	  char **parv, int *errors, int alev, int dir, char c, void *d, const char *chname)
+	  char **parv, int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname)
 {
 	char *mask = NULL;
 
@@ -1136,7 +1207,7 @@ clear_ban_cache_client(struct Client *client_p)
 static void
 chm_owner(struct Client *client_p, struct Client *source_p,
 	  struct Channel *chptr, int parc, int *parn,
-	  char **parv, int *errors, int alev, int dir, char c, void *d, const char *chname)
+	  char **parv, int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname)
 {
 	char *opnick;
 	struct Client *targ_p;
@@ -1201,7 +1272,7 @@ chm_owner(struct Client *client_p, struct Client *source_p,
 static void
 chm_protect(struct Client *client_p, struct Client *source_p,
 	    struct Channel *chptr, int parc, int *parn,
-	    char **parv, int *errors, int alev, int dir, char c, void *d, const char *chname)
+	    char **parv, int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname)
 {
 	char *opnick;
 	struct Client *targ_p;
@@ -1277,7 +1348,7 @@ chm_protect(struct Client *client_p, struct Client *source_p,
 static void
 chm_op(struct Client *client_p, struct Client *source_p,
        struct Channel *chptr, int parc, int *parn,
-       char **parv, int *errors, int alev, int dir, char c, void *d, const char *chname)
+       char **parv, int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname)
 {
 	char *opnick;
 	struct Client *targ_p;
@@ -1386,7 +1457,7 @@ chm_op(struct Client *client_p, struct Client *source_p,
 static void
 chm_hop(struct Client *client_p, struct Client *source_p,
 	struct Channel *chptr, int parc, int *parn,
-	char **parv, int *errors, int alev, int dir, char c, void *d, const char *chname)
+	char **parv, int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname)
 {
 	char *opnick;
 	struct Client *targ_p;
@@ -1508,7 +1579,7 @@ chm_hop(struct Client *client_p, struct Client *source_p,
 static void
 chm_voice(struct Client *client_p, struct Client *source_p,
 	  struct Channel *chptr, int parc, int *parn,
-	  char **parv, int *errors, int alev, int dir, char c, void *d, const char *chname)
+	  char **parv, int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname)
 {
 	char *opnick;
 	struct Client *targ_p;
@@ -1613,7 +1684,7 @@ chm_voice(struct Client *client_p, struct Client *source_p,
 static void
 chm_limit(struct Client *client_p, struct Client *source_p,
 	  struct Channel *chptr, int parc, int *parn,
-	  char **parv, int *errors, int alev, int dir, char c, void *d, const char *chname)
+	  char **parv, int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname)
 {
 	int i, limit;
 	char *lstr;
@@ -1677,7 +1748,7 @@ chm_limit(struct Client *client_p, struct Client *source_p,
 static void
 chm_key(struct Client *client_p, struct Client *source_p,
 	struct Channel *chptr, int parc, int *parn,
-	char **parv, int *errors, int alev, int dir, char c, void *d, const char *chname)
+	char **parv, int *errors, int alev, int dir, char c, const struct channel_mode *mode, const char *chname)
 {
 	int i;
 	char *key;
@@ -1744,91 +1815,6 @@ chm_key(struct Client *client_p, struct Client *source_p,
 		mode_changes[mode_count++].arg = "*";
 	}
 }
-
-struct ChannelMode
-{
-	void (*func) (struct Client * client_p, struct Client * source_p,
-		      struct Channel * chptr, int parc, int *parn, char **parv,
-		      int *errors, int alev, int dir, char c, void *d, const char *chname);
-	void *d;
-};
-
-/* *INDENT-OFF* */
-static struct ChannelMode ModeTable[255] =
-{
-  {chm_nosuch, NULL},
-  {chm_nosuch, NULL},                             /* A */
-  {chm_simple, (void *) MODE_BWSAVER},            /* B */
-  {chm_nosuch, NULL},                             /* C */
-  {chm_nosuch, NULL},                             /* D */
-  {chm_nosuch, NULL},                             /* E */
-  {chm_nosuch, NULL},                             /* F */
-  {chm_nosuch, NULL},                             /* G */
-  {chm_nosuch, NULL},                             /* H */
-  {chm_invex, NULL},                              /* I */
-  {chm_nosuch, NULL},                             /* J */
-  {chm_nosuch, NULL},                             /* K */
-  {chm_nosuch, NULL},                             /* L */
-  {chm_simple, (void *) MODE_MODREG},             /* M */
-  {chm_simple, (void *) MODE_NONOTICES},          /* N */
-  {chm_simple, (void *) MODE_OPERONLY},           /* O */
-  {chm_nosuch, NULL},                             /* P */
-  {chm_nosuch, NULL},                             /* Q */
-  {chm_simple, (void *) MODE_REGONLY},            /* R */
-  {chm_simple, (void *) MODE_SSLONLY},            /* S */
-  {chm_nosuch, NULL},                             /* T */
-  {chm_nosuch, NULL},                             /* U */
-  {chm_nosuch, NULL},                             /* V */
-  {chm_nosuch, NULL},                             /* W */
-  {chm_nosuch, NULL},                             /* X */
-  {chm_nosuch, NULL},                             /* Y */
-  {chm_nosuch, NULL},                             /* Z */
-  {chm_nosuch, NULL},
-  {chm_nosuch, NULL},
-  {chm_nosuch, NULL},
-  {chm_nosuch, NULL},
-  {chm_nosuch, NULL},
-  {chm_nosuch, NULL},
-#ifdef CHANAQ
-  {chm_protect, NULL},                            /* a */
-#else
-  {chm_nosuch, NULL},                             /* a */
-#endif
-  {chm_ban, NULL},                                /* b */
-  {chm_simple, (void *) MODE_NOCTRL},             /* c */
-  {chm_nosuch, NULL},                             /* d */
-  {chm_except, NULL},                             /* e */
-  {chm_nosuch, NULL},                             /* f */
-  {chm_nosuch, NULL},                             /* g */
-#ifdef HALFOPS
-  {chm_hop, NULL},                                /* h */
-#else
-  {chm_nosuch, NULL},				  /* h */
-#endif
-  {chm_simple, (void *) MODE_INVITEONLY},         /* i */
-  {chm_nosuch, NULL},                             /* j */
-  {chm_key, NULL},                                /* k */
-  {chm_limit, NULL},                              /* l */
-  {chm_simple, (void *) MODE_MODERATED},          /* m */
-  {chm_simple, (void *) MODE_NOPRIVMSGS},         /* n */
-  {chm_op, NULL},                                 /* o */
-  {chm_simple, (void *) MODE_PRIVATE},            /* p */
-#ifdef CHANAQ
-  {chm_owner, NULL},                              /* q */
-#else
-  {chm_nosuch, NULL},                             /* q */
-#endif
-  {chm_nosuch, NULL},                             /* r */
-  {chm_simple, (void *) MODE_SECRET},             /* s */
-  {chm_simple, (void *) MODE_TOPICLIMIT},         /* t */
-  {chm_nosuch, NULL},                             /* u */
-  {chm_voice, NULL},                              /* v */
-  {chm_nosuch, NULL},                             /* w */
-  {chm_nosuch, NULL},                             /* x */
-  {chm_nosuch, NULL},                             /* y */
-  {chm_simple, (void *) MODE_PERSIST},            /* z */
-};
-/* *INDENT-ON* */
 
 /* get_channel_access()
  *
@@ -2157,10 +2143,10 @@ set_channel_mode(struct Client *client_p, struct Client *source_p, struct Channe
 				table_position = 0;
 			else
 				table_position = c - 'A' + 1;
-			ModeTable[table_position].func(client_p, source_p, chptr,
+			channel_mode_info[table_position].func(client_p, source_p, chptr,
 						       parc, &parn,
 						       parv, &errors, alevel, dir, c,
-						       ModeTable[table_position].d, chname);
+						       &channel_mode_info[table_position], chname);
 			break;
 		}
 	}

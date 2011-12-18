@@ -501,30 +501,6 @@ do_join_0(struct Client *client_p, struct Client *source_p)
  * output       - NONE
  * side effects -
  */
-/* *INDENT-OFF* */
-static const struct mode_letter
-{
-	unsigned int mode;
-	unsigned char letter;
-} flags[] =
-{
-	{MODE_BWSAVER, 'B'},
-	{MODE_MODREG, 'M'},
-	{MODE_NONOTICES, 'N'},
-	{MODE_OPERONLY, 'O'},
-	{MODE_REGONLY, 'R'},
-	{MODE_SSLONLY, 'S'},
-	{MODE_NOCTRL, 'c'},
-	{MODE_NOPRIVMSGS, 'n'},
-	{MODE_TOPICLIMIT, 't'},
-	{MODE_SECRET, 's'},
-	{MODE_MODERATED, 'm'},
-	{MODE_INVITEONLY, 'i'},
-	{MODE_PRIVATE, 'p'},
-	{0, '\0'}
-};
-/* *INDENT-ON* */
-
 static void
 set_final_mode(struct Mode *mode, struct Mode *oldmode)
 {
@@ -533,29 +509,29 @@ set_final_mode(struct Mode *mode, struct Mode *oldmode)
 	int len;
 	int i;
 
-	for(i = 0; flags[i].letter; i++)
+	for(i = 0; channel_mode_info[i].func != NULL; ++i)
 	{
-		if((flags[i].mode & mode->mode) && !(flags[i].mode & oldmode->mode))
+		if((channel_mode_info[i].mode & mode->mode) && !(channel_mode_info[i].mode & oldmode->mode))
 		{
 			if(what != 1)
 			{
 				*mbuf++ = '+';
 				what = 1;
 			}
-			*mbuf++ = flags[i].letter;
+			*mbuf++ = channel_mode_info[i].letter;
 		}
 	}
 
-	for(i = 0; flags[i].letter; i++)
+	for(i = 0; channel_mode_info[i].func != NULL; ++i)
 	{
-		if((flags[i].mode & oldmode->mode) && !(flags[i].mode & mode->mode))
+		if((channel_mode_info[i].mode & oldmode->mode) && !(channel_mode_info[i].mode & mode->mode))
 		{
 			if(what != -1)
 			{
 				*mbuf++ = '-';
 				what = -1;
 			}
-			*mbuf++ = flags[i].letter;
+			*mbuf++ = channel_mode_info[i].letter;
 		}
 	}
 

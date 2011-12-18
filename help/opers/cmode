@@ -46,6 +46,10 @@ NO PARAMETERS:
      +B     - 'Bandwith Saver'. This will prevent anyone set away, or idle
               for longer than 30 minutes from receiving channel messages.
 
+     +C     - 'No CTCPs'. This will prevent any user who isn't an owner,
+               protected, opped, half-opped, or voiced (+q/+a/+o/+h/+v)
+               from sending CTCPs to the channel.
+
      +M     - 'ModReg'. This will prevent any user who isn't a owner,
               protected, opped, half-opped or voiced (+q/+a/+o/+h/+v) from
               talking in the channel if they havent identified to their

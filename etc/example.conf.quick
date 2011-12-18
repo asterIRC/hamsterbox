@@ -308,6 +308,7 @@ channel
 	use_invex = yes;
 	use_except = yes;
 	use_knock = yes;
+	use_noctcp = no;
 	knock_delay = 5 minutes;
 	knock_delay_channel = 1 minute;
 	burst_topicwho = yes;
@@ -390,7 +391,7 @@ general
 	max_targets = 4;
 	client_flood = 2560;
 	message_locale = "standard";
-	oper_only_umodes = bots, cconn, cconn_full, debug, full, skill,
+	oper_only_umodes = bots, cconn, debug, full, skill,
 		nchange, rej, spy, external, operwall, locops, unauth, hidechannels;
 
 	oper_umodes = bots, locops, servnotice, operwall, wallop;

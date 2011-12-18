@@ -476,6 +476,8 @@ sendto_channel_butone(struct Client *one, struct Client *from,
 	dlink_node *ptr;
 	dlink_node *ptr_next;
 	struct Client *target_p;
+	int is_ctcp = NO;
+	const char *message;
 
 	if(IsServer(from))
 		local_len = ircsprintf(local_buf, ":%s %s %s ", from->name, command, chptr->chname);
@@ -489,6 +491,7 @@ sendto_channel_butone(struct Client *one, struct Client *from,
 	va_start(alocal, pattern);
 	va_start(aremote, pattern);
 	va_start(auid, pattern);
+	message = &local_buf[local_len] + 1;
 	local_len += send_format(&local_buf[local_len], IRCD_BUFSIZE - local_len, pattern, alocal);
 	remote_len += send_format(&remote_buf[remote_len], IRCD_BUFSIZE - remote_len,
 				  pattern, aremote);
@@ -499,13 +502,16 @@ sendto_channel_butone(struct Client *one, struct Client *from,
 
 	++current_serial;
 
+	if(msg_is_ctcp(message))
+		is_ctcp = YES;
+
 	DLINK_FOREACH_SAFE(ptr, ptr_next, chptr->members.head)
 	{
 		target_p = ((struct Membership *) ptr->data)->client_p;
 		assert(target_p != NULL);
 
-		if(IsDefunct(target_p) || IsDeaf(target_p) || is_bwsave(chptr, target_p)
-		   || target_p->from == one)
+		if(IsDefunct(target_p) || IsDeaf(target_p) || is_bwsave(chptr, target_p) ||
+		   (is_ctcp && is_noctcp(from, target_p)) || target_p->from == one)
 			continue;
 
 		if(MyClient(target_p))

@@ -510,6 +510,10 @@ msg_channel(int p_or_n, const char *command, struct Client *client_p,
 				sendto_one(source_p, form_str(ERR_NOCTRLSONCHAN),
 					   ID_or_name(&me, client_p),
 					   ID_or_name(source_p, client_p), chptr->chname, text);
+			else if(result == CAN_SEND_NOCTCP)
+				sendto_one(source_p, form_str(ERR_NOCTCP),
+					ID_or_name(&me, client_p),
+					ID_or_name(source_p, client_p), chptr->chname, "channel", text);
 			else
 				sendto_one(source_p, form_str(ERR_CANNOTSENDTOCHAN),
 					   ID_or_name(&me, client_p),
@@ -626,6 +630,15 @@ msg_client(int p_or_n, const char *command, struct Client *source_p,
 			sendto_one(source_p, form_str(ERR_NONONREG),
 				   ID_or_name(&me, source_p->from),
 				   ID_or_name(source_p, source_p->from), target_p->name);
+		return;
+	}
+
+	if(is_noctcp(source_p, target_p) && msg_is_ctcp(text))
+	{
+		if(p_or_n != NOTICE)
+			sendto_one(source_p, form_str(ERR_NOCTCP),
+				ID_or_name(&me, source_p->from),
+				ID_or_name(source_p, source_p->from), target_p->name, "user", text);
 		return;
 	}
 

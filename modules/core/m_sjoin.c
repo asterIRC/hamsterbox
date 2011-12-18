@@ -149,62 +149,28 @@ ms_sjoin(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 
 	for(s = parv[3]; *s; ++s)
 	{
+		int table_position;
+		if(*s < 'A' || *s > 'z')
+			continue;
+		table_position = *s - 'A' + 1;
+		mode.mode |= channel_mode_info[table_position].mode;
+
 		switch (*s)
 		{
-		case 'B':
-			mode.mode |= MODE_BWSAVER;
-			break;
-		case 'M':
-			mode.mode |= MODE_MODREG;
-			break;
-		case 'N':
-			mode.mode |= MODE_NONOTICES;
-			break;
-		case 'O':
-			mode.mode |= MODE_OPERONLY;
-			break;
-		case 'R':
-			mode.mode |= MODE_REGONLY;
-			break;
-		case 'S':
-			mode.mode |= MODE_SSLONLY;
-			break;
-		case 'c':
-			mode.mode |= MODE_NOCTRL;
-			break;
-		case 't':
-			mode.mode |= MODE_TOPICLIMIT;
-			break;
-		case 'n':
-			mode.mode |= MODE_NOPRIVMSGS;
-			break;
-		case 's':
-			mode.mode |= MODE_SECRET;
-			break;
-		case 'm':
-			mode.mode |= MODE_MODERATED;
-			break;
-		case 'i':
-			mode.mode |= MODE_INVITEONLY;
-			break;
-		case 'p':
-			mode.mode |= MODE_PRIVATE;
-			break;
-		case 'k':
-			strlcpy(mode.key, parv[4 + args], sizeof(mode.key));
-			args++;
-			if(parc < 5 + args)
-				return;
-			break;
-		case 'l':
-			mode.limit = atoi(parv[4 + args]);
-			args++;
-			if(parc < 5 + args)
-				return;
-			break;
-		case 'z':
-			mode.mode |= MODE_PERSIST;
-			break;
+			case 'k':
+				strlcpy(mode.key, parv[4 + args], sizeof(mode.key));
+				args++;
+				if(parc < 5 + args)
+					return;
+				break;
+			case 'l':
+				mode.limit = atoi(parv[4 + args]);
+				args++;
+				if(parc < 5 + args)
+					return;
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -723,31 +689,6 @@ ms_sjoin(struct Client *client_p, struct Client *source_p, int parc, char *parv[
  *		  but were not set in oldmode.
  */
 
-/* *INDENT-OFF* */
-static const struct mode_letter
-{
-	unsigned int mode;
-	unsigned char letter;
-} flags[] =
-{
-	{MODE_BWSAVER, 'B'},
-	{MODE_MODREG, 'M'},
-	{MODE_NONOTICES, 'N'},
-	{MODE_OPERONLY, 'O'},
-	{MODE_REGONLY, 'R'},
-	{MODE_SSLONLY, 'S'},
-	{MODE_NOCTRL, 'c'},
-	{MODE_NOPRIVMSGS, 'n'},
-	{MODE_TOPICLIMIT, 't'},
-	{MODE_SECRET, 's'},
-	{MODE_MODERATED, 'm'},
-	{MODE_INVITEONLY, 'i'},
-	{MODE_PRIVATE, 'p'},
-	{MODE_PERSIST, 'z'},
-	{0, '\0'}
-};
-/* *INDENT-ON* */
-
 static void
 set_final_mode(struct Mode *mode, struct Mode *oldmode)
 {
@@ -757,10 +698,10 @@ set_final_mode(struct Mode *mode, struct Mode *oldmode)
 
 	*mbuf++ = '-';
 
-	for(i = 0; flags[i].letter; i++)
+	for(i = 0; channel_mode_info[i].func != NULL; ++i)
 	{
-		if((flags[i].mode & oldmode->mode) && !(flags[i].mode & mode->mode))
-			*mbuf++ = flags[i].letter;
+		if((channel_mode_info[i].mode & oldmode->mode) && !(channel_mode_info[i].mode & mode->mode))
+			*mbuf++ = channel_mode_info[i].letter;
 	}
 
 	if(oldmode->limit != 0 && mode->limit == 0)
@@ -779,10 +720,10 @@ set_final_mode(struct Mode *mode, struct Mode *oldmode)
 	else
 		*mbuf++ = '+';
 
-	for(i = 0; flags[i].letter; i++)
+	for(i = 0; channel_mode_info[i].func != NULL; i++)
 	{
-		if((flags[i].mode & mode->mode) && !(flags[i].mode & oldmode->mode))
-			*mbuf++ = flags[i].letter;
+		if((channel_mode_info[i].mode & mode->mode) && !(channel_mode_info[i].mode & oldmode->mode))
+			*mbuf++ = channel_mode_info[i].letter;
 	}
 
 	if(mode->limit != 0 && oldmode->limit != mode->limit)

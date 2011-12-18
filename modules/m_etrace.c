@@ -123,9 +123,6 @@ do_etrace(struct Client *source_p, int parc, char **parv)
 		tname = "*";
 	}
 
-	if(IsFull(source_p))
-		full_etrace = 1;
-
 	if(!wilds && !do_all)
 	{
 		target_p = find_client(tname);

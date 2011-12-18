@@ -319,6 +319,7 @@ use_invex	{ return USE_INVEX; }
 regex_bans	{ return USE_REGEX_BANS; }
 hide_killer	{ return HIDE_KILLER; }
 use_knock	{ return USE_KNOCK; }
+use_noctcp      { return USE_NOCTCP; }
 use_logging	{ return USE_LOGGING; }
 use_whois_actually { return USE_WHOIS_ACTUALLY; }
 throttle_time { return THROTTLE_TIME; }
@@ -369,7 +370,7 @@ oper_only_umodes        { return OPER_ONLY_UMODES; }
 oper_umodes             { return OPER_UMODES; }
 bots                    { return T_BOTS; }
 cconn                   { return T_CCONN; }
-cconn_full              { return T_CCONN_FULL; }
+noctcp                  { return T_NOCTCP; }
 deaf                    { return T_DEAF; }
 debug                   { return T_DEBUG; }
 full                    { return T_FULL; }

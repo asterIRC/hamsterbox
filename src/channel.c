@@ -99,6 +99,18 @@ msg_has_ctrls(char *msg)
 	return 0;
 }
 
+int
+msg_is_ctcp(const char *msg)
+{
+	if (msg == NULL)
+		return NO;
+	
+	if (*msg++ == 1 && strncmp(msg, "ACTION ", 7) != 0 && strncmp(msg, "DCC ", 4) != 0)
+		return YES;
+	
+	return NO;
+}
+
 /*! \brief Initializes the channel blockheap, adds known channel CAPAB
  */
 void
@@ -979,6 +991,9 @@ can_send(struct Channel *chptr, struct Client *source_p, struct Membership *ms, 
 	if((chptr->mode.mode & MODE_NOCTRL) && msg_has_ctrls(text))
 		return CAN_SEND_NOCTRLS;
 
+	if((chptr->mode.mode & MODE_NOCTCP) && msg_is_ctcp(text))
+		return CAN_SEND_NOCTCP;
+
 	if(notice && (chptr->mode.mode & MODE_NONOTICES))
 		return CAN_SEND_NO;
 
@@ -1164,6 +1179,18 @@ is_bwsave(struct Channel *chptr, struct Client *source_p)
 	if(source_p->away != NULL || (CurrentTime - source_p->localClient->last) > 1800)
 		return YES;
 
+	return NO;
+}
+
+int
+is_noctcp(struct Client *source_p, struct Client *target_p)
+{
+	if(!MyClient(target_p) || IsOper(source_p) || source_p == target_p)
+		return NO;
+
+	if(IsNoCTCP(target_p))
+		return YES;
+	
 	return NO;
 }
 

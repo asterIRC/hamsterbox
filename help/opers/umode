@@ -25,7 +25,7 @@ Usermodes: (* designates that the umode is oper only)
        * +a     - Is marked as a server admin in stats p/o.
        * +N     - Is marked as a network administrator
        * +q     - Is a Services Administrator, can use SQUITs.
-       * +C     - Can see extended client connections and exits.
+         +C     - Blocks CTCP messages.
          +p     - Hides the output of channels this client is in from WHOIS
                   to non-admins.
          +D     - "deaf": don't receive channel messages

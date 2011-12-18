@@ -427,6 +427,7 @@ struct config_channel_entry
 	int use_except;
 	int use_invex;
 	int use_knock;
+	int use_noctcp;
 	int regex_bans;
 	int knock_delay;
 	int knock_delay_channel;

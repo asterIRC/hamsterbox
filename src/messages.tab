@@ -520,7 +520,7 @@ static struct NumericInfo replies[] = {
 /* 489 */  {NULL, NULL, NULL},
 /* 490 */  {NULL, NULL, NULL},
 /* 491 */  {"ERR_NOOPERHOST", ":%s 491 %s :Only few of mere mortals may try to enter the twilight zone", NULL},
-/* 492 */  {NULL, NULL, NULL},
+/* 492 */  {"ERR_NOCTCP", ":%s 492 %s %s :You cannot send CTCPs to this %s. Not sent: %s", NULL},
 /* 493 */  {NULL, NULL, NULL},
 /* 494 */  {NULL, NULL, NULL},
 /* 495 */  {NULL, NULL, NULL},

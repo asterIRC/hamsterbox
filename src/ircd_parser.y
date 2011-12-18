@@ -344,7 +344,7 @@ unhook_hub_leaf_confs(void)
 %token  T_SOFTCALLERID
 %token  T_CALLERID
 %token  T_CCONN
-%token  T_CCONN_FULL
+%token  T_NOCTCP
 %token  T_CLIENT_FLOOD
 %token  T_DEAF
 %token  T_DEBUG
@@ -391,6 +391,7 @@ unhook_hub_leaf_confs(void)
 %token  HIDE_KILLER
 %token  USE_REGEX_BANS
 %token  USE_KNOCK
+%token  USE_NOCTCP
 %token  USE_LOGGING
 %token  USE_WHOIS_ACTUALLY
 %token  VHOST
@@ -1296,10 +1297,10 @@ oper_umodes_item:  T_BOTS
 {
   if (ypass == 2)
     yy_aconf->modes |= UMODE_CCONN;
-} | T_CCONN_FULL
+} | T_NOCTCP
 {
   if (ypass == 2)
-    yy_aconf->modes |= UMODE_CCONN_FULL;
+    yy_aconf->modes |= UMODE_NOCTCP;
 } | T_DEAF
 {
   if (ypass == 2)
@@ -3770,9 +3771,9 @@ umode_oitem:     T_BOTS
 } | T_CCONN
 {
   ConfigFileEntry.oper_umodes |= UMODE_CCONN;
-} | T_CCONN_FULL
+} | T_NOCTCP
 {
-  ConfigFileEntry.oper_umodes |= UMODE_CCONN_FULL;
+  ConfigFileEntry.oper_umodes |= UMODE_NOCTCP;
 } | T_DEAF
 {
   ConfigFileEntry.oper_umodes |= UMODE_DEAF;
@@ -3838,9 +3839,9 @@ umode_item:	T_BOTS
 } | T_CCONN
 {
   ConfigFileEntry.oper_only_umodes |= UMODE_CCONN;
-} | T_CCONN_FULL
+} | T_NOCTCP
 {
-  ConfigFileEntry.oper_only_umodes |= UMODE_CCONN_FULL;
+  ConfigFileEntry.oper_only_umodes |= UMODE_NOCTCP;
 } | T_DEAF
 {
   ConfigFileEntry.oper_only_umodes |= UMODE_DEAF;
@@ -4095,7 +4096,7 @@ channel_entry: CHANNEL
 
 channel_items:      channel_items channel_item | channel_item;
 channel_item:       channel_disable_local_channels | channel_use_except |
-                    channel_use_invex | channel_use_knock | channel_use_regex_bans |
+                    channel_use_invex | channel_use_knock | channel_use_noctcp | channel_use_regex_bans |
                     channel_max_bans | channel_knock_delay |
                     channel_knock_delay_channel | channel_max_chans_per_user |
                     channel_quiet_on_ban | channel_default_split_user_count |
@@ -4144,6 +4145,11 @@ channel_use_regex_bans: USE_REGEX_BANS '=' TBOOL ';'
 channel_use_knock: USE_KNOCK '=' TBOOL ';'
 {
   ConfigChannel.use_knock = yylval.number;
+};
+
+channel_use_noctcp: USE_NOCTCP '=' TBOOL ';'
+{
+  ConfigChannel.use_noctcp = yylval.number;
 };
 
 channel_knock_delay: KNOCK_DELAY '=' timespec ';'

@@ -253,7 +253,7 @@
      T_SOFTCALLERID = 470,
      T_CALLERID = 471,
      T_CCONN = 472,
-     T_CCONN_FULL = 473,
+     T_NOCTCP = 473,
      T_CLIENT_FLOOD = 474,
      T_DEAF = 475,
      T_DEBUG = 476,
@@ -300,13 +300,14 @@
      HIDE_KILLER = 517,
      USE_REGEX_BANS = 518,
      USE_KNOCK = 519,
-     USE_LOGGING = 520,
-     USE_WHOIS_ACTUALLY = 521,
-     VHOST = 522,
-     VHOST6 = 523,
-     XLINE = 524,
-     WARN = 525,
-     WARN_NO_NLINE = 526
+     USE_NOCTCP = 520,
+     USE_LOGGING = 521,
+     USE_WHOIS_ACTUALLY = 522,
+     VHOST = 523,
+     VHOST6 = 524,
+     XLINE = 525,
+     WARN = 526,
+     WARN_NO_NLINE = 527
    };
 #endif
 /* Tokens.  */
@@ -525,7 +526,7 @@
 #define T_SOFTCALLERID 470
 #define T_CALLERID 471
 #define T_CCONN 472
-#define T_CCONN_FULL 473
+#define T_NOCTCP 473
 #define T_CLIENT_FLOOD 474
 #define T_DEAF 475
 #define T_DEBUG 476
@@ -572,13 +573,14 @@
 #define HIDE_KILLER 517
 #define USE_REGEX_BANS 518
 #define USE_KNOCK 519
-#define USE_LOGGING 520
-#define USE_WHOIS_ACTUALLY 521
-#define VHOST 522
-#define VHOST6 523
-#define XLINE 524
-#define WARN 525
-#define WARN_NO_NLINE 526
+#define USE_NOCTCP 520
+#define USE_LOGGING 521
+#define USE_WHOIS_ACTUALLY 522
+#define VHOST 523
+#define VHOST6 524
+#define XLINE 525
+#define WARN 526
+#define WARN_NO_NLINE 527
 
 
 
@@ -596,7 +598,7 @@ typedef union YYSTYPE
 
 
 /* Line 1685 of yacc.c  */
-#line 600 "y.tab.h"
+#line 602 "y.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
