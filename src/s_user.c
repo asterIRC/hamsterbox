@@ -725,8 +725,6 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 			*prefix_ptr++ = '_';
 		if(IsExemptLimits(source_p))
 			*prefix_ptr++ = '>';
-		if(IsExemptDnsbl(source_p))
-			*prefix_ptr++ = '~';
 		if(IsIdlelined(source_p))
 			*prefix_ptr++ = '<';
 		if(IsCanFlood(source_p))
@@ -886,13 +884,6 @@ report_and_set_user_flags(struct Client *source_p, const struct AccessItem *acon
 		sendto_one(source_p,
 			   ":%s NOTICE %s :*** You are exempt from user limits. congrats.",
 			   me.name, source_p->name);
-	}
-
-	if (IsConfExemptDnsbl(aconf))
-	{
-		SetExemptDnsbl(source_p);
-		sendto_one(source_p, ":%s NOTICE %s :*** You are exempt from blacklist checking and have saved %d DNS queries. congrats.",
-			me.name, source_p->name, dnsbl_items.length);
 	}
 
 	/* If this user is exempt from idle time outs */
@@ -1689,7 +1680,7 @@ dnsbl_check(struct Client *cptr)
 	struct in_addr lookup_addr;
 	char reverse_ip[INET_ADDRSTRLEN];
 
-	if (!MyConnect(cptr) || IsExemptDnsbl(cptr) || cptr->localClient->ip.ss.ss_family != AF_INET)
+	if (!MyConnect(cptr) || cptr->localClient->ip.ss.ss_family != AF_INET)
 		return;
 
 	addr = (struct sockaddr_in *) &cptr->localClient->ip;

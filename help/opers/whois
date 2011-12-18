@@ -15,5 +15,4 @@ _ - Exempt from G lines.
 > - Exempt from user limits.
 < - Exempt from idle limits.
 | - Exempt from flood limits.
-~ - Exempt from dnsbl checks.
 

@@ -181,7 +181,6 @@ unhook_hub_leaf_confs(void)
 %token  DISABLE_LOCAL_CHANNELS
 %token  DISABLE_REMOTE_COMMANDS
 %token  DNSBL
-%token  DNSBL_EXEMPT
 %token  DOT_IN_IP6_ADDR
 %token  DOTS_IN_IDENT
 %token	DURATION
@@ -2173,13 +2172,6 @@ auth_flags_item_atom: SPOOF_NOTICE
   {
     if (not_atom) yy_aconf->flags &= ~CONF_FLAGS_EXEMPTRESV;
     else yy_aconf->flags |= CONF_FLAGS_EXEMPTRESV;
-  }
-} | DNSBL_EXEMPT
-{
-  if (ypass == 2)
-  {
-    if (not_atom) yy_aconf->flags &= ~CONF_FLAGS_EXEMPTDNSBL;
-    else yy_aconf->flags |= CONF_FLAGS_EXEMPTDNSBL;
   }
 } | IS_WEBIRC
 {

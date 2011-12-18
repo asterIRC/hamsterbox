@@ -851,8 +851,6 @@ show_iline_prefix(struct Client *sptr, struct AccessItem *aconf, const char *nam
 		*prefix_ptr++ = '_';
 	if(MyOper(sptr) && IsConfExemptLimits(aconf))
 		*prefix_ptr++ = '>';
-	if(MyOper(sptr) && IsConfExemptDnsbl(aconf))
-		*prefix_ptr++ = '~';
 	if(MyOper(sptr) && IsConfIdlelined(aconf))
 		*prefix_ptr++ = '<';
 	if(IsConfCanFlood(aconf))

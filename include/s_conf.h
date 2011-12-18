@@ -251,7 +251,6 @@ struct DnsblItem
 #define CONF_FLAGS_CAN_FLOOD            0x00100000
 #define CONF_FLAGS_NEED_PASSWORD        0x00200000
 #define CONF_FLAGS_WEBIRC	        0x02000000
-#define CONF_FLAGS_EXEMPTDNSBL          0x04000000
 /* server flags */
 #define CONF_FLAGS_ALLOW_AUTO_CONN      0x00004000
 #define CONF_FLAGS_LAZY_LINK            0x00008000
@@ -275,7 +274,6 @@ struct DnsblItem
 #define IsConfExemptLimits(x)   ((x)->flags & CONF_FLAGS_NOLIMIT)
 #define IsConfExemptGline(x)    ((x)->flags & CONF_FLAGS_EXEMPTGLINE)
 #define IsConfExemptResv(x)     ((x)->flags & CONF_FLAGS_EXEMPTRESV)
-#define IsConfExemptDnsbl(x)    ((x)->flags & CONF_FLAGS_EXEMPTDNSBL)
 #define IsConfIdlelined(x)      ((x)->flags & CONF_FLAGS_IDLE_LINED)
 #define IsConfDoIdentd(x)       ((x)->flags & CONF_FLAGS_DO_IDENTD)
 #define IsConfDoSpoofIp(x)      ((x)->flags & CONF_FLAGS_SPOOF_IP)

@@ -1,3 +1,26 @@
+Adam              2011/12/17 21:00:00    (20111217_1-529)
+
+  Log:
+- Removed dnsbl_exempt config option
+
+  Modified:
+	Modified : ChangeLog
+	Modified : etc/example.conf
+	Modified : etc/example.rizon.conf
+	Modified : help/opers/whois
+	Modified : include/client.h
+	Modified : include/s_conf.h
+	Modified : include/serno.h
+	Modified : modules/m_whois.c
+	Modified : src/hostmask.c
+	Modified : src/ircd_lexer.l
+	Modified : src/ircd_parser.y
+	Modified : src/lex.yy.c
+	Modified : src/s_serv.c
+	Modified : src/s_user.c
+	Modified : src/y.tab.c
+	Modified : src/y.tab.h
+
 Adam              2011/12/17 21:00:00    (20111217_0-529)
 
   Log:
