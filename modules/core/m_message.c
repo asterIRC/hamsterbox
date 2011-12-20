@@ -983,8 +983,9 @@ handle_special(int p_or_n, const char *command, struct Client *client_p,
 			{
 				if(!IsNetAdmin(source_p) && !IsServices(source_p))
 				{
-					sendto_one(source_p, form_str(ERR_NOPRIVILEGES),
-						   ID_or_name(&me, client_p), ID_or_name(source_p, client_p));
+					if(MyClient(source_p))
+						sendto_one(source_p, form_str(ERR_NOPRIVILEGES),
+							   ID_or_name(&me, client_p), ID_or_name(source_p, client_p));
 					return;
 				}
 			}
