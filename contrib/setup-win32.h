@@ -77,22 +77,22 @@
 #define HAVE_ERRNO_H 1
 
 /* Define to 1 if you have the `EVP_bf_cfb' function. */
-/* #undef HAVE_EVP_BF_CFB64 */
+/* #undef HAVE_EVP_BF_CFB */
 
 /* Define to 1 if you have the `EVP_cast5_cfb' function. */
-/* #undef HAVE_EVP_CAST5_CFB64 */
+/* #undef HAVE_EVP_CAST5_CFB */
 
 /* Define to 1 if you have the `EVP_des_cfb' function. */
-/* #undef HAVE_EVP_DES_CFB64 */
+/* #undef HAVE_EVP_DES_CFB */
 
 /* Define to 1 if you have the `EVP_des_ede3_cfb' function. */
-/* #undef HAVE_EVP_DES_EDE3_CFB64 */
+/* #undef HAVE_EVP_DES_EDE3_CFB */
 
 /* Define to 1 if you have the `EVP_idea_cfb' function. */
-/* #undef HAVE_EVP_IDEA_CFB64 */
+/* #undef HAVE_EVP_IDEA_CFB */
 
 /* Define to 1 if you have the `EVP_rc5_32_12_16_cfb' function. */
-/* #undef HAVE_EVP_RC5_32_12_16_CFB64 */
+/* #undef HAVE_EVP_RC5_32_12_16_CFB */
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 /* #undef HAVE_INTTYPES_H */

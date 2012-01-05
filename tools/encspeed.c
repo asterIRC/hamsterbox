@@ -83,7 +83,7 @@ int main(int argc, char * argv[]) {
     {
       case CIPHER_BF168:
         cipherstr = "Blowfish 168-bit";
-#ifdef HAVE_EVP_BF_CFB64
+#ifdef HAVE_EVP_BF_CFB
         cipher = EVP_bf_cfb();
         EVP_EncryptInit(&ctx, cipher, NULL, NULL);
         EVP_CIPHER_CTX_set_key_length(&ctx, 24);
@@ -93,7 +93,7 @@ int main(int argc, char * argv[]) {
         break;
       case CIPHER_BF128:
         cipherstr = "Blowfish 128-bit";
-#ifdef HAVE_EVP_BF_CFB64
+#ifdef HAVE_EVP_BF_CFB
         cipher = EVP_bf_cfb();
         EVP_EncryptInit(&ctx, cipher, NULL, NULL);
         EVP_CIPHER_CTX_set_key_length(&ctx, 16);
@@ -103,7 +103,7 @@ int main(int argc, char * argv[]) {
         break;
       case CIPHER_CAST128:
         cipherstr = "CAST 128-bit";
-#ifdef HAVE_EVP_CAST5_CFB64
+#ifdef HAVE_EVP_CAST5_CFB
         cipher = EVP_cast5_cfb();
         EVP_EncryptInit(&ctx, cipher, NULL, NULL);
         EVP_CIPHER_CTX_set_key_length(&ctx, 16);
@@ -113,7 +113,7 @@ int main(int argc, char * argv[]) {
         break;
       case CIPHER_IDEA128:
         cipherstr = "IDEA 128-bit";
-#ifdef HAVE_EVP_IDEA_CFB64
+#ifdef HAVE_EVP_IDEA_CFB
         cipher = EVP_idea_cfb();
         EVP_EncryptInit(&ctx, cipher, NULL, NULL);
         EVP_CIPHER_CTX_set_key_length(&ctx, 16);
@@ -123,7 +123,7 @@ int main(int argc, char * argv[]) {
         break;
       case CIPHER_DES56:
         cipherstr = "DES 56-bit";
-#ifdef HAVE_EVP_DES_CFB64
+#ifdef HAVE_EVP_DES_CFB
         cipher = EVP_des_cfb();
         EVP_EncryptInit(&ctx, cipher, NULL, NULL);
         EVP_CIPHER_CTX_set_key_length(&ctx, 8);
@@ -133,7 +133,7 @@ int main(int argc, char * argv[]) {
         break;
       case CIPHER_3DES168:
         cipherstr = "3DES 168-bit";
-#ifdef HAVE_EVP_DES_EDE3_CFB64
+#ifdef HAVE_EVP_DES_EDE3_CFB
         cipher = EVP_des_ede3_cfb();
         EVP_EncryptInit(&ctx, cipher, NULL, NULL);
         EVP_CIPHER_CTX_set_key_length(&ctx, 24);
@@ -143,7 +143,7 @@ int main(int argc, char * argv[]) {
         break;
       case CIPHER_RC58128:
         cipherstr = "RC5 8 round 128-bit";
-#ifdef HAVE_EVP_RC5_32_12_16_CFB64
+#ifdef HAVE_EVP_RC5_32_12_16_CFB
         cipher = EVP_rc5_32_12_16_cfb();
         EVP_EncryptInit(&ctx, cipher, NULL, NULL);
         EVP_CIPHER_CTX_set_key_length(&ctx, 8);
@@ -154,7 +154,7 @@ int main(int argc, char * argv[]) {
         break;
       case CIPHER_RC512128:
         cipherstr = "RC5 12 round 128-bit";
-#ifdef HAVE_EVP_RC5_32_12_16_CFB64
+#ifdef HAVE_EVP_RC5_32_12_16_CFB
         cipher = EVP_rc5_32_12_16_cfb();
         EVP_EncryptInit(&ctx, cipher, NULL, NULL);
         EVP_CIPHER_CTX_set_key_length(&ctx, 12);
@@ -165,7 +165,7 @@ int main(int argc, char * argv[]) {
         break;
       case CIPHER_RC516128:
         cipherstr = "RC5 16 round 128-bit";
-#ifdef HAVE_EVP_RC5_32_12_16_CFB64
+#ifdef HAVE_EVP_RC5_32_12_16_CFB
         cipher = EVP_rc5_32_12_16_cfb();
         EVP_EncryptInit(&ctx, cipher, NULL, NULL);
         EVP_CIPHER_CTX_set_key_length(&ctx, 16);
