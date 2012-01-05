@@ -551,18 +551,54 @@ if test "$cf_enable_openssl" != no; then
 		if test "$ac_cv_lib_crypto_RSA_free" = yes; then
 			LIBS="$LIBS -lcrypto"
 			cf_openssl_ciphers=''
+
 			AC_CHECK_FUNCS(EVP_bf_cfb,
-			cf_openssl_ciphers="${cf_openssl_ciphers}BF/168 BF/128 ")
+				cf_openssl_ciphers="${cf_openssl_ciphers}BF/168 BF/128 ",
+				AC_CHECK_FUNCS(EVP_bf_cfb64, [
+					AC_DEFINE(HAVE_EVP_BF_CFB)
+					cf_openssl_ciphers="${cf_openssl_ciphers}BF/168 BF/128 "
+				])
+			)
+
 			AC_CHECK_FUNCS(EVP_cast5_cfb,
-			cf_openssl_ciphers="${cf_openssl_ciphers}CAST/128 ")
+				cf_openssl_ciphers="${cf_openssl_ciphers}CAST/128 ",
+				AC_CHECK_FUNCS(EVP_cast5_cfb64, [
+					AC_DEFINE(HAVE_EVP_CAST5_CFB)
+					cf_openssl_ciphers="${cf_openssl_ciphers}CAST/128 "
+				])
+			)
+
 			AC_CHECK_FUNCS(EVP_idea_cfb,
-			cf_openssl_ciphers="${cf_openssl_ciphers}IDEA/128 ")
+				cf_openssl_ciphers="${cf_openssl_ciphers}IDEA/128 ",
+				AC_CHECK_FUNCS(EVP_idea_cfb64, [
+					AC_DEFINE(HAVE_EVP_IDEA_CFB)
+					cf_openssl_ciphers="${cf_openssl_ciphers}IDEA/128 "
+				])
+			)
+
 			AC_CHECK_FUNCS(EVP_rc5_32_12_16_cfb,
-			cf_openssl_ciphers="${cf_openssl_ciphers}RC5.16/128 RC5.12/128 RC5.8/128 ")
+				cf_openssl_ciphers="${cf_openssl_ciphers}RC5.16/128 RC5.12/128 RC5.8/128 ",
+				AC_CHECK_FUNCS(EVP_rc5_32_12_16_cfb64, [
+					AC_DEFINE(HAVE_EVP_RC5_32_12_16_CFB)
+					cf_openssl_ciphers="${cf_openssl_ciphers}RC5.16/128 RC5.12/128 RC5.8/128 "
+				])
+			)
+
 			AC_CHECK_FUNCS(EVP_des_ede3_cfb,
-			cf_openssl_ciphers="${cf_openssl_ciphers}3DES/168 ")
+				cf_openssl_ciphers="${cf_openssl_ciphers}3DES/168 ",
+				AC_CHECK_FUNCS(EVP_des_ede3_cfb64, [
+					AC_DEFINE(HAVE_EVP_DES_EDE3_CFB)
+					cf_openssl_ciphers="${cf_openssl_ciphers}3DES/168 "
+				])
+			)
+
 			AC_CHECK_FUNCS(EVP_des_cfb,
-			cf_openssl_ciphers="${cf_openssl_ciphers}DES/56 ")
+				cf_openssl_ciphers="${cf_openssl_ciphers}DES/56 ",
+				AC_CHECK_FUNCS(EVP_des_cfb64, [
+					AC_DEFINE(HAVE_EVP_DES_CFB)
+					cf_openssl_ciphers="${cf_openssl_ciphers}DES/56 "
+				])
+			)
 		fi
 		SSL_LIBS="$SSL_LIBS -lssl -lcrypto"
 		SSL_SRCS_ENABLE='$(SSL_SRCS)'
