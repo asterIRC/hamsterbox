@@ -26,6 +26,7 @@ struct DnsblInfo
 {
 	struct Client *cptr;
 	struct DNSQuery query;
+	dlink_node node;
 	char *dnsbl_host;
 	int duration;
 	char *reason;

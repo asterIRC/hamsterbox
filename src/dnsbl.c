@@ -49,7 +49,7 @@ dnsbl_callback(void *ptr, struct DNSReply *reply)
 
 	assert(MyClient(cptr));
 
-	dlinkFindDelete(&cptr->localClient->dnsbl_queries, dnsbl);
+	dlinkDelete(&dnsbl->node, &cptr->localClient->dnsbl_queries);
 
 	if (reply != NULL && dline == NULL)
 	{
@@ -172,7 +172,7 @@ start_dnsbl_lookup(struct Client *cptr)
 		struct DnsblInfo *info = MyMalloc(sizeof(struct DnsblInfo));
 		char host_buf[128];
 
-		dlinkAdd(info, make_dlink_node(), &cptr->localClient->dnsbl_queries);
+		dlinkAdd(info, &info->node, &cptr->localClient->dnsbl_queries);
 
 		ircsprintf(host_buf, "%s.%s", reverse_ip, conf->name);
 
