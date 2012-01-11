@@ -371,6 +371,7 @@ mo_unrkline(struct Client *client_p, struct Client *source_p, int parc, char *pa
 {
 	char *target_server = NULL;
 	char *user, *host;
+	struct AccessItem *aconf;
 
 	if(!IsAdmin(source_p) || !IsOperUnkline(source_p))
 	{
@@ -417,8 +418,10 @@ mo_unrkline(struct Client *client_p, struct Client *source_p, int parc, char *pa
 		return;
 	}
 
-	if(remove_conf_line(RKLINE_TYPE, source_p, user, host) > 0)
+	if((aconf = find_regexp_kline(user, host, NULL, 0)))
 	{
+		delete_conf_item(unmap_conf_item(aconf));
+		remove_conf_line(RKLINE_TYPE, source_p, user, host);
 		sendto_one(source_p, ":%s NOTICE %s :RK-Line for [%s@%s] is removed",
 			   me.name, source_p->name, user, host);
 		sendto_realops_flags(UMODE_ALL, L_ALL,
@@ -445,6 +448,7 @@ static void
 me_unrkline(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
 	const char *user = NULL, *host = NULL;
+	struct AccessItem *aconf;
 
 	if(parc != 4 || EmptyString(parv[3]))
 		return;
@@ -471,8 +475,10 @@ me_unrkline(struct Client *client_p, struct Client *source_p, int parc, char *pa
 			return;
 		}
 
-		if(remove_conf_line(RKLINE_TYPE, source_p, user, host) > 0)
+		if((aconf = find_regexp_kline(user, host, NULL, 0)))
 		{
+			delete_conf_item(unmap_conf_item(aconf));
+			remove_conf_line(RKLINE_TYPE, source_p, user, host);
 			sendto_one(source_p, ":%s NOTICE %s :RK-Line for [%s@%s] is removed",
 				   me.name, source_p->name, user, host);
 			sendto_realops_flags(UMODE_ALL, L_ALL,

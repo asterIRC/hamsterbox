@@ -690,18 +690,6 @@ remove_conf_line(ConfType type, struct Client *source_p, const char *pat1, const
 	else
 	{
 		(void) rename(temppath, filename);
-
-		/* XXX
-		 * This is a very inefficient way of removing a kline/xline etc.
-		 * This next function call forces a complete re-read of all conf
-		 * files, instead of a re-read of the kline/dline etc. files modified
-		 * But, consider how often an /quote unkline etc. is done compared
-		 * to how often a /quote kline is done. Its not a biggie in
-		 * the grand scheme of things. If it does become a biggie,
-		 * we will rewrite it - Dianora
-		 */
-
-		rehash(0);
 		return 1;
 	}
 }

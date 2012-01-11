@@ -110,7 +110,6 @@ const char *_version = "$Revision: 505 $";
 
 /* Local function prototypes */
 static int already_placed_kline(struct Client *, const char *, const char *, int);
-static void apply_kline(struct Client *, struct ConfItem *, const char *, time_t);
 static void apply_tkline(struct Client *, struct ConfItem *, int);
 
 static char buffer[IRCD_BUFSIZE];
@@ -207,7 +206,11 @@ mo_kline(struct Client *client_p, struct Client *source_p, int parc, char **parv
 
 		if(oper_reason != NULL)
 			DupString(aconf->oper_reason, oper_reason);
-		apply_kline(source_p, conf, current_date, cur_time);
+
+		add_conf_by_address(CONF_KILL, aconf);
+		write_conf_line(source_p, conf, current_date, cur_time);
+		/* Now, activate kline against current online clients */
+		rehashed_klines = 1;
 	}
 }
 
@@ -267,7 +270,11 @@ me_kline(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 
 			if(oper_reason != NULL)
 				DupString(aconf->oper_reason, oper_reason);
-			apply_kline(source_p, conf, current_date, cur_time);
+
+			add_conf_by_address(CONF_KILL, aconf);
+			write_conf_line(source_p, conf, current_date, cur_time);
+			/* Now, activate kline against current online clients */
+			rehashed_klines = 1;
 		}
 	}
 }
@@ -284,25 +291,6 @@ ms_kline(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 			   "KLINE %s %s %s %s :%s", parv[1], parv[2], parv[3], parv[4], parv[5]);
 
 	me_kline(client_p, source_p, parc, parv);
-}
-
-/* apply_kline()
- *
- * inputs	-
- * output	- NONE
- * side effects	- kline as given, is added to the hashtable
- *		  and conf file
- */
-static void
-apply_kline(struct Client *source_p, struct ConfItem *conf,
-	    const char *current_date, time_t cur_time)
-{
-	struct AccessItem *aconf = map_to_conf(conf);
-
-	add_conf_by_address(CONF_KILL, aconf);
-	write_conf_line(source_p, conf, current_date, cur_time);
-	/* Now, activate kline against current online clients */
-	rehashed_klines = 1;
 }
 
 /* apply_tkline()
@@ -608,11 +596,10 @@ mo_unkline(struct Client *client_p, struct Client *source_p, int parc, char *par
 				     get_oper_name(source_p), user, host);
 		ilog(L_NOTICE, "%s removed temporary K-Line for [%s@%s]",
 		     source_p->name, user, host);
-		return;
 	}
-
-	if(remove_conf_line(KLINE_TYPE, source_p, user, host) > 0)
+	else if(del_conf_by_address(CONF_KILL, user, host) > 0)
 	{
+		remove_conf_line(KLINE_TYPE, source_p, user, host);
 		sendto_one(source_p, ":%s NOTICE %s :K-Line for [%s@%s] is removed",
 			   me.name, source_p->name, user, host);
 		sendto_realops_flags(UMODE_ALL, L_ALL,
@@ -670,11 +657,10 @@ me_unkline(struct Client *client_p, struct Client *source_p, int parc, char *par
 			}
 			ilog(L_NOTICE, "%s removed temporary K-Line for [%s@%s]",
 			     source_p->name, kuser, khost);
-			return;
 		}
-
-		if(remove_conf_line(KLINE_TYPE, source_p, kuser, khost) > 0)
+		else if(del_conf_by_address(CONF_KILL, kuser, khost) > 0)
 		{
+			remove_conf_line(KLINE_TYPE, source_p, kuser, khost);
 			if(!services)
 			{
 				sendto_one(source_p, ":%s NOTICE %s :K-Line for [%s@%s] is removed",
@@ -811,11 +797,10 @@ mo_undline(struct Client *client_p, struct Client *source_p, int parc, char *par
 				     "%s has removed the temporary D-Line for: [%s]",
 				     get_oper_name(source_p), cidr);
 		ilog(L_NOTICE, "%s removed temporary D-Line for [%s]", source_p->name, cidr);
-		return;
 	}
-
-	if(remove_conf_line(DLINE_TYPE, source_p, cidr, NULL) > 0)
+	else if(del_conf_by_address(CONF_DLINE | 1, NULL, cidr) > 0)
 	{
+		remove_conf_line(DLINE_TYPE, source_p, cidr, NULL);
 		sendto_one(source_p, ":%s NOTICE %s :D-Line for [%s] is removed",
 			   me.name, source_p->name, cidr);
 		sendto_realops_flags(UMODE_ALL, L_ALL,

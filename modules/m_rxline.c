@@ -346,6 +346,8 @@ write_rxline(struct Client *source_p, const char *gecos, char *reason, time_t tk
 static void
 remove_xline(struct Client *source_p, char *gecos)
 {
+	struct ConfItem *conf;
+
 	/* XXX use common temporary un function later */
 	if(remove_txline(gecos))
 	{
@@ -359,8 +361,11 @@ remove_xline(struct Client *source_p, char *gecos)
 		return;
 	}
 
-	if(remove_conf_line(RXLINE_TYPE, source_p, gecos, NULL) > 0)
+	if ((conf = find_exact_name_conf(RXLINE_TYPE, gecos, NULL, NULL, NULL)))
 	{
+		delete_conf_item(conf);
+		remove_conf_line(RXLINE_TYPE, source_p, gecos, NULL);
+
 		sendto_one(source_p, ":%s NOTICE %s :RX-Line for [%s] is removed",
 			   me.name, source_p->name, gecos);
 		sendto_realops_flags(UMODE_ALL, L_ALL,

@@ -407,6 +407,7 @@ static void
 remove_xline(struct Client *source_p, char *gecos)
 {
 	int services = 0;
+	struct ConfItem *conf;
 
 	if(IsServices(source_p))
 		services = 1;
@@ -427,8 +428,11 @@ remove_xline(struct Client *source_p, char *gecos)
 		return;
 	}
 
-	if(remove_conf_line(XLINE_TYPE, source_p, gecos, NULL) > 0)
+	if ((conf = find_exact_name_conf(XLINE_TYPE, gecos, NULL, NULL, NULL)))
 	{
+		delete_conf_item(conf);
+		remove_conf_line(XLINE_TYPE, source_p, gecos, NULL);
+
 		if(!services)
 		{
 			sendto_one(source_p, ":%s NOTICE %s :X-Line for [%s] is removed",

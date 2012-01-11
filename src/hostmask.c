@@ -712,6 +712,55 @@ add_conf_by_address(int type, struct AccessItem *aconf)
 	arec->type = type;
 }
 
+int del_conf_by_address(int type, const char *username, const char *address)
+{
+	int masktype, bits;
+	struct irc_ssaddr addr;
+	unsigned long hv;
+	struct AddressRec *arec, *arec_prev;
+
+	if (!username)
+		username = "";
+	if (!address)
+		address = "";
+
+	masktype = parse_netmask(address, &addr, &bits);
+
+#ifdef IPV6
+	if (masktype == HM_IPV6)
+	{
+		bits -= bits % 16;
+		hv = hash_ipv6(&addr, bits);
+	}
+	else
+#endif
+	if (masktype == HM_IPV4)
+	{
+		bits -= bits % 8;
+		hv = hash_ipv4(&addr, bits);
+	}
+	else
+		hv = get_mask_hash(address);
+	
+	for (arec = atable[hv], arec_prev = NULL; arec; arec_prev = arec, arec = arec->next)
+		if (arec->type == (type & ~0x1) && (type & 0x1 || match(username, arec->aconf->user)) && match(address, arec->aconf->host))
+		{
+			if (arec_prev)
+				arec_prev->next = arec->next;
+			else
+				atable[hv] = arec->next;
+
+			SetConfIllegal(arec->aconf);
+
+			if (arec->aconf->clients == 0)
+				free_access_item(arec->aconf);
+			MyFree(arec);
+			return 1;
+		}
+	
+	return 0;
+}
+
 /* void delete_one_address(const char*, struct AccessItem*)
  * Input: An address string, the associated AccessItem.
  * Output: None

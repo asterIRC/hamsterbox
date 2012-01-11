@@ -106,7 +106,6 @@ static int attach_iline(struct Client *, struct ConfItem *);
 static struct ip_entry *find_or_add_ip(struct irc_ssaddr *);
 static void parse_conf_file(int, int);
 static dlink_list *map_to_list(ConfType);
-static struct AccessItem *find_regexp_kline(const char *[]);
 static int find_user_host(struct Client *, char *, char *, char *, unsigned int);
 
 /*
@@ -979,7 +978,6 @@ verify_access(struct Client *client_p, const char *username)
 	struct AccessItem *aconf = NULL, *rkconf = NULL;
 	struct ConfItem *conf = NULL;
 	char non_ident[USERLEN + 1] = { '~', '\0' };
-	const char *uhi[3];
 
 	if(IsGotId(client_p))
 	{
@@ -1007,11 +1005,7 @@ verify_access(struct Client *client_p, const char *username)
 #endif
 	}
 
-	uhi[0] = IsGotId(client_p) ? client_p->username : non_ident;
-	uhi[1] = client_p->host;
-	uhi[2] = client_p->sockhost;
-
-	rkconf = find_regexp_kline(uhi);
+	rkconf = find_regexp_kline(IsGotId(client_p) ? client_p->username : non_ident, client_p->host, client_p->sockhost, 1);
 
 	if(aconf != NULL)
 	{
@@ -2143,10 +2137,17 @@ conf_connect_allowed(struct irc_ssaddr *addr, int aftype)
 	return 0;
 }
 
-static struct AccessItem *
-find_regexp_kline(const char *uhi[])
+struct AccessItem *
+find_regexp_kline(const char *username, const char *realhost, const char *sockhost, int regex)
 {
 	const dlink_node *ptr = NULL;
+
+	if (!username)
+		username = "";
+	if (!realhost)
+		realhost = "";
+	if (!sockhost)
+		sockhost = "";
 
 	DLINK_FOREACH(ptr, rkconf_items.head)
 	{
@@ -2155,10 +2156,21 @@ find_regexp_kline(const char *uhi[])
 		assert(aptr->regexuser);
 		assert(aptr->regexhost);
 
-		if(!ircd_pcre_exec(aptr->regexuser, uhi[0]) &&
-		   (!ircd_pcre_exec(aptr->regexhost, uhi[1]) ||
-		    !ircd_pcre_exec(aptr->regexhost, uhi[2])))
-			return aptr;
+		if (regex)
+		{
+			if(!ircd_pcre_exec(aptr->regexuser, username) &&
+				(!ircd_pcre_exec(aptr->regexhost, realhost) ||
+				!ircd_pcre_exec(aptr->regexhost, sockhost)))
+					return aptr;
+		}
+		else
+		{
+			if(!strcmp(aptr->user, username) &&
+				(!strcmp(aptr->host, realhost) ||
+				!strcmp(aptr->host, sockhost)))
+					return aptr;
+		}
+
 	}
 
 	return NULL;
@@ -2175,11 +2187,6 @@ struct AccessItem *
 find_kill(struct Client *client_p)
 {
 	struct AccessItem *aconf = NULL;
-	const char *uhi[3];
-
-	uhi[0] = client_p->username;
-	uhi[1] = client_p->realhost;
-	uhi[2] = client_p->sockhost;
 
 	assert(client_p != NULL);
 
@@ -2192,7 +2199,7 @@ find_kill(struct Client *client_p)
 					&client_p->localClient->ip,
 					client_p->localClient->aftype);
 	if(aconf == NULL)
-		aconf = find_regexp_kline(uhi);
+		aconf = find_regexp_kline(client_p->username, client_p->realhost, client_p->sockhost, 1);
 
 	if(aconf && (aconf->status & CONF_KLINE))
 		return aconf;

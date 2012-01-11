@@ -1,3 +1,21 @@
+Adam              2012/01/10 23:00:00    (20120110_1-530)
+
+  Log:
+- Fixed remove_conf_line from using this horrible rehash hack
+
+  Modified:
+	Modified : ChangeLog
+	Modified : include/hostmask.h
+	Modified : include/s_conf.h
+	Modified : include/serno.h
+	Modified : modules/m_kline.c
+	Modified : modules/m_rkline.c
+	Modified : modules/m_rxline.c
+	Modified : modules/m_xline.c
+	Modified : src/csvlib.c
+	Modified : src/hostmask.c
+	Modified : src/s_conf.c
+
 Adam              2011/12/20 19:00:00    (20111220_0-530)
 
   Log:

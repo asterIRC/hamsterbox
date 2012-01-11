@@ -47,6 +47,7 @@ extern void mask_addr(struct irc_ssaddr *, int);
 extern int parse_netmask(const char *, struct irc_ssaddr *, int *);
 
 extern void add_conf_by_address(int, struct AccessItem *);
+extern int del_conf_by_address(int, const char *, const char *);
 extern void delete_one_address_conf(const char *, struct AccessItem *);
 extern void clear_out_address_conf(void);
 extern void init_host_hash(void);
