@@ -740,7 +740,7 @@ stats_deny(struct Client *source_p)
 
 				sendto_one(source_p, form_str(RPL_STATSDLINE),
 					   from, to, 'D', aconf->host, aconf->reason,
-					   aconf->oper_reason);
+					   aconf->oper_reason ? aconf->oper_reason : "");
 			}
 		}
 	}
@@ -814,7 +814,7 @@ stats_exempt(struct Client *source_p)
 
 				sendto_one(source_p, form_str(RPL_STATSDLINE),
 					   from, to, 'e', aconf->host,
-					   aconf->reason, aconf->oper_reason);
+					   aconf->reason, aconf->oper_reason ? aconf->oper_reason : "");
 			}
 		}
 	}
@@ -1070,7 +1070,7 @@ stats_klines(struct Client *source_p)
 			return;
 
 		sendto_one(source_p, form_str(RPL_STATSKLINE), from,
-			   to, "K", aconf->host, aconf->user, aconf->reason, aconf->oper_reason);
+			   to, "K", aconf->host, aconf->user, aconf->reason, aconf->oper_reason ? aconf->oper_reason : "");
 	}
 	/* Theyre opered, or allowed to see all klines */
 	else
