@@ -206,12 +206,11 @@ clear_dnsbl_lookup(struct Client *cptr)
 		struct DnsblInfo *info = (struct DnsblInfo *) ptr->data;
 
 		delete_resolver_queries(&info->query);
+		dlinkDelete(ptr, &cptr->localClient->dnsbl_queries);
 
 		MyFree(info->dnsbl_host);
 		MyFree(info->reason);
 		MyFree(info);
-
-		dlinkDelete(ptr, &cptr->localClient->dnsbl_queries);
 	}
 
 	cptr->localClient->registration &= ~REG_NEED_DNSBL;
