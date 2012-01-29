@@ -377,7 +377,6 @@ accept_connection(fde_t * pfd, void *data)
 	static time_t last_oper_notice = 0;
 	struct irc_ssaddr addr;
 	int fd;
-	int pe;
 	struct Listener *listener = data;
 	const char *reason;
 
@@ -431,13 +430,11 @@ accept_connection(fde_t * pfd, void *data)
 		 * Do an initial check we aren't connecting too fast or with too many
 		 * from this IP...
 		 */
-		if((pe = conf_connect_allowed(&addr, addr.ss.ss_family, &reason)) != 0)
+		if(conf_connect_allowed(&addr, addr.ss.ss_family, &reason) != 0)
 		{
 			++ServerStats->is_ref;
-			if(!(listener->flags & LISTENER_SSL))
+			if(!(listener->flags & LISTENER_SSL) && reason)
 			{
-				if (!reason || !*reason)
-					reason = "You have been D-lined.";
 				send(fd, "ERROR :", 7, 0);
 				send(fd, reason, strlen(reason), 0);
 				send(fd, "\r\n", 2, 0);

@@ -2126,7 +2126,7 @@ conf_connect_allowed(struct irc_ssaddr *addr, int aftype, const char **reason)
 
 	if(aconf != NULL)
 	{
-		*reason = aconf->reason;
+		*reason = aconf->reason ? aconf->reason : "You have been D-lined.";
 		return BANNED_CLIENT;
 	}
 
