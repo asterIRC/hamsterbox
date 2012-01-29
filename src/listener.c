@@ -371,9 +371,6 @@ close_listeners(void)
 	DLINK_FOREACH_SAFE(ptr, next_ptr, ListenerPollList.head) close_listener(ptr->data);
 }
 
-#define TOOFAST_WARNING "ERROR :Trying to reconnect too fast.\r\n"
-#define DLINE_WARNING "ERROR :You have been D-lined.\r\n"
-
 static void
 accept_connection(fde_t * pfd, void *data)
 {
@@ -382,6 +379,7 @@ accept_connection(fde_t * pfd, void *data)
 	int fd;
 	int pe;
 	struct Listener *listener = data;
+	const char *reason;
 
 	memset(&addr, 0, sizeof(addr));
 
@@ -433,19 +431,17 @@ accept_connection(fde_t * pfd, void *data)
 		 * Do an initial check we aren't connecting too fast or with too many
 		 * from this IP...
 		 */
-		if((pe = conf_connect_allowed(&addr, addr.ss.ss_family)) != 0)
+		if((pe = conf_connect_allowed(&addr, addr.ss.ss_family, &reason)) != 0)
 		{
 			++ServerStats->is_ref;
 			if(!(listener->flags & LISTENER_SSL))
-				switch (pe)
-				{
-				case BANNED_CLIENT:
-					send(fd, DLINE_WARNING, sizeof(DLINE_WARNING) - 1, 0);
-					break;
-				case TOO_FAST:
-					send(fd, TOOFAST_WARNING, sizeof(TOOFAST_WARNING) - 1, 0);
-					break;
-				}
+			{
+				if (!reason || !*reason)
+					reason = "You have been D-lined.";
+				send(fd, "ERROR :", 7, 0);
+				send(fd, reason, strlen(reason), 0);
+				send(fd, "\r\n", 2, 0);
+			}
 
 #ifdef _WIN32
 			closesocket(fd);

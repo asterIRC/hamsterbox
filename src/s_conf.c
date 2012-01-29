@@ -2113,22 +2113,28 @@ lookup_confhost(struct ConfItem *conf)
  * side effects	- none
  */
 int
-conf_connect_allowed(struct irc_ssaddr *addr, int aftype)
+conf_connect_allowed(struct irc_ssaddr *addr, int aftype, const char **reason)
 {
 	struct ip_entry *ip_found;
 	struct AccessItem *aconf = find_dline_conf(addr, aftype);
+
+	*reason = NULL;
 
 	/* DLINE exempt also gets you out of static limits/pacing... */
 	if(aconf && (aconf->status & CONF_EXEMPTDLINE))
 		return 0;
 
 	if(aconf != NULL)
+	{
+		*reason = aconf->reason;
 		return BANNED_CLIENT;
+	}
 
 	ip_found = find_or_add_ip(addr);
 
 	if((CurrentTime - ip_found->last_attempt) < ConfigFileEntry.throttle_time)
 	{
+		*reason = "Trying to reconnect too fast.";
 		ip_found->last_attempt = CurrentTime;
 		return TOO_FAST;
 	}

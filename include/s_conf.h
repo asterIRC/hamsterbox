@@ -539,7 +539,7 @@ extern struct ConfItem *find_conf_exact(ConfType, const char *, const char *, co
 extern struct AccessItem *find_regexp_kline(const char *, const char *, const char *, int);
 extern struct AccessItem *find_kill(struct Client *);
 extern struct AccessItem *find_gline(struct Client *);
-extern int conf_connect_allowed(struct irc_ssaddr *, int);
+extern int conf_connect_allowed(struct irc_ssaddr *, int, const char **);
 extern char *oper_privs_as_string(const unsigned int);
 extern void split_nuh(struct split_nuh_item *);
 extern struct ConfItem *find_matching_name_conf(ConfType, const char *,
