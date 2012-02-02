@@ -1,3 +1,14 @@
+Adam              2012/02/02 14:00:00    (20120202_0-532)
+
+  Log:
+- Fixed an error reported by valgrind caused by read_auth_reply freeing its fde_t while s_bsd_* is using it.
+
+  Modified:
+	Modified : ChangeLog
+	Modified : include/s_auth.h
+	Modified : include/serno.h
+	Modified : src/s_auth.c
+
 Adam              2012/01/11 01:00:00    (20120111_0-531)
 
   Log:

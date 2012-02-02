@@ -89,6 +89,9 @@ enum
 static dlink_list auth_doing_dns_list = { NULL, NULL, 0 };
 static dlink_list auth_doing_ident_list = { NULL, NULL, 0 };
 
+/* We can't free AuthRequest in read_auth_reply as the underlying socket engine relies on auth->fd */
+static dlink_list dead_auth_list = { NULL, NULL, 0 };
+
 static EVH timeout_auth_queries_event;
 
 static PF read_auth_reply;
@@ -123,18 +126,19 @@ make_auth_request(struct Client *client)
 }
 
 /*
- * release_auth_client - release auth client from auth system
+ * release_auth - release auth from auth system
  * this adds the client into the local client lists so it can be read by
  * the main io processing loop
  */
-void
-release_auth_client(struct Client *client)
+static void
+release_auth(struct AuthRequest *auth)
 {
 	/*
 	 * When a client has auth'ed, we want to start reading what it sends
 	 * us. This is what read_packet() does.
 	 *     -- adrian
 	 */
+	struct Client *client = auth->client;
 	client->localClient->allow_read = MAX_FLOOD;
 	comm_setflush(&client->localClient->fd, 1000, flood_recalc, client);
 
@@ -153,6 +157,8 @@ release_auth_client(struct Client *client)
 	client->flags |= FLAGS_FINISHED_AUTH;
 
 	read_packet(&client->localClient->fd, client);
+
+	dlinkAdd(auth, &auth->dead_node, &dead_auth_list);
 }
 
 /*
@@ -217,11 +223,7 @@ auth_dns_callback(void *vptr, struct DNSReply *reply)
 	auth->client->localClient->dns_query = NULL;
 
 	if(!IsDoingAuth(auth))
-	{
-		struct Client *client_p = auth->client;
-		MyFree(auth);
-		release_auth_client(client_p);
-	}
+		release_auth(auth);
 }
 
 /*
@@ -240,10 +242,7 @@ auth_error(struct AuthRequest *auth)
 	sendheader(auth->client, REPORT_FAIL_ID);
 
 	if(!IsDNSPending(auth) && !IsCrit(auth))
-	{
-		release_auth_client(auth->client);
-		MyFree(auth);
-	}
+		release_auth(auth);
 }
 
 /*
@@ -460,9 +459,15 @@ timeout_auth_queries_event(void *notused)
 			ilog(L_INFO, "DNS/AUTH timeout %s", get_client_name(auth->client, SHOW_IP));
 
 			dlinkDelete(&auth->ident_node, &auth_doing_ident_list);
-			release_auth_client(auth->client);
-			MyFree(auth);
+			release_auth(auth);
 		}
+	}
+
+	DLINK_FOREACH_SAFE(ptr, next_ptr, dead_auth_list.head)
+	{
+		auth = ptr->data;
+		dlinkDelete(&auth->dead_node, &dead_auth_list);
+		MyFree(auth);
 	}
 }
 
@@ -628,10 +633,7 @@ read_auth_reply(fde_t * fd, void *data)
 	}
 
 	if(!IsDNSPending(auth) && !IsCrit(auth))
-	{
-		release_auth_client(auth->client);
-		MyFree(auth);
-	}
+		release_auth(auth);
 }
 
 /*
