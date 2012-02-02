@@ -181,8 +181,6 @@ free_client(struct Client *client_p)
 		dbuf_clear(&client_p->localClient->buf_recvq);
 		dbuf_clear(&client_p->localClient->buf_sendq);
 
-		clear_dnsbl_lookup(client_p);
-
 		BlockHeapFree(lclient_heap, client_p->localClient);
 	}
 
@@ -961,6 +959,8 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
 			remove_one_ip(&source_p->localClient->ip);
 
 		delete_auth(source_p);
+
+		clear_dnsbl_lookup(source_p);
 
 		/* This source_p could have status of one of STAT_UNKNOWN, STAT_CONNECTING
 		 * STAT_HANDSHAKE or STAT_UNKNOWN
