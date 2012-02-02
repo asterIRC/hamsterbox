@@ -47,7 +47,7 @@ dnsbl_callback(void *ptr, struct DNSReply *reply)
 	struct Client *cptr = dnsbl->cptr;
 	struct AccessItem *dline = find_conf_by_address(cptr->sockhost, &cptr->localClient->ip, CONF_DLINE | 1, AF_INET, NULL, NULL, NULL);
 
-	assert(MyClient(cptr));
+	assert(MyConnect(cptr));
 
 	dlinkDelete(&dnsbl->node, &cptr->localClient->dnsbl_queries);
 
@@ -87,7 +87,7 @@ dnsbl_callback(void *ptr, struct DNSReply *reply)
 					}
 					else if (dnsbl->reason[i] == '%' && dnsbl->reason[i + 1] == 'c')
 					{
-						reason_buffer[written++] += result + 48;
+						reason_buffer[written++] = result + 48;
 						++i;
 					}
 					else

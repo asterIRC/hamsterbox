@@ -685,7 +685,9 @@ count_memory(struct Client *source_p)
 		   me.name, RPL_STATSDEBUG, source_p->name, remote_client_count,
 		   remote_client_memory_used);
 
+#ifndef NOBALLOC
 	block_heap_report_stats(source_p);
+#endif
 
 	sendto_one(source_p,
 		   ":%s %d %s z :TOTAL: %d Available:  Current max RSS: %lu",
