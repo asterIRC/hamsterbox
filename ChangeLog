@@ -1,3 +1,23 @@
+Adam              2012/02/06 15:00:00    (20120206_0-533)
+
+  Log:
+- Fixed potentially corrupting our DNS query list caused by read_packet being
+able to call clear_dnsbl_lookup via either m_webirc or having an error on read
+when called from release_auth when having an auth DNS query timeout after IDENT
+lookup is done/timed out when the next query in list is an open dnsbl lookup for the
+same client.
+
+Also added in more assertions.
+
+Bump to 533.
+
+  Modified:
+	Modified : ChangeLog
+	Modified : include/serno.h
+	Modified : src/dnsbl.c
+	Modified L src/irc_res.c
+	Modified : src/s_auth.c
+
 Adam              2012/02/02 14:00:00    (20120202_0-532)
 
   Log:

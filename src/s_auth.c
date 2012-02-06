@@ -133,11 +133,6 @@ make_auth_request(struct Client *client)
 static void
 release_auth(struct AuthRequest *auth)
 {
-	/*
-	 * When a client has auth'ed, we want to start reading what it sends
-	 * us. This is what read_packet() does.
-	 *     -- adrian
-	 */
 	struct Client *client = auth->client;
 	client->localClient->allow_read = MAX_FLOOD;
 	comm_setflush(&client->localClient->fd, 1000, flood_recalc, client);
@@ -156,7 +151,15 @@ release_auth(struct AuthRequest *auth)
 	client->since = client->lasttime = client->firsttime = CurrentTime;
 	client->flags |= FLAGS_FINISHED_AUTH;
 
-	read_packet(&client->localClient->fd, client);
+	/*
+	 * Use comm_setselect to register the client for reads as they are finished with auth.
+	 * Do *NOT* call read_packet here to register the user. We *can* be here due to a DNS
+	 * query timeout (iterating over timeout_query_list), and read_packet can call commands
+	 * that can modify this query list, such as WEBIRC! This was a source of painful problems.
+	 *
+	 *  - Adam
+	 */
+	comm_setselect(&client->localClient->fd, COMM_SELECT_READ, read_packet, client, 0);
 
 	dlinkAdd(auth, &auth->dead_node, &dead_auth_list);
 }

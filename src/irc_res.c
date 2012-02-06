@@ -302,6 +302,7 @@ add_local_domain(char *hname, size_t size)
 static void
 rem_request(struct reslist *request)
 {
+	assert(dlinkFind(&request_list, request));
 	dlinkDelete(&request->node, &request_list);
 	MyFree(request->name);
 	MyFree(request);

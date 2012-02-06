@@ -45,9 +45,11 @@ dnsbl_callback(void *ptr, struct DNSReply *reply)
 {
 	struct DnsblInfo *dnsbl = (struct DnsblInfo *) ptr;
 	struct Client *cptr = dnsbl->cptr;
-	struct AccessItem *dline = find_conf_by_address(cptr->sockhost, &cptr->localClient->ip, CONF_DLINE | 1, AF_INET, NULL, NULL, NULL);
+	struct AccessItem *dline;
 
 	assert(MyConnect(cptr));
+
+	dline = find_conf_by_address(cptr->sockhost, &cptr->localClient->ip, CONF_DLINE | 1, AF_INET, NULL, NULL, NULL);
 
 	dlinkDelete(&dnsbl->node, &cptr->localClient->dnsbl_queries);
 
@@ -149,7 +151,9 @@ start_dnsbl_lookup(struct Client *cptr)
 	char reverse_ip[INET_ADDRSTRLEN];
 	dlink_node *ptr;
 
-	if (!MyConnect(cptr) || cptr->localClient->ip.ss.ss_family != AF_INET)
+	assert(MyConnect(cptr));
+
+	if (cptr->localClient->ip.ss.ss_family != AF_INET)
 		return;
 	else if (dnsbl_items.length == 0)
 		return;
@@ -198,8 +202,7 @@ clear_dnsbl_lookup(struct Client *cptr)
 {
 	dlink_node *ptr, *nexptr;
 
-	if (!MyConnect(cptr))
-		return;
+	assert(MyConnect(cptr));
 
 	DLINK_FOREACH_SAFE(ptr, nexptr, cptr->localClient->dnsbl_queries.head)
 	{
