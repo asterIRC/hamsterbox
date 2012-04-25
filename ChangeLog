@@ -1,3 +1,13 @@
+Adam              2012/04/24 22:00:00    (20120424_0-533)
+
+  Log:
+- Fixed generating cloaks for IPv6 addresses that have a double colon.
+
+  Modified:
+	Modified : ChangeLog
+	Modified : include/serno.h
+	Modified : src/cloak.c
+
 Adam              2012/02/06 15:00:00    (20120206_0-533)
 
   Log:
@@ -15,7 +25,7 @@ Bump to 533.
 	Modified : ChangeLog
 	Modified : include/serno.h
 	Modified : src/dnsbl.c
-	Modified L src/irc_res.c
+	Modified : src/irc_res.c
 	Modified : src/s_auth.c
 
 Adam              2012/02/02 14:00:00    (20120202_0-532)

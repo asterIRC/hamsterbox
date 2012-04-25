@@ -267,6 +267,12 @@ hidehost_ipv6(char *host)
 	 * BETA  = downsample(md5(md5("KEY3:a:b:c:d:e:f:g:KEY1")+"KEY2"));
 	 * GAMMA = downsample(md5(md5("KEY1:a:b:c:d:KEY2")+"KEY3"));
 	 */
+
+	/* Hosts may contain :: and not match %x:%x:%x:%x:%x:%x:%x:%x, so initialize these
+	 * or we generate the cloak from uninitialized values!
+	 */
+	a = b = c = d = e = f = g = h = 0;
+
 	sscanf(host, "%x:%x:%x:%x:%x:%x:%x:%x", &a, &b, &c, &d, &e, &f, &g, &h);
 
 	/* ALPHA... */
