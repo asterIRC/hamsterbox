@@ -308,7 +308,7 @@ channel
 	use_invex = yes;
 	use_except = yes;
 	use_knock = yes;
-	use_noctcp = no;
+	use_noctcp = yes;
 	knock_delay = 5 minutes;
 	knock_delay_channel = 1 minute;
 	burst_topicwho = yes;
