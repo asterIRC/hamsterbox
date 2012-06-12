@@ -976,7 +976,7 @@ me_su(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
 	struct Client *target_p = NULL;
 
-	if(!IsServer(source_p) || !IsServices(source_p)) 
+	if(!IsServer(source_p))
 		return;
 
 	if(parc < 2)
