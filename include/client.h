@@ -112,7 +112,7 @@ struct Client
 	unsigned long connect_id;	/* unique connection ID */
 	unsigned int umodes;	/* opers, normal users subset */
 	uint64_t flags;		/* client flags */
-	unsigned int servicestamp;	/* services stamp (set via SVSMODE +d) */
+	char services_stamp[NICKLEN + 1]; /* services stamp (set via SVSMODE +d) */
 
 	unsigned short hopcount;	/* number of servers to this 0 = local */
 	unsigned short status;	/* Client type */

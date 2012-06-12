@@ -477,7 +477,8 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 	if(IsDead(source_p))
 		return;
 
-	source_p->servicestamp = 0;
+	source_p->services_stamp[0] = '\0';
+	source_p->suser[0] = '\0';
 
 #ifdef HAVE_LIBCRYPTO
 	if(source_p->localClient->fd.ssl != NULL)
@@ -504,7 +505,7 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 			sendto_realops_flags(UMODE_ALL, L_ALL, "New Max Local Clients: %d",
 					     Count.max_loc);
 	}
-	source_p->suser[0] = '\0';
+
 	SetClient(source_p);
 
 	source_p->servptr = &me;
@@ -662,22 +663,22 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 	{
 		if(IsCapable(uplink, CAP_TS6) && HasID(source_p))
 		{
-			sendto_one(uplink, ":%s UID %s %d %lu %s %s %s %s %s %lu %s :%s",
+			sendto_one(uplink, ":%s UID %s %d %lu %s %s %s %s %s %s %s :%s",
 				   source_p->servptr->id,
 				   source_p->name, source_p->hopcount + 1,
 				   (unsigned long) source_p->tsinfo,
 				   ubuf, source_p->username, source_p->host,
 				   IsIPSpoof(source_p) ? "0" : source_p->sockhost,
-				   source_p->id, (unsigned long) source_p->servicestamp,
+				   source_p->id, EmptyString(source_p->services_stamp) ? "0" : source_p->services_stamp,
 				   source_p->realhost, source_p->info);
 		}
 		else
 		{
-			sendto_one(uplink, "NICK %s %d %lu %s %s %s %s %lu %s :%s",
+			sendto_one(uplink, "NICK %s %d %lu %s %s %s %s %s %s :%s",
 				   source_p->name, source_p->hopcount + 1,
 				   (unsigned long) source_p->tsinfo,
 				   ubuf, source_p->username, source_p->host,
-				   source_p->servptr->name, (unsigned long) source_p->servicestamp,
+				   source_p->servptr->name, EmptyString(source_p->services_stamp) ? "0" : source_p->services_stamp,
 				   source_p->realhost, source_p->info);
 		}
 	}
@@ -691,21 +692,21 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 				continue;
 
 			if(IsCapable(server, CAP_TS6) && HasID(source_p))
-				sendto_one(server, ":%s UID %s %d %lu %s %s %s %s %s %lu %s :%s",
+				sendto_one(server, ":%s UID %s %d %lu %s %s %s %s %s %s %s :%s",
 					   source_p->servptr->id,
 					   source_p->name, source_p->hopcount + 1,
 					   (unsigned long) source_p->tsinfo,
 					   ubuf, source_p->username, source_p->host,
 					   IsIPSpoof(source_p) ? "0" : source_p->sockhost,
-					   source_p->id, (unsigned long) source_p->servicestamp,
+					   source_p->id, EmptyString(source_p->services_stamp) ? "0" : source_p->services_stamp,
 					   source_p->realhost, source_p->info);
 			else
-				sendto_one(server, "NICK %s %d %lu %s %s %s %s %lu %s :%s",
+				sendto_one(server, "NICK %s %d %lu %s %s %s %s %s %s :%s",
 					   source_p->name, source_p->hopcount + 1,
 					   (unsigned long) source_p->tsinfo,
 					   ubuf, source_p->username, source_p->host,
 					   source_p->servptr->name,
-					   (unsigned long) source_p->servicestamp,
+					   EmptyString(source_p->services_stamp) ? "0" : source_p->services_stamp,
 					   source_p->realhost, source_p->info);
 		}
 	}

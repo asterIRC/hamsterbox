@@ -885,20 +885,20 @@ sendnick_TS(struct Client *client_p, struct Client *target_p)
 
 	/* XXX Both of these need to have a :me.name or :mySID!?!?! */
 	if(HasID(target_p) && IsCapable(client_p, CAP_TS6))
-		sendto_one(client_p, ":%s UID %s %d %lu %s %s %s %s %s %lu %s :%s",
+		sendto_one(client_p, ":%s UID %s %d %lu %s %s %s %s %s %s %s :%s",
 			   target_p->servptr->id,
 			   target_p->name, target_p->hopcount + 1,
 			   (unsigned long) target_p->tsinfo,
 			   ubuf, target_p->username, target_p->host,
 			   IsIPSpoof(target_p) ? "0" : target_p->sockhost, target_p->id,
-			   (unsigned long) target_p->servicestamp, target_p->realhost,
+			   EmptyString(target_p->services_stamp) ? "0" : target_p->services_stamp, target_p->realhost,
 			   target_p->info);
 	else
-		sendto_one(client_p, "NICK %s %d %lu %s %s %s %s %lu %s :%s",
+		sendto_one(client_p, "NICK %s %d %lu %s %s %s %s %s %s :%s",
 			   target_p->name, target_p->hopcount + 1,
 			   (unsigned long) target_p->tsinfo,
 			   ubuf, target_p->username, target_p->host,
-			   target_p->servptr->name, (unsigned long) target_p->servicestamp,
+			   target_p->servptr->name, EmptyString(target_p->services_stamp) ? "0" : target_p->services_stamp,
 			   target_p->realhost, target_p->info);
 	if(IsConfAwayBurst((struct AccessItem *) map_to_conf(client_p->serv->sconf)))
 		if(!EmptyString(target_p->away))

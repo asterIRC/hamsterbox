@@ -326,8 +326,8 @@ me_svsmode(struct Client *client_p, struct Client *source_p, int parc, char *par
 				break;
 
 			case 'd':
-				if(optarg && IsDigit(*optarg))
-					target_p->servicestamp = strtoul(optarg, NULL, 0);
+				if(optarg)
+					strlcpy(target_p->services_stamp, optarg, sizeof(target_p->services_stamp));
 				break;
 
 			case 'o':
