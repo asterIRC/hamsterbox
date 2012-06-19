@@ -1,3 +1,12 @@
+Adam              2012/06/19 00:00:00    (20120619_0-534)
+
+  Log:
+- Log module loads, unloads, reloads, and restarts
+- Removed m_bopm
+- Add user mode +F (far connects) for BOPM
+- Allow non numeric services stamps. Will eventually allow switching
+completely over to suser and removing services stamp
+
 Adam              2012/04/24 22:00:00    (20120424_0-533)
 
   Log:
