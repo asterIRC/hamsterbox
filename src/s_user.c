@@ -101,7 +101,7 @@ unsigned int user_modes[256] =
   UMODE_NOCTCP,       /* C */
   UMODE_DEAF,         /* D */
   0,                  /* E */
-  0,                  /* F */
+  UMODE_FARCONNECT,   /* F */
   UMODE_SOFTCALLERID, /* G */
   0,                  /* H */
   0,                  /* I */
@@ -612,6 +612,12 @@ register_remote_user(struct Client *client_p, struct Client *source_p,
 	/* If the client is on a services server mark it as a services client - ThaPrince */
 	if(IsServices(source_p->servptr))
 		SetServices(source_p);
+
+	sendto_realops_flags(UMODE_FARCONNECT, L_ALL,
+			     "Client connecting from %s: %s (%s@%s) [%s] [%s]",
+			     source_p->servptr->name, source_p->name, source_p->username, source_p->realhost,
+			     (EmptyString(source_p->sockhost) || !strcmp("0", source_p->sockhost)) ? "255.255.255.255" : source_p->sockhost,
+			     source_p->info);
 
 	introduce_client(client_p, source_p);
 }
@@ -1193,6 +1199,14 @@ set_user_mode(struct Client *client_p, struct Client *source_p, int parc, char *
 		sendto_one(source_p, ":%s NOTICE %s :*** You have no admin flag;",
 			   me.name, source_p->name);
 		source_p->umodes &= ~(UMODE_ADMIN);
+	}
+
+	if(MyConnect(source_p) && (source_p->umodes & UMODE_FARCONNECT) &&
+	   !IsOperFarConnect(source_p))
+	{
+		sendto_one(source_p, ":%s NOTICE %s :*** You have no admin flag;",
+			   me.name, source_p->name);
+		source_p->umodes &= ~UMODE_FARCONNECT;
 	}
 
 	if(!(setflags & UMODE_INVISIBLE) && IsInvisible(source_p))

@@ -391,7 +391,7 @@ general
 	max_targets = 4;
 	client_flood = 2560;
 	message_locale = "standard";
-	oper_only_umodes = bots, cconn, debug, full, skill,
+	oper_only_umodes = bots, cconn, debug, farconnect, full, skill,
 		nchange, rej, spy, external, operwall, locops, unauth, hidechannels;
 
 	oper_umodes = bots, locops, servnotice, operwall, wallop;

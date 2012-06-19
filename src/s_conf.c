@@ -2436,6 +2436,8 @@ static const struct oper_privs
 	{
 	OPER_FLAG_DIE, 0, 'D'},
 	{
+	OPER_FLAG_FARCONNECT, 0, 'F'},
+	{
 	OPER_FLAG_GLINE, 0, 'G'},
 	{
 	OPER_FLAG_REHASH, 0, 'H'},

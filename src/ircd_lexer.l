@@ -269,6 +269,7 @@ oper		{ return OPERATOR; }
 oper_log        { return OPER_LOG; }
 oper_pass_resv	{ return OPER_PASS_RESV; }
 oper_spy	{ return OPER_SPY_T; }
+far_connect	{ return OPER_FARCONNECT; }
 operator	{ return OPERATOR; }
 passwd		{ return PASSWORD; }
 password	{ return PASSWORD; }
@@ -388,6 +389,7 @@ softcallerid            { return T_SOFTCALLERID; }
 drone                   { return T_DRONE; }
 locops                  { return T_LOCOPS; }
 hidechannels		{ return T_HIDECHANNELS; }
+farconnect              { return T_FARCONNECT; }
 topicburst		{ return TOPICBURST; }
 
 weeks			{ return WEEKS; }

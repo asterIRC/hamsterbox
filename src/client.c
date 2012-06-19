@@ -1044,6 +1044,14 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
 		 */
 		close_connection(source_p);
 	}
+	else
+	{
+		sendto_realops_flags(UMODE_FARCONNECT, L_ALL,
+			"Client exiting from %s: %s (%s@%s) [%s] [%s]",
+			source_p->servptr->name, source_p->name,
+			source_p->username, source_p->realhost, comment,
+			(EmptyString(source_p->sockhost) || !strcmp("0", source_p->sockhost)) ? "255.255.255.255" : source_p->sockhost);
+	}
 
 	if(IsServer(source_p))
 	{

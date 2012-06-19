@@ -142,6 +142,7 @@ operator
 	 * +C - noctcp       - Blocks CTCP messages
 	 * +D - deaf         - Don't receive channel messages
 	 * +d - debug        - See debugging notices
+	 * +F - farconnect   - See remote connect messages
 	 * +f - full         - See I: line full notices
 	 * +G - softcallerid - Server Side Ignore for users not on your channels
 	 * +g - callerid     - Server Side Ignore (for privmsgs etc)
@@ -185,6 +186,7 @@ operator
 	 *               being an admin
 	 * hidden_oper:  not shown in /stats p (except for other operators)
 	 * oper_spy:     currently not used
+	 * far_connect:  can see far (remote) connects via usermode +F
 	 */
 	flags = global_kill, remote, kline, unkline, xline,
 		die, rehash, nick_changes, admin, operwall;
@@ -347,7 +349,7 @@ general
 	max_targets = 4;
 	client_flood = 2560 bytes;
 	message_locale = "standard";
-	oper_only_umodes = bots, cconn, debug, full, skill,
+	oper_only_umodes = bots, cconn, debug, farconnect, full, skill,
 		nchange, rej, spy, external, operwall, locops, unauth, hidechannels;
 	oper_umodes = bots, locops, servnotice, operwall, wallop, external;
 #       servlink_path = "/usr/local/ircd/bin/servlink";

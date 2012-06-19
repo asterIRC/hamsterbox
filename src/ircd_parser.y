@@ -282,6 +282,7 @@ unhook_hub_leaf_confs(void)
 %token  OPER_ONLY_UMODES
 %token  OPER_PASS_RESV
 %token  OPER_SPY_T
+%token  OPER_FARCONNECT
 %token  OPER_UMODES
 %token  JOIN_FLOOD_COUNT
 %token  JOIN_FLOOD_TIME
@@ -351,6 +352,7 @@ unhook_hub_leaf_confs(void)
 %token  T_EXTERNAL
 %token  T_FULL
 %token  T_HIDECHANNELS
+%token  T_FARCONNECT
 %token  T_INVISIBLE
 %token  T_IPV4
 %token  T_IPV6
@@ -1368,6 +1370,10 @@ oper_umodes_item:  T_BOTS
 {
   if (ypass == 2)
     yy_aconf->modes |= UMODE_HIDECHANNELS;
+} | T_FARCONNECT
+{
+  if (ypass == 2)
+    yy_aconf->modes |= UMODE_FARCONNECT;
 };
 
 oper_global_kill: GLOBAL_KILL '=' TBOOL ';'
@@ -1655,7 +1661,14 @@ oper_flags_item_atom: GLOBAL_KILL
     if (not_atom) ClearConfEncrypted(yy_aconf);
     else SetConfEncrypted(yy_aconf);
   }
-};
+} | OPER_FARCONNECT
+{
+  if (ypass == 2)
+  {
+    if (not_atom) yy_aconf->port &= ~OPER_FLAG_FARCONNECT;
+    else yy_aconf->port |= OPER_FLAG_FARCONNECT;
+  }
+}
 
 
 /***************************************************************************
@@ -3817,6 +3830,9 @@ umode_oitem:     T_BOTS
 } | T_HIDECHANNELS
 {
   ConfigFileEntry.oper_umodes |= UMODE_HIDECHANNELS;
+} | T_FARCONNECT
+{
+  ConfigFileEntry.oper_umodes |= UMODE_FARCONNECT;
 };
 
 general_oper_only_umodes: OPER_ONLY_UMODES 
@@ -3885,6 +3901,9 @@ umode_item:	T_BOTS
 } | T_HIDECHANNELS
 {
   ConfigFileEntry.oper_only_umodes |= UMODE_HIDECHANNELS;
+} | T_FARCONNECT
+{
+  ConfigFileEntry.oper_only_umodes |= UMODE_FARCONNECT;
 };
 
 general_min_nonwildcard: MIN_NONWILDCARD '=' NUMBER ';'

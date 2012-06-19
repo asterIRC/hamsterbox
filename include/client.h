@@ -419,6 +419,7 @@ struct LocalUser
 #define UMODE_NOCTCP       0x00400000	/* block ctcp messages to user */
 #define UMODE_HIDECHANNELS 0x00800000	/* suppress output of channel list on WHOIS */
 #define UMODE_WEBIRC       0x01000000	/* cgi:irc user                             */
+#define UMODE_FARCONNECT   0x02000000	/* can see far connects                     */
 
 /* user information flags, only settable by remote mode or local oper */
 #define UMODE_ROUTING      0x10000000	/* Routing Team umode                    */
@@ -449,6 +450,7 @@ struct LocalUser
 #define OPER_FLAG_OPER_SPY     0x00001000	/* */
 #define OPER_FLAG_REMOTEBAN    0x00002000	/* */
 #define OPER_FLAG_HIDDEN_OPER  0x00004000	/* */
+#define OPER_FLAG_FARCONNECT   0x00008000	/* oper can set umode +F       */
 
 #define SetOFlag(x, y) ((x)->localClient->operflags |= (y))
 
@@ -617,6 +619,7 @@ struct LocalUser
 #define IsOperWall(x)           (MyConnect(x) ? (x)->localClient->operflags & OPER_FLAG_OPERWALL : 0)
 #define IsOperRemoteBan(x)      (MyConnect(x) ? (x)->localClient->operflags & OPER_FLAG_REMOTEBAN : 0)
 #define IsOperHidden(x)         (MyConnect(x) ? (x)->localClient->operflags & OPER_FLAG_HIDDEN_OPER : 0)
+#define IsOperFarConnect(x)     (MyConnect(x) ? (x)->localClient->operflags & OPER_FLAG_FARCONNECT : 0)
 
 /*
  * definitions for get_client_name
