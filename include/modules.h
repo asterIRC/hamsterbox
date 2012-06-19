@@ -206,7 +206,6 @@ extern struct Message uncapture_msgtab;
 extern struct Message authflags_msgtab;
 extern struct Message chgident_msgtab;
 extern struct Message cgiirc_msgtab;
-extern struct Message bopm_msgtab;
 
 #ifdef BUILD_CONTRIB
 extern struct Message classlist_msgtab;

@@ -19,7 +19,7 @@ UHELP           UMODE           UNCAPTURE       UNDLINE
 UNGLINE         UNKLINE         UNRESV          UNXLINE
 WALLOPS         XLINE           AUTHFLAGS       CHGHOST
 CHGIDENT        SAJOIN          SAMODE          SAPART
-WEBIRC          BOPM
+WEBIRC
 
 Help topics available to users:
 
