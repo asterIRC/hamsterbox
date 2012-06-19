@@ -37,6 +37,7 @@
 #include "irc_string.h"
 #include "memory.h"
 #include "list.h"
+#include "s_serv.h"
 
 /* -TimeMr14C:
  * I have moved the dl* function definitions and
@@ -370,6 +371,11 @@ mo_modload(struct Client *client_p, struct Client *source_p, int parc, char *par
 		return;
 	}
 
+	sendto_wallops_flags(UMODE_WALLOP, &me, "MODLOAD %s from %s", parv[1], source_p->name);
+	sendto_server(NULL, NULL, NULL, CAP_TS6, NOCAPS, NOFLAGS, ":%s WALLOPS :MODLOAD %s from %s", me.id, parv[1], source_p->name);
+	sendto_server(NULL, NULL, NULL, NOCAPS, CAP_TS6, NOFLAGS, ":%s WALLOPS :MODLOAD %s from %s", me.name, parv[1], source_p->name);
+	ilog(L_TRACE, "MODLOAD %s from %s", parv[1], source_p->name);
+
 	m_bn = basename(parv[1]);
 
 	if(findmodule_byname(m_bn) != NULL)
@@ -414,6 +420,11 @@ mo_modunload(struct Client *client_p, struct Client *source_p, int parc, char *p
 			   me.name, source_p->name, m_bn);
 		return;
 	}
+	
+	sendto_wallops_flags(UMODE_WALLOP, &me, "MODUNLOAD %s from %s", parv[1], source_p->name);
+	sendto_server(NULL, NULL, NULL, CAP_TS6, NOCAPS, NOFLAGS, ":%s WALLOPS :MODUNLOAD %s from %s", me.id, parv[1], source_p->name);
+	sendto_server(NULL, NULL, NULL, NOCAPS, CAP_TS6, NOFLAGS, ":%s WALLOPS :MODUNLOAD %s from %s", me.name, parv[1], source_p->name);
+	ilog(L_TRACE, "MODUNLOAD %s from %s", parv[1], source_p->name);
 
 	/* XXX might want to simply un dlink it here */
 
@@ -457,6 +468,11 @@ mo_modreload(struct Client *client_p, struct Client *source_p, int parc, char *p
 			   me.name, source_p->name, m_bn);
 		return;
 	}
+
+	sendto_wallops_flags(UMODE_WALLOP, &me, "MODRELOAD %s from %s", parv[1], source_p->name);
+	sendto_server(NULL, NULL, NULL, CAP_TS6, NOCAPS, NOFLAGS, ":%s WALLOPS :MODRELOAD %s from %s", me.id, parv[1], source_p->name);
+	sendto_server(NULL, NULL, NULL, NOCAPS, CAP_TS6, NOFLAGS, ":%s WALLOPS :MODRELOAD %s from %s", me.name, parv[1], source_p->name);
+	ilog(L_TRACE, "MODRELOAD %s from %s", parv[1], source_p->name);
 
 	if((load_one_module(parv[1], check_core) == -1) && check_core)
 	{
@@ -518,6 +534,11 @@ mo_modrestart(struct Client *client_p, struct Client *source_p, int parc, char *
 		sendto_one(source_p, form_str(ERR_NOPRIVILEGES), me.name, source_p->name);
 		return;
 	}
+
+	sendto_wallops_flags(UMODE_WALLOP, &me, "MODRESTART from %s", source_p->name);
+	sendto_server(NULL, NULL, NULL, CAP_TS6, NOCAPS, NOFLAGS, ":%s WALLOPS :MODRESTART from %s", me.id, source_p->name);
+	sendto_server(NULL, NULL, NULL, NOCAPS, CAP_TS6, NOFLAGS, ":%s WALLOPS :MODRESTART from %s", me.name, source_p->name);
+	ilog(L_TRACE, "MODRESTART from %s", source_p->name);
 
 	sendto_one(source_p, ":%s NOTICE %s :Reloading all modules", me.name, source_p->name);
 
