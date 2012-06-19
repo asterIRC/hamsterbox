@@ -1044,7 +1044,7 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
 		 */
 		close_connection(source_p);
 	}
-	else
+	else if(IsClient(source_p))
 	{
 		sendto_realops_flags(UMODE_FARCONNECT, L_ALL,
 			"Client exiting from %s: %s (%s@%s) [%s] [%s]",
