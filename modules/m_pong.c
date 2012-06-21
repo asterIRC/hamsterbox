@@ -92,6 +92,8 @@ ms_pong(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
 			return;
 		}
 	}
+	else
+		SetEob(source_p);
 }
 
 static void

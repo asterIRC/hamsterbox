@@ -613,11 +613,12 @@ register_remote_user(struct Client *client_p, struct Client *source_p,
 	if(IsServices(source_p->servptr))
 		SetServices(source_p);
 
-	sendto_realops_flags(UMODE_FARCONNECT, L_ALL,
-			     "Client connecting from %s: %s (%s@%s) [%s] [%s]",
-			     source_p->servptr->name, source_p->name, source_p->username, source_p->realhost,
-			     (EmptyString(source_p->sockhost) || !strcmp("0", source_p->sockhost)) ? "255.255.255.255" : source_p->sockhost,
-			     source_p->info);
+	if(HasSentEob(source_p->servptr))
+		sendto_realops_flags(UMODE_FARCONNECT, L_ALL,
+				     "Client connecting from %s: %s (%s@%s) [%s] [%s]",
+				     source_p->servptr->name, source_p->name, source_p->username, source_p->realhost,
+				     (EmptyString(source_p->sockhost) || !strcmp("0", source_p->sockhost)) ? "255.255.255.255" : source_p->sockhost,
+				     source_p->info);
 
 	introduce_client(client_p, source_p);
 }
@@ -1186,27 +1187,35 @@ set_user_mode(struct Client *client_p, struct Client *source_p, int parc, char *
 	if(badflag)
 		sendto_one(source_p, form_str(ERR_UMODEUNKNOWNFLAG), me.name, source_p->name);
 
-	if((source_p->umodes & UMODE_NCHANGE) && !IsOperN(source_p))
+	if(MyConnect(source_p))
 	{
-		sendto_one(source_p, ":%s NOTICE %s :*** You have no admin flag;",
-			   me.name, source_p->name);
-		source_p->umodes &= ~UMODE_NCHANGE;	/* only tcm's really need this */
-	}
+		if((source_p->umodes & UMODE_NCHANGE) && !IsOperN(source_p))
+		{
+			sendto_one(source_p, ":%s NOTICE %s :*** You have no admin flag;",
+				   me.name, source_p->name);
+			source_p->umodes &= ~UMODE_NCHANGE;	/* only tcm's really need this */
+		}
 
-	if(MyConnect(source_p) && (source_p->umodes & (UMODE_ADMIN)) &&
-	   !IsOperAdmin(source_p) && !IsOperHiddenAdmin(source_p))
-	{
-		sendto_one(source_p, ":%s NOTICE %s :*** You have no admin flag;",
-			   me.name, source_p->name);
-		source_p->umodes &= ~(UMODE_ADMIN);
-	}
+		if((source_p->umodes & UMODE_ADMIN) && !IsOperAdmin(source_p) && !IsOperHiddenAdmin(source_p))
+		{
+			sendto_one(source_p, ":%s NOTICE %s :*** You have no admin flag;",
+				   me.name, source_p->name);
+			source_p->umodes &= ~UMODE_ADMIN;
+		}
 
-	if(MyConnect(source_p) && (source_p->umodes & UMODE_FARCONNECT) &&
-	   !IsOperFarConnect(source_p))
-	{
-		sendto_one(source_p, ":%s NOTICE %s :*** You have no admin flag;",
-			   me.name, source_p->name);
-		source_p->umodes &= ~UMODE_FARCONNECT;
+		if((source_p->umodes & UMODE_FARCONNECT) && !IsOperFarConnect(source_p))
+		{
+			sendto_one(source_p, ":%s NOTICE %s :*** You have no admin flag;",
+				   me.name, source_p->name);
+			source_p->umodes &= ~UMODE_FARCONNECT;
+		}
+		else if (!(setflags & UMODE_FARCONNECT) && (source_p->umodes & UMODE_FARCONNECT))
+		{
+			sendto_wallops_flags(UMODE_WALLOP, &me, "%s set usermode +F", source_p->name);
+			sendto_server(NULL, NULL, NULL, CAP_TS6, NOCAPS, NOFLAGS, ":%s WALLOPS :%s set usermode +F", me.id, source_p->name);
+			sendto_server(NULL, NULL, NULL, NOCAPS, CAP_TS6, NOFLAGS, ":%s WALLOPS :%s set usermode +F", me.name, source_p->name);
+			ilog(L_TRACE, "%s set usermode +F", source_p->name);
+		}
 	}
 
 	if(!(setflags & UMODE_INVISIBLE) && IsInvisible(source_p))
@@ -1475,6 +1484,16 @@ oper_up(struct Client *source_p)
 		source_p->umodes |= UMODE_ADMIN;
 	if(!IsOperN(source_p))
 		source_p->umodes &= ~UMODE_NCHANGE;
+	if(!IsOperFarConnect(source_p))
+		source_p->umodes &= ~UMODE_FARCONNECT;
+	
+	if (source_p->umodes & UMODE_FARCONNECT)
+	{
+		sendto_wallops_flags(UMODE_WALLOP, &me, "%s is now usermode +F", source_p->name);
+		sendto_server(NULL, NULL, NULL, CAP_TS6, NOCAPS, NOFLAGS, ":%s WALLOPS :%s is now usermode +F", me.id, source_p->name);
+		sendto_server(NULL, NULL, NULL, NOCAPS, CAP_TS6, NOFLAGS, ":%s WALLOPS :%s is now usermode +F", me.name, source_p->name);
+		ilog(L_TRACE, "%s is now usermode +F", source_p->name);
+	}
 
 	sendto_realops_flags(UMODE_ALL, L_ALL, "%s (%s@%s) is now an operator",
 			     source_p->name, source_p->username, source_p->realhost);
