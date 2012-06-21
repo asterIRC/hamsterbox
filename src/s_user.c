@@ -1487,14 +1487,6 @@ oper_up(struct Client *source_p)
 	if(!IsOperFarConnect(source_p))
 		source_p->umodes &= ~UMODE_FARCONNECT;
 	
-	if (source_p->umodes & UMODE_FARCONNECT)
-	{
-		sendto_wallops_flags(UMODE_WALLOP, &me, "%s is now usermode +F", source_p->name);
-		sendto_server(NULL, NULL, NULL, CAP_TS6, NOCAPS, NOFLAGS, ":%s WALLOPS :%s is now usermode +F", me.id, source_p->name);
-		sendto_server(NULL, NULL, NULL, NOCAPS, CAP_TS6, NOFLAGS, ":%s WALLOPS :%s is now usermode +F", me.name, source_p->name);
-		ilog(L_TRACE, "%s is now usermode +F", source_p->name);
-	}
-
 	sendto_realops_flags(UMODE_ALL, L_ALL, "%s (%s@%s) is now an operator",
 			     source_p->name, source_p->username, source_p->realhost);
 	send_umode_out(source_p, source_p, old);
@@ -1502,6 +1494,14 @@ oper_up(struct Client *source_p)
 	sendto_one(source_p, ":%s NOTICE %s :*** Oper privs are %s",
 		   me.name, source_p->name, operprivs);
 	send_message_file(source_p, &ConfigFileEntry.opermotd);
+
+	if (source_p->umodes & UMODE_FARCONNECT)
+	{
+		sendto_wallops_flags(UMODE_WALLOP, &me, "%s is now usermode +F", source_p->name);
+		sendto_server(NULL, NULL, NULL, CAP_TS6, NOCAPS, NOFLAGS, ":%s WALLOPS :%s is now usermode +F", me.id, source_p->name);
+		sendto_server(NULL, NULL, NULL, NOCAPS, CAP_TS6, NOFLAGS, ":%s WALLOPS :%s is now usermode +F", me.name, source_p->name);
+		ilog(L_TRACE, "%s is now usermode +F", source_p->name);
+	}
 }
 
 static char new_uid[TOTALSIDUID + 1];	/* allow for \0 */

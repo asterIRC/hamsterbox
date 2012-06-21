@@ -68,6 +68,8 @@ ms_eob(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
 	sendto_match_servs(source_p, "*", CAP_EOB, "EOB");
 
+	server_eob(source_p);
+
 	/*
 	 * Only process the EOB locally if the client is also the source, making this a locally
 	 * connected server.
@@ -77,5 +79,4 @@ ms_eob(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 
 	sendto_realops_flags(UMODE_ALL, L_ALL, "End of burst from %s (%u seconds)",
 			     source_p->name, (unsigned int) (CurrentTime - source_p->firsttime));
-	SetEob(client_p);
 }

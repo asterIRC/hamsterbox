@@ -1303,6 +1303,19 @@ server_estab(struct Client *client_p)
 	server_burst(client_p);
 }
 
+void server_eob(struct Client *server)
+{
+	dlink_node *ptr;
+
+	if (!IsServer(server))
+		return;
+	
+	SetEob(server);
+
+	DLINK_FOREACH(ptr, server->serv->servers.head)
+		server_eob(ptr->data);
+}
+
 static void
 start_io(struct Client *server)
 {
