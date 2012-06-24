@@ -29,6 +29,7 @@ Usermodes: (* designates that the umode is oper only)
          +p     - Hides the output of channels this client is in from WHOIS
                   to non-admins.
          +D     - "deaf": don't receive channel messages
+         +F     - "farconnects": like +c but for remote servers
          +G     - "soft caller id": block private messages from people not on
                   any common channels with you (unless they are /accept'ed)
          +g     - "caller id" mode: only allow /accept clients to message you
