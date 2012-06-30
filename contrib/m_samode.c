@@ -809,6 +809,7 @@ mo_saumode(struct Client *client_p, struct Client *source_p, int parc, char *par
 				}
 			}
 			break;
+		case 'U':
 
 		case ' ':
 		case '\n':
@@ -1145,6 +1146,7 @@ ms_smode(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 				}
 
 				break;
+			case 'U':
 
 				/* we may not get these,
 				 * but they shouldnt be in default

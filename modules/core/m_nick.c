@@ -715,6 +715,8 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
 					Count.invisi++;
 				if(!(source_p->umodes & UMODE_OPER) && (flag & UMODE_OPER))
 					Count.oper++;
+				if(flag & UMODE_SERVICE)
+					SetServices(source_p);
 
 				source_p->umodes |= flag & SEND_UMODES;
 				m++;
@@ -795,6 +797,8 @@ client_from_server(struct Client *client_p, struct Client *source_p, int parc,
 			Count.invisi++;
 		if(flag & UMODE_OPER)
 			Count.oper++;
+		if(flag & UMODE_SERVICE)
+			SetServices(source_p);
 
 		source_p->umodes |= flag & SEND_UMODES;
 		m++;

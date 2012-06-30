@@ -421,7 +421,9 @@ whois_person(struct Client *source_p, struct Client *target_p)
 
 		strcat(buf, "is an IRC Operator");
 
-		if(IsNetAdmin(target_p))
+		if(IsServices(target_p))
+			strcat(buf, " - Network Service");
+		else if(IsNetAdmin(target_p))
 			strcat(buf, " - Network Administrator");
 		else if(IsAdmin(target_p) && !IsOperHiddenAdmin(target_p))
 			strcat(buf, " - Server Administrator");

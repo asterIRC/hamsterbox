@@ -116,7 +116,7 @@ unsigned int user_modes[256] =
   UMODE_REGONLY,      /* R */
   UMODE_SSL,          /* S */
   0,                  /* T */
-  0,                  /* U */
+  UMODE_SERVICE,      /* U */
   0,                  /* V */
   UMODE_WEBIRC,       /* W */
   UMODE_EXTERNAL,     /* X */
@@ -1152,6 +1152,7 @@ set_user_mode(struct Client *client_p, struct Client *source_p, int parc, char *
 			case 'N':
 			case 'S':
 			case 'W':
+			case 'U':
 				/* we may not get these,
 				 * but they shouldnt be in default
 				 */

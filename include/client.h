@@ -420,6 +420,7 @@ struct LocalUser
 #define UMODE_HIDECHANNELS 0x00800000	/* suppress output of channel list on WHOIS */
 #define UMODE_WEBIRC       0x01000000	/* cgi:irc user                             */
 #define UMODE_FARCONNECT   0x02000000	/* can see far connects                     */
+#define UMODE_SERVICE      0x04000000	/* is a network service */
 
 /* user information flags, only settable by remote mode or local oper */
 #define UMODE_ROUTING      0x10000000	/* Routing Team umode                    */
@@ -431,7 +432,8 @@ struct LocalUser
 
 #define SEND_UMODES  (UMODE_INVISIBLE | UMODE_OPER | UMODE_WALLOP | UMODE_SPY | \
                       UMODE_ADMIN | UMODE_CLOAK | UMODE_SSL | UMODE_REGNICK | UMODE_ROUTING | \
-                      UMODE_REGONLY | UMODE_NETADMIN | UMODE_HIDECHANNELS | UMODE_WEBIRC)
+                      UMODE_REGONLY | UMODE_NETADMIN | UMODE_HIDECHANNELS | UMODE_WEBIRC | \
+                      UMODE_FARCONNECT | UMODE_SERVICE)
 
 
 /* oper priv flags */
