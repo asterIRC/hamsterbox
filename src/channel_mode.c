@@ -100,7 +100,7 @@ static struct ChCapCombo chcap_combos[NCHCAP_COMBOS];
 extern BlockHeap *ban_heap;
 
 /* *INDENT-OFF* */
-const struct channel_mode channel_mode_info[] = 
+struct channel_mode channel_mode_info[] = 
 {
   {chm_nosuch, 0, 0, NULL},
   {chm_nosuch, 0, 0, NULL},                                              /* A */
