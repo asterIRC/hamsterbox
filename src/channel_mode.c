@@ -2006,7 +2006,7 @@ send_mode_changes(struct Client *client_p, struct Client *source_p,
 	if(!mode_count)
 		return;
 
-	if(IsServer(source_p))
+	if(IsMe(source_p) || IsServer(source_p))
 		mbl = ircsprintf(modebuf, ":%s MODE %s ", (IsHidden(source_p) ||
 							   ConfigServerHide.hide_servers) ?
 				 me.name : source_p->name, chname);
@@ -2047,8 +2047,8 @@ send_mode_changes(struct Client *client_p, struct Client *source_p,
 			nc = 0;
 			mc = 0;
 
-			if(IsServer(source_p))
-				mbl = ircsprintf(modebuf, ":%s MODE %s ", me.name, chname);
+			if(IsMe(source_p) || IsServer(source_p))
+				mbl = ircsprintf(modebuf, ":%s MODE %s ", (IsHidden(source_p) || ConfigServerHide.hide_servers) ? me.name : source_p->name, chname);
 			else
 				mbl = ircsprintf(modebuf, ":%s!%s@%s MODE %s ", source_p->name,
 						 source_p->username, source_p->host, chname);

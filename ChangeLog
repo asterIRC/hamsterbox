@@ -1,3 +1,8 @@
+Adam              2012/07/25 21:00:00    (20120725_0-534)
+
+  Log:
+- Fixed send_mode_changes() handling modes set by me
+
 Adam              2012/06/19 00:00:00    (20120619_0-534)
 
   Log:
