@@ -320,11 +320,14 @@ write_conf_line(struct Client *source_p, struct ConfItem *conf,
 
 	case DLINE_TYPE:
 		aconf = (struct AccessItem *) map_to_conf(conf);
-		sendto_realops_flags(UMODE_ALL, L_ALL,
-				     "%s added D-Line for [%s] [%s]",
-				     get_oper_name(source_p), aconf->host, aconf->reason);
-		sendto_one(source_p, ":%s NOTICE %s :Added D-Line [%s] to %s",
-			   from, to, aconf->host, filename);
+		if(!services)
+		{
+			sendto_realops_flags(UMODE_ALL, L_ALL,
+					     "%s added D-Line for [%s] [%s]",
+					     get_oper_name(source_p), aconf->host, aconf->reason);
+			sendto_one(source_p, ":%s NOTICE %s :Added D-Line [%s] to %s",
+				   from, to, aconf->host, filename);
+		}
 		ilog(L_TRACE, "%s added D-Line for [%s] [%s]",
 		     get_oper_name(source_p), aconf->host, aconf->reason);
 		log_oper_action(LOG_DLINE_TYPE, source_p, "[%s] [%s]\n",

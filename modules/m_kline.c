@@ -54,10 +54,12 @@ static void me_kline(struct Client *, struct Client *, int, char **);
 static void mo_kline(struct Client *, struct Client *, int, char **);
 static void ms_kline(struct Client *, struct Client *, int, char **);
 static void mo_dline(struct Client *, struct Client *, int, char **);
+static void me_dline(struct Client *, struct Client *, int, char **);
 static void me_unkline(struct Client *, struct Client *, int, char **);
 static void mo_unkline(struct Client *, struct Client *, int, char **);
 static void ms_unkline(struct Client *, struct Client *, int, char **);
 static void mo_undline(struct Client *, struct Client *, int, char **);
+static void me_undline(struct Client *, struct Client *, int, char **);
 
 static int remove_tkline_match(const char *, const char *);
 static int remove_tdline_match(const char *);
@@ -69,7 +71,7 @@ struct Message kline_msgtab = {
 
 struct Message dline_msgtab = {
 	"DLINE", 0, 0, 2, 0, MFLG_SLOW, 0,
-	{m_unregistered, m_not_oper, m_error, m_ignore, mo_dline, m_ignore}
+	{m_unregistered, m_not_oper, m_error, me_dline, mo_dline, m_ignore}
 };
 
 struct Message unkline_msgtab = {
@@ -79,7 +81,7 @@ struct Message unkline_msgtab = {
 
 struct Message undline_msgtab = {
 	"UNDLINE", 0, 0, 2, 0, MFLG_SLOW, 0,
-	{m_unregistered, m_not_oper, m_error, m_ignore, mo_undline, m_ignore}
+	{m_unregistered, m_not_oper, m_error, me_undline, mo_undline, m_ignore}
 };
 
 #ifndef STATIC_MODULES
@@ -339,18 +341,25 @@ apply_tdline(struct Client *source_p, struct ConfItem *conf,
 	     const char *current_date, int tkline_time)
 {
 	struct AccessItem *aconf;
+	int services = 0;
 
 	aconf = map_to_conf(conf);
 	aconf->hold = CurrentTime + tkline_time;
 
-	add_temp_line(conf);
-	sendto_realops_flags(UMODE_ALL, L_ALL,
-			     "%s added temporary %d min. D-Line for [%s] [%s]",
-			     get_oper_name(source_p), tkline_time / 60, aconf->host, aconf->reason);
+	if (IsServices(source_p))
+		services = 1;
 
-	sendto_one(source_p, ":%s NOTICE %s :Added temporary %d min. D-Line [%s]",
-		   MyConnect(source_p) ? me.name : ID_or_name(&me, source_p->from),
-		   source_p->name, tkline_time / 60, aconf->host);
+	add_temp_line(conf);
+	if (!services)
+	{
+		sendto_realops_flags(UMODE_ALL, L_ALL,
+				     "%s added temporary %d min. D-Line for [%s] [%s]",
+				     get_oper_name(source_p), tkline_time / 60, aconf->host, aconf->reason);
+
+		sendto_one(source_p, ":%s NOTICE %s :Added temporary %d min. D-Line [%s]",
+			   MyConnect(source_p) ? me.name : ID_or_name(&me, source_p->from),
+			   source_p->name, tkline_time / 60, aconf->host);
+	}
 	ilog(L_TRACE, "%s added temporary %d min. D-Line for [%s] [%s]",
 	     source_p->name, tkline_time / 60, aconf->host, aconf->reason);
 	log_oper_action(LOG_TEMP_DLINE_TYPE, source_p, "[%s@%s] [%s]\n",
@@ -812,3 +821,87 @@ mo_undline(struct Client *client_p, struct Client *source_p, int parc, char *par
 		sendto_one(source_p, ":%s NOTICE %s :No D-Line for [%s] found",
 			   me.name, source_p->name, cidr);
 }
+
+static void me_dline(struct Client *client_p, struct Client *source_p, int parc, char **parv)
+{
+	time_t tkline_time;
+	char *kip, *kreason, *oper_reason;
+
+	if(parc != 4 || EmptyString(parv[3]) || !IsClient(source_p))
+		return;
+
+	tkline_time = valid_tkline(parv[1], TK_SECONDS);
+	kip = parv[2];
+	kreason = parv[3];
+
+	if((oper_reason = strchr(kreason, '|')) != NULL)
+		*oper_reason++ = '\0';
+
+	if(find_matching_name_conf(ULINE_TYPE, source_p->servptr->name, source_p->username, source_p->realhost, SHARED_KLINE))
+	{
+		struct irc_ssaddr daddr;
+		int t = parse_netmask(kip, &daddr, NULL);
+		struct ConfItem *conf;
+		struct AccessItem *aconf;
+		time_t cur_time;
+		const char *current_date;
+
+		if (find_dline_conf(&daddr, t) != NULL)
+			return;
+
+		conf = make_conf_item(DLINE_TYPE);
+		aconf = map_to_conf(conf);
+		DupString(aconf->host, kip);
+
+		cur_time = CurrentTime;
+		current_date = smalldate(cur_time);
+
+		if(tkline_time != 0)
+		{
+			ircsprintf(buffer, "Temporary D-line %d min. - %s (%s)",
+				   (int) (tkline_time / 60), kreason, current_date);
+			DupString(aconf->reason, buffer);
+			if(oper_reason != NULL)
+				DupString(aconf->oper_reason, oper_reason);
+			apply_tdline(source_p, conf, current_date, tkline_time);
+		}
+		else
+		{
+			ircsprintf(buffer, "%s (%s)", kreason, current_date);
+			DupString(aconf->reason, buffer);
+			if(oper_reason != NULL)
+				DupString(aconf->oper_reason, oper_reason);
+			add_conf_by_address(CONF_DLINE, aconf);
+			write_conf_line(source_p, conf, current_date, cur_time);
+		}
+
+		rehashed_klines = 1;
+	}
+}
+
+static void me_undline(struct Client *client_p, struct Client *source_p, int parc, char **parv)
+{
+	const char *ip;
+
+	if(parc != 2)
+		return;
+
+	ip = parv[1];
+
+	if(!IsClient(source_p))
+		return;
+
+	if(find_matching_name_conf(ULINE_TYPE, source_p->servptr->name, source_p->username, source_p->realhost, SHARED_UNKLINE))
+	{
+		if(remove_tdline_match(ip))
+		{
+			ilog(L_NOTICE, "%s removed temporary D-Line for [%s]", source_p->name, ip);
+		}
+		else if(del_conf_by_address(CONF_DLINE | 1, NULL, ip) > 0)
+		{
+			remove_conf_line(DLINE_TYPE, source_p, ip, NULL);
+			ilog(L_NOTICE, "%s removed D-Line for [%s]", get_oper_name(source_p), ip);
+		}
+	}
+}
+
