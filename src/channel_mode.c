@@ -426,6 +426,8 @@ add_id(struct Client *client_p, struct Channel *chptr, char *banid, int type)
 		ircsprintf(ban_p->who, "%s!%s@%s", client_p->name,
 			   client_p->username, client_p->host);
 	}
+	else if (IsHidden(client_p) || (IsServer(client_p) && ConfigServerHide.hide_servers))
+		DupString(ban_p->who, me.name);
 	else
 		DupString(ban_p->who, client_p->name);
 
