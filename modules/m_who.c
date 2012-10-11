@@ -344,7 +344,7 @@ do_who_on_channel(struct Client *source_p, struct Channel *chptr,
 static void
 do_who(struct Client *source_p, struct Client *target_p, const char *chname, const char *op_flags)
 {
-	char status[6];
+	char status[7];
 	const char *from, *to;
 
 	if(IsCapable(source_p->from, CAP_TS6) && HasID(source_p))
@@ -359,11 +359,12 @@ do_who(struct Client *source_p, struct Client *target_p, const char *chname, con
 	}
 
 	if(IsOper(source_p))
-		ircsprintf(status, "%c%s%s%s",
-			   target_p->away ? 'G' : 'H',
+		ircsprintf(status, "%c%s%s%s%s",
+			   target_p->away ? 'G' : 'H', IsRegNick(target_p) ? "r" : "",
 			   IsOper(target_p) ? "*" : "", IsCaptured(target_p) ? "#" : "", op_flags);
 	else
-		ircsprintf(status, "%c%s%s", target_p->away ? 'G' : 'H',
+		ircsprintf(status, "%c%s%s%s", target_p->away ? 'G' : 'H',
+			   IsRegNick(target_p) ? "r" : "",
 			   IsOper(target_p) ? "*" : "", op_flags);
 
 	if(ConfigServerHide.hide_servers)
