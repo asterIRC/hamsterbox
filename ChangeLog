@@ -1,3 +1,12 @@
+Adam              2012/10/25 06:00:00    (20121025_0-534)
+
+  Log:
+- Made using no_tilde in a webirc block work
+- Accept the userhost-in-names cap as a valid name for CAP_UHNAMES too
+- Match channel bans against users's cloaked host and ip, even if they aren't
+  using them. Also show what cloak a user would have in WHOIS. 
+- Add general:cloak_whois_actually to config parser
+
 Adam              2012/08/28 03:00:00    (20120828_0-534)
 
   Log:
