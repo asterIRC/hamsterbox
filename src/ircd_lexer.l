@@ -150,6 +150,7 @@ client_flood	{ return T_CLIENT_FLOOD; }
 cloak_key1	{ return CLOAK_KEY1; }
 cloak_key2	{ return CLOAK_KEY2; }
 cloak_key3	{ return CLOAK_KEY3; }
+cloak_whois_actually { return CLOAK_WHOIS_ACTUALLY; }
 cluster		{ return T_CLUSTER; }
 compressed	{ return COMPRESSED; }
 compression_level { return COMPRESSION_LEVEL; }

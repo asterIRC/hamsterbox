@@ -162,6 +162,7 @@ unhook_hub_leaf_confs(void)
 %token  CLOAK_KEY1
 %token  CLOAK_KEY2
 %token  CLOAK_KEY3
+%token  CLOAK_WHOIS_ACTUALLY
 %token  COMPRESSED
 %token  COMPRESSION_LEVEL
 %token  CONNECT
@@ -3401,7 +3402,7 @@ general_item:       general_hide_spoof_ips | general_ignore_bogus_ts |
 		    general_tkline_expire_notices | general_gline_min_cidr |
                     general_gline_min_cidr6 | general_use_whois_actually |
 		    general_reject_hold_time | general_hide_killer |
-		    general_cloak_key1 | general_cloak_key2 | general_cloak_key3 |
+		    general_cloak_key1 | general_cloak_key2 | general_cloak_key3 | general_cloak_whois_actually
 		    general_services_name |
 		    error;
 
@@ -3553,6 +3554,11 @@ general_cloak_key3: CLOAK_KEY3 '=' QSTRING ';'
     MyFree(ConfigFileEntry.cloak_key3);
     DupString(ConfigFileEntry.cloak_key3, yylval.string);
   }
+};
+
+general_cloak_whois_actually: CLOAK_WHOIS_ACTUALLY '=' TBOOL ';'
+{
+  ConfigFileEntry.cloak_whois_actually = yylval.number;
 };
 
 general_services_name: SERVICES_NAME '=' QSTRING ';'
