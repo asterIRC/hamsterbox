@@ -35,6 +35,7 @@
 #include "msg.h"
 #include "parse.h"
 #include "modules.h"
+#include "s_serv.h"
 
 static void mr_pong(struct Client *, struct Client *, int, char **);
 static void ms_pong(struct Client *, struct Client *, int, char **);

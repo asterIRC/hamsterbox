@@ -297,6 +297,7 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 	char ipaddr[HOSTIPLEN];
 	dlink_node *ptr = NULL;
 	dlink_node *m = NULL;
+	int is_no_tilde;
 
 	assert(source_p != NULL);
 	assert(MyConnect(source_p));
@@ -334,7 +335,7 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 		strlcpy(source_p->realhost, source_p->sockhost, sizeof(source_p->realhost));
 	}
 
-	int is_no_tilde = 0;
+	is_no_tilde = 0;
 	DLINK_FOREACH(ptr, source_p->localClient->confs.head)
 		is_no_tilde |= IsNoTilde((struct AccessItem *) map_to_conf(ptr->data));
 
