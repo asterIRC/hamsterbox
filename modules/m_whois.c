@@ -528,10 +528,36 @@ whois_person(struct Client *source_p, struct Client *target_p)
 			hide_ip = 1;
 
 		if(IsOper(source_p) || source_p == target_p)
+		{
+			ircsprintf(buf, "%s@%s [%s]", target_p->username, target_p->realhost, hide_ip ? "255.255.255.255" : target_p->sockhost);
 			sendto_one(source_p, form_str(RPL_WHOISACTUALLY), me.name,
-				   source_p->name, target_p->name,
-				   target_p->username, target_p->realhost,
-				   hide_ip ? "255.255.255.255" : target_p->sockhost);
+				   source_p->name, target_p->name, "is actually", buf);
+		}
+		else if (ConfigFileEntry.enable_cloak_system && ConfigFileEntry.cloak_whois_actually && !IsIPSpoof(target_p))
+		{
+			*buf = 0;
+
+			/* If the cloaked host isn't the displayed host */
+			if (strcmp(target_p->host, target_p->cloaked_host))
+			{
+				/* Show the real cloaked host, and the real cloaked IP if the cloaked IP != the cloaked host */
+				if (strcmp(target_p->cloaked_host, target_p->cloaked_ip))
+					ircsprintf(buf, "%s@%s [%s]", target_p->username, target_p->cloaked_host, target_p->cloaked_ip);
+				/* Since they are the same only show the host */
+				else
+					ircsprintf(buf, "%s@%s", target_p->username, target_p->cloaked_host);
+			}
+			/* The user is using a cloak, show the cloaked IP if the cloaked host != the cloaked IP */
+			else if (strcmp(target_p->host, target_p->cloaked_ip))
+			{
+				ircsprintf(buf, "%s@%s", target_p->username, target_p->cloaked_ip);
+			}
+			/* else the user is using a cloaked IP already and there is nothing more to display */
+
+			if (*buf)
+				sendto_one(source_p, form_str(RPL_WHOISACTUALLY), me.name,
+					source_p->name, target_p->name, "has cloak", buf);
+		}
 	}
 	
 	if(!IsHideChannels(target_p) || IsOper(source_p) || source_p == target_p)

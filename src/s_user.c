@@ -492,6 +492,10 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 	if(ConfigFileEntry.enable_cloak_system && !IsIPSpoof(source_p))
 	{
 		make_virthost(source_p->realhost, source_p->host);
+
+		strlcpy(source_p->cloaked_host, source_p->host, sizeof(source_p->cloaked_host));
+		make_virthost(source_p->sockhost, source_p->cloaked_ip);
+
 		source_p->umodes |= UMODE_CLOAK;
 	}
 
@@ -1061,7 +1065,6 @@ set_user_mode(struct Client *client_p, struct Client *source_p, int parc, char *
 				if(what == MODE_ADD)
 				{
 					int localclient = MyClient(source_p);
-					char cloaked_host[HOSTLEN + 1] = "";
 
 					if(localclient)
 						if(!ConfigFileEntry.enable_cloak_system ||
@@ -1076,8 +1079,7 @@ set_user_mode(struct Client *client_p, struct Client *source_p, int parc, char *
 					if(!localclient)
 						break;
 
-					make_virthost(source_p->realhost, cloaked_host);
-					change_local_host(source_p, NULL, cloaked_host);
+					change_local_host(source_p, NULL, source_p->cloaked_host);
 
 					sendto_server(NULL, source_p, NULL, CAP_ENCAP, NOCAPS,
 						      LL_ICLIENT, ":%s ENCAP * CHGHOST %s %s",

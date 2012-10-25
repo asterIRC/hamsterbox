@@ -409,6 +409,7 @@ struct config_file_entry
 	char *cloak_key2;
 	char *cloak_key3;
 	int enable_cloak_system;
+	int cloak_whois_actually;
 	int anti_spam_connect_numeric;
 	char *services_name;
 #ifdef HAVE_LIBCRYPTO

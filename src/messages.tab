@@ -366,7 +366,7 @@ static struct NumericInfo replies[] = {
 /* 335 */  {NULL, NULL, NULL},
 /* 336 */  {NULL, NULL, NULL},
 /* 337 */  {NULL, NULL, NULL},
-/* 338 */  {"RPL_WHOISACTUALLY", ":%s 338 %s %s :is actually %s@%s [%s]", NULL},
+/* 338 */  {"RPL_WHOISACTUALLY", ":%s 338 %s %s :%s %s", NULL},
 /* 339 */  {NULL, NULL, NULL},
 /* 340 */  {NULL, NULL, NULL},
 /* 341 */  {"RPL_INVITING", ":%s 341 %s %s %s", NULL},

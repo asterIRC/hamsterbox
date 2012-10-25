@@ -1941,6 +1941,7 @@ set_default_conf(void)
 	ConfigFileEntry.cloak_key1 = NULL;
 	ConfigFileEntry.cloak_key2 = NULL;
 	ConfigFileEntry.cloak_key3 = NULL;
+	ConfigFileEntry.cloak_whois_actually = NO;
 	DupString(ConfigFileEntry.services_name, SERVICES_NAME_DEFAULT);
 	ConfigFileEntry.gline_min_cidr = 16;
 	ConfigFileEntry.gline_min_cidr6 = 48;

@@ -154,6 +154,13 @@ struct Client
 	char host[HOSTLEN + 1];	/* client's hostname */
 
 	/*
+	 * The clients cloaked IP and host. These contain the same value if
+	 * the user has no hostname, only an IP.
+	 */
+	char cloaked_ip[HOSTLEN + 1];
+	char cloaked_host[HOSTLEN + 1];
+
+	/*
 	 * client->realhost contains a static version of client->host
 	 * This is to keep the original hostname when using the cloaking system.
 	 * This allows clients to set/unset their cloaked hosts at will.

@@ -746,7 +746,8 @@ find_bmask(const struct Client *who, const dlink_list * const list)
 				{
 				case HM_HOST:
 					if(match(bp->host, who->host) || match(bp->host, who->realhost)
-					   || match(bp->host, who->sockhost))
+					   || match(bp->host, who->sockhost) || match(bp->host, who->cloaked_host)
+					   || match(bp->host, who->cloaked_ip))
 						return 1;
 					break;
 				case HM_IPV4:
