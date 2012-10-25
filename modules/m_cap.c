@@ -84,7 +84,9 @@ static struct capabilities
 {
 #define _CAP(cap, flags, name)  \
 	{ (cap), (flags), (name), sizeof(name) - 1 }
-	_CAP(CAP_MULTI_PREFIX, 0, "multi-prefix"), _CAP(CAP_UHNAMES, 0, "uhnames")
+	_CAP(CAP_MULTI_PREFIX, 0, "multi-prefix"),
+	_CAP(CAP_UHNAMES, 0, "uhnames"),
+	_CAP(CAP_UHNAMES, 0, "userhost-in-names")
 #undef _CAP
 };
 
