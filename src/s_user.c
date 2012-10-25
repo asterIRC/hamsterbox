@@ -334,6 +334,10 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 		strlcpy(source_p->realhost, source_p->sockhost, sizeof(source_p->realhost));
 	}
 
+	int is_no_tilde = 0;
+	DLINK_FOREACH(ptr, source_p->localClient->confs.head)
+		is_no_tilde |= IsNoTilde((struct AccessItem *) map_to_conf(ptr->data));
+
 	ptr = source_p->localClient->confs.head;
 	aconf = map_to_conf(ptr->data);
 
@@ -353,7 +357,7 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 
 		p = username;
 
-		if(!IsNoTilde(aconf))
+		if (!is_no_tilde)
 			source_p->username[i++] = '~';
 
 		while(*p && i < USERLEN)

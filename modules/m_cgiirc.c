@@ -176,6 +176,8 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 
 	clear_dnsbl_lookup(source_p);
 
+	attach_conf(source_p, unmap_conf_item(aconf));
+
 	strlcpy(source_p->localClient->cgisockhost, source_p->sockhost, sizeof(source_p->localClient->cgisockhost)); 
 	parse_netmask(parv[4], &source_p->localClient->ip, &bits);
 	strlcpy(source_p->host, parv[3], sizeof(source_p->host));
