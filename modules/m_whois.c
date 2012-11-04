@@ -533,7 +533,7 @@ whois_person(struct Client *source_p, struct Client *target_p)
 			sendto_one(source_p, form_str(RPL_WHOISACTUALLY), me.name,
 				   source_p->name, target_p->name, "is actually", buf);
 		}
-		else if (ConfigFileEntry.enable_cloak_system && ConfigFileEntry.cloak_whois_actually && !IsIPSpoof(target_p))
+		if (ConfigFileEntry.enable_cloak_system && ConfigFileEntry.cloak_whois_actually && !IsIPSpoof(target_p))
 		{
 			*buf = 0;
 
