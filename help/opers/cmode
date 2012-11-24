@@ -24,7 +24,7 @@ NO PARAMETERS:
               or half-opped (+o/+h) from setting a channel topic.
 
      +s     - 'Secret'. This will prevent the channel from being shown
-              in a /whois, and in the channel list.
+              in a /whois and in the channel list to non-admins.
 
      +p     - 'Paranoia'. This will prevent halfops from setting +h/-h 
               and kicking other halfops, prevent knocks if the channel 

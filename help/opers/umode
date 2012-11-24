@@ -17,7 +17,7 @@ Usermodes: (* designates that the umode is oper only)
        * +j     - Can see 'rejected' client notices.
        * +k     - Can see server kill messages.
        * +f     - Can see 'I-line is full' notices.
-       * +y     - Can see stats/links/admin requests to name a few.
+       * +y     - Can see whois and spambot notices.
        * +d     - Can see server debug messages.
        * +n     - Can see client nick changes.
        * +X     - Can see new server introduction and split messages.
@@ -27,7 +27,7 @@ Usermodes: (* designates that the umode is oper only)
        * +q     - Is a Services Administrator, can use SQUITs.
          +C     - Blocks CTCP messages.
          +p     - Hides the output of channels this client is in from WHOIS
-                  to non-admins.
+                  to non-operators.
          +D     - "deaf": don't receive channel messages
          +F     - "farconnects": like +c but for remote servers
          +G     - "soft caller id": block private messages from people not on
