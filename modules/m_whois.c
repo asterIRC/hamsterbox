@@ -534,10 +534,19 @@ whois_person(struct Client *source_p, struct Client *target_p)
 				   source_p->name, target_p->name, "is actually", buf);
 		}
 		if (ConfigFileEntry.enable_cloak_system && ConfigFileEntry.cloak_whois_actually && !IsIPSpoof(target_p))
+		{
+			/* Show the users's cloaked host and IP if they whois themselves and they differ */
+			if((IsOper(source_p) || source_p == target_p) && strcmp(target_p->cloaked_ip, target_p->cloaked_host))
+			{
+				ircsprintf(buf, "%s [%s]", target_p->cloaked_host, target_p->cloaked_ip);
+				sendto_one(source_p, form_str(RPL_WHOISACTUALLY), me.name,
+					source_p->name, target_p->name, "has cloak", buf);
+			}
 			/* Show the user's cloaked IP if their current host isn't their cloaked IP */
-			if (strcmp(target_p->host, target_p->cloaked_ip))
+			else if (strcmp(target_p->host, target_p->cloaked_ip))
 				sendto_one(source_p, form_str(RPL_WHOISACTUALLY), me.name,
 					source_p->name, target_p->name, "has cloak", target_p->cloaked_ip);
+		}
 	}
 	
 	if(!IsHideChannels(target_p) || IsOper(source_p) || source_p == target_p)
