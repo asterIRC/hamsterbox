@@ -278,6 +278,11 @@ static const struct InfoStruct info_table[] = {
 	 &ConfigServerHide.hide_server_ips,
 	 "Prevent people from seeing server IPs"},
 	{
+	 "cloak_whois_actually",
+	 OUTPUT_BOOLEAN_YN,
+	 &ConfigFileEntry.cloak_whois_actually,
+	 "Show cloaks on /WHOIS when possible"},
+	{
 	 "gline_min_cidr",
 	 OUTPUT_DECIMAL,
 	 &ConfigFileEntry.gline_min_cidr,
