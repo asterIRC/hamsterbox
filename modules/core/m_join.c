@@ -178,7 +178,7 @@ m_join(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 				sendto_one(source_p, form_str(ERR_CHANBANREASON),
 					   me.name, source_p->name, chan, "Reserved Channel");
 
-			sendto_realops_flags(UMODE_SPY, L_ALL,
+			sendto_realops_flags(UMODE_BOTS, L_ALL,
 					     "User %s (%s@%s) is attempting to join locally juped channel %s",
 					     source_p->name, source_p->username, source_p->realhost,
 					     chan);

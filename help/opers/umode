@@ -17,7 +17,7 @@ Usermodes: (* designates that the umode is oper only)
        * +j     - Can see 'rejected' client notices.
        * +k     - Can see server kill messages.
        * +f     - Can see 'I-line is full' notices.
-       * +y     - Can see whois and spambot notices.
+       * +y     - Can see whois notices.
        * +d     - Can see server debug messages.
        * +n     - Can see client nick changes.
        * +X     - Can see new server introduction and split messages.
