@@ -84,7 +84,11 @@
 #endif
 
 #include <stdio.h>
+#ifndef NDEBUG
 #include <assert.h>
+#else
+#define assert(x)
+#endif
 #include <time.h>
 #include <fcntl.h>
 
