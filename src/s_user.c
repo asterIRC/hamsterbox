@@ -296,7 +296,6 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 	const struct AccessItem *aconf = NULL;
 	char ipaddr[HOSTIPLEN];
 	dlink_node *ptr = NULL;
-	dlink_node *m = NULL;
 	int is_no_tilde;
 
 	assert(source_p != NULL);
@@ -515,8 +514,6 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 					     Count.max_loc);
 	}
 
-	SetClient(source_p);
-
 	source_p->servptr = &me;
 	dlinkAdd(source_p, &source_p->lnode, &source_p->servptr->serv->users);
 
@@ -527,13 +524,11 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 
 	source_p->localClient->allow_read = MAX_FLOOD_BURST;
 
-	if((m = dlinkFindDelete(&unknown_list, source_p)) != NULL)
-	{
-		free_dlink_node(m);
-		dlinkAdd(source_p, &source_p->localClient->lclient_node, &local_client_list);
-	}
-	else
-		assert(0);
+	SetClient(source_p);
+
+	assert(dlinkFind(&unknown_list, source_p) != NULL);
+	dlinkDelete(&source_p->localClient->lclient_node, &unknown_list);
+	dlinkAdd(source_p, &source_p->localClient->lclient_node, &local_client_list);
 
 	user_welcome(source_p);
 	add_user_host(source_p->username, source_p->realhost, 0);

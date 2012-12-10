@@ -127,7 +127,7 @@ make_client(struct Client *from)
 		client_p->localClient = BlockHeapAlloc(lclient_heap);
 		client_p->localClient->registration = REG_INIT;
 		/* as good a place as any... */
-		dlinkAdd(client_p, make_dlink_node(), &unknown_list);
+		dlinkAdd(client_p, &client_p->localClient->lclient_node, &unknown_list);
 	}
 	else
 		client_p->from = from;	/* 'from' of local client is self! */
@@ -970,8 +970,8 @@ exit_client(struct Client *source_p, struct Client *from, const char *comment)
 		 */
 		if(!IsRegistered(source_p))
 		{
-			if((m = dlinkFindDelete(&unknown_list, source_p)) != NULL)
-				free_dlink_node(m);
+			assert(dlinkFind(&unknown_list, source_p) != NULL);
+			dlinkDelete(&source_p->localClient->lclient_node, &unknown_list);
 		}
 		else if(IsClient(source_p))
 		{
