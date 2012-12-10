@@ -435,9 +435,9 @@ accept_connection(fde_t * pfd, void *data)
 			++ServerStats->is_ref;
 			if(!(listener->flags & LISTENER_SSL) && reason)
 			{
-				send(fd, "ERROR :", 7, 0);
-				send(fd, reason, strlen(reason), 0);
-				send(fd, "\r\n", 2, 0);
+				char buf[512];
+				ircsprintf(buf, "ERROR :%s\r\n", reason);
+				send(fd, buf, strlen(buf), 0);
 			}
 
 #ifdef _WIN32
