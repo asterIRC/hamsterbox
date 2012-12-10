@@ -39,6 +39,8 @@ struct DNSReply
 	struct irc_ssaddr addr;
 };
 
+typedef void (*dns_callback)(void *vptr, struct DNSReply *reply);
+
 struct DNSQuery
 {
 #ifdef _WIN32
@@ -46,8 +48,9 @@ struct DNSQuery
 	HANDLE handle;
 	char reply[MAXGETHOSTSTRUCT];
 #endif
+	dlink_list queries;	/* the actual queries associated with this object */
 	void *ptr;		/* pointer used by callback to identify request */
-	void (*callback) (void *vptr, struct DNSReply * reply);	/* callback to call */
+	dns_callback callback;	/* callback to call */
 };
 
 typedef struct

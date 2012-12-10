@@ -50,6 +50,7 @@ static PF res_readreply;
 #define RES_MAXALIASES 35	/* maximum aliases allowed */
 #define RES_MAXADDRS   35	/* maximum addresses allowed */
 #define AR_TTL         600	/* TTL in seconds for dns cache entries */
+#define MAX_ID         (1 << 16)
 
 /* RFC 1104/1105 wasn't very helpful about what these fields
  * should be named, so for now, we'll just name them this way.
@@ -75,7 +76,8 @@ typedef enum
 
 struct reslist
 {
-	dlink_node node;
+	dlink_node node;	/* node into the query->queries list */
+	dlink_node tnode;	/* node into request_list_timeout */
 	int id;
 	int sent;		/* number of requests sent */
 	request_state state;	/* State the resolver machine is in */
@@ -92,7 +94,11 @@ struct reslist
 };
 
 static fde_t ResolverFileDescriptor;
-static dlink_list request_list = { NULL, NULL, 0 };
+
+/* request list. ordered with oldest queries first, newest last */
+static dlink_list request_list_timeout;
+/* request hash. request_list[request->id] == request */
+static struct reslist *request_list[MAX_ID];
 
 static void rem_request(struct reslist *request);
 static struct reslist *make_request(struct DNSQuery *query);
@@ -177,26 +183,24 @@ res_ourserver(const struct irc_ssaddr *inp)
  * timeout_query_list - Remove queries from the list which have been 
  * there too long without being resolved.
  */
-static time_t
+static void
 timeout_query_list(time_t now)
 {
-	dlink_node *ptr;
-	dlink_node *next_ptr;
-	struct reslist *request;
-	time_t next_time = 0;
-	time_t timeout = 0;
+	dlink_node *ptr, *next_ptr;
 
-	DLINK_FOREACH_SAFE(ptr, next_ptr, request_list.head)
+	DLINK_FOREACH_SAFE(ptr, next_ptr, request_list_timeout.head)
 	{
-		request = ptr->data;
-		timeout = request->sentat + request->timeout;
+		struct reslist *request = ptr->data;
+		time_t timeout = request->sentat + request->timeout;
 
 		if(now >= timeout)
 		{
 			if(--request->retries <= 0)
 			{
-				(*request->query->callback) (request->query->ptr, NULL);
+				dns_callback callback = request->query->callback;
+				void *data = request->query->ptr;
 				rem_request(request);
+				callback(data, NULL);
 				continue;
 			}
 			else
@@ -206,14 +210,9 @@ timeout_query_list(time_t now)
 				resend_query(request);
 			}
 		}
-
-		if((next_time == 0) || timeout < next_time)
-		{
-			next_time = timeout;
-		}
+		else
+			break;
 	}
-
-	return ((next_time > now) ? next_time : (now + AR_TTL));
 }
 
 /*
@@ -302,8 +301,15 @@ add_local_domain(char *hname, size_t size)
 static void
 rem_request(struct reslist *request)
 {
-	assert(dlinkFind(&request_list, request));
-	dlinkDelete(&request->node, &request_list);
+	assert(dlinkFind(&request->query->queries, request));
+	dlinkDelete(&request->node, &request->query->queries);
+
+	assert(dlinkFind(&request_list_timeout, request));
+	dlinkDelete(&request->tnode, &request_list_timeout);
+
+	assert(request_list[request->id] == request);
+	request_list[request->id] = NULL;
+
 	MyFree(request->name);
 	MyFree(request);
 }
@@ -315,6 +321,17 @@ static struct reslist *
 make_request(struct DNSQuery *query)
 {
 	struct reslist *request;
+#ifndef HAVE_LRAND48
+	int k = 0;
+	struct timeval tv;
+#endif
+
+	if (dlink_list_length(&request_list_timeout) == MAX_ID)
+	{
+		ilog(L_CRIT, "Unable to create dns request, all queries are in use");
+		query->callback(query->ptr, NULL);
+		return NULL;
+	}
 
 	request = (struct reslist *) MyMalloc(sizeof(struct reslist));
 
@@ -325,7 +342,34 @@ make_request(struct DNSQuery *query)
 	request->query = query;
 	request->state = REQ_IDLE;
 
-	dlinkAdd(request, &request->node, &request_list);
+	/*
+	 * generate an unique id
+	 * NOTE: we don't have to worry about converting this to and from
+	 * network byte order, the nameserver does not interpret this value
+	 * and returns it unchanged
+	 */
+#ifdef HAVE_LRAND48
+	do
+	{
+		request->id = (request->id + lrand48()) & 0xffff;
+	}
+	while(find_id(request->id));
+#else
+	gettimeofday(&tv, NULL);
+	do
+	{
+		request->id = (request->id + k + tv.tv_usec) & 0xffff;
+		k++;
+	}
+	while(find_id(request->id));
+#endif /* HAVE_LRAND48 */
+
+	assert(request_list[request->id] == NULL);
+	request_list[request->id] = request;
+
+	dlinkAdd(request, &request->node, &query->queries);
+	dlinkAddTail(request, &request->tnode, &request_list_timeout);
+
 	return (request);
 }
 
@@ -336,18 +380,10 @@ make_request(struct DNSQuery *query)
 void
 delete_resolver_queries(const struct DNSQuery *query)
 {
-	dlink_node *ptr;
-	dlink_node *next_ptr;
-	struct reslist *request;
+	dlink_node *ptr, *next_ptr;
 
-	DLINK_FOREACH_SAFE(ptr, next_ptr, request_list.head)
-	{
-		if((request = ptr->data) != NULL)
-		{
-			if(query == request->query)
-				rem_request(request);
-		}
-	}
+	DLINK_FOREACH_SAFE(ptr, next_ptr, query->queries.head)
+		rem_request(ptr->data);
 }
 
 /*
@@ -382,23 +418,12 @@ send_res_msg(const char *msg, int len, int rcount)
 }
 
 /*
- * find_id - find a dns request id (id is determined by dn_mkquery)
+ * find_id - find a dns request id
  */
 static struct reslist *
 find_id(int id)
 {
-	dlink_node *ptr;
-	struct reslist *request;
-
-	DLINK_FOREACH(ptr, request_list.head)
-	{
-		request = ptr->data;
-
-		if(request->id == id)
-			return (request);
-	}
-
-	return (NULL);
+	return request_list[id];
 }
 
 /* 
@@ -448,6 +473,9 @@ do_query_name(struct DNSQuery *query, const char *name, struct reslist *request,
 	if(request == NULL)
 	{
 		request = make_request(query);
+		if (request == NULL)
+			return;
+
 		request->name = (char *) MyMalloc(strlen(host_name) + 1);
 		request->type = type;
 		strcpy(request->name, host_name);
@@ -519,6 +547,8 @@ do_query_number(struct DNSQuery *query, const struct irc_ssaddr *addr, struct re
 	if(request == NULL)
 	{
 		request = make_request(query);
+		if (request == NULL)
+			return;
 		request->type = T_PTR;
 		memcpy(&request->addr, addr, sizeof(struct irc_ssaddr));
 		request->name = (char *) MyMalloc(HOSTLEN + 1);
@@ -542,32 +572,7 @@ query_name(const char *name, int query_class, int type, struct reslist *request)
 					  (unsigned char *) buf, sizeof(buf))) > 0)
 	{
 		HEADER *header = (HEADER *) buf;
-#ifndef HAVE_LRAND48
-		int k = 0;
-		struct timeval tv;
-#endif
-		/*
-		 * generate an unique id
-		 * NOTE: we don't have to worry about converting this to and from
-		 * network byte order, the nameserver does not interpret this value
-		 * and returns it unchanged
-		 */
-#ifdef HAVE_LRAND48
-		do
-		{
-			header->id = (header->id + lrand48()) & 0xffff;
-		}
-		while(find_id(header->id));
-#else
-		gettimeofday(&tv, NULL);
-		do
-		{
-			header->id = (header->id + k + tv.tv_usec) & 0xffff;
-			k++;
-		}
-		while(find_id(header->id));
-#endif /* HAVE_LRAND48 */
-		request->id = header->id;
+		header->id = request->id;
 		++request->sends;
 
 		request->sent += send_res_msg(buf, request_len, request->sends);
@@ -579,6 +584,10 @@ resend_query(struct reslist *request)
 {
 	if(request->resend == 0)
 		return;
+	
+	assert(dlinkFind(&request_list_timeout, request));
+	dlinkDelete(&request->tnode, &request_list_timeout);
+	dlinkAddTail(request, &request->tnode, &request_list_timeout);
 
 	switch (request->type)
 	{
@@ -769,7 +778,6 @@ res_readreply(fde_t * fd, void *data)
 		;
 	HEADER *header;
 	struct reslist *request = NULL;
-	struct DNSReply *reply = NULL;
 	int rc;
 	int answer_count;
 	socklen_t len = sizeof(struct irc_ssaddr);
@@ -798,7 +806,8 @@ res_readreply(fde_t * fd, void *data)
 	 * response for an id which we have already received an answer for
 	 * just ignore this response.
 	 */
-	if(0 == (request = find_id(header->id)))
+	request = find_id(header->id);
+	if(request == NULL)
 		return;
 
 	/*
@@ -836,8 +845,10 @@ res_readreply(fde_t * fd, void *data)
 				 * If a bad error was returned, stop here and don't
 				 * send any more (no retries granted).
 				 */
-				(*request->query->callback) (request->query->ptr, NULL);
+				dns_callback callback = request->query->callback;
+				void *data = request->query->ptr;
 				rem_request(request);
+				callback(data, NULL);
 			}
 		}
 		else		/* Some other error other than NXDOMAIN */
@@ -846,8 +857,10 @@ res_readreply(fde_t * fd, void *data)
 			 * If a bad error was returned, stop here and don't
 			 * send any more (no retries granted).
 			 */
-			(*request->query->callback) (request->query->ptr, NULL);
+			dns_callback callback = request->query->callback;
+			void *data = request->query->ptr;
 			rem_request(request);
+			callback(data, NULL);
 		}
 		return;
 	}
@@ -867,8 +880,10 @@ res_readreply(fde_t * fd, void *data)
 				 * got a PTR response with no name, something bogus is happening
 				 * don't bother trying again, the client address doesn't resolve
 				 */
-				(*request->query->callback) (request->query->ptr, reply);
+				dns_callback callback = request->query->callback;
+				void *data = request->query->ptr;
 				rem_request(request);
+				callback(data, NULL);
 				return;
 			}
 
@@ -890,10 +905,15 @@ res_readreply(fde_t * fd, void *data)
 			/*
 			 * got a name and address response, client resolved
 			 */
-			reply = make_dnsreply(request);
-			(*request->query->callback) (request->query->ptr, reply);
-			MyFree(reply);
+			dns_callback callback = request->query->callback;
+			void *data = request->query->ptr;
+			struct DNSReply *reply = make_dnsreply(request);
+
 			rem_request(request);
+			callback(data, reply);
+
+			MyFree(reply->h_name);
+			MyFree(reply);
 		}
 	}
 	else if(!request->sent)
@@ -916,7 +936,7 @@ make_dnsreply(struct reslist *request)
 
 	cp = (struct DNSReply *) MyMalloc(sizeof(struct DNSReply));
 
-	cp->h_name = request->name;
+	DupString(cp->h_name, request->name);
 	memcpy(&cp->addr, &request->addr, sizeof(cp->addr));
 	return (cp);
 }
