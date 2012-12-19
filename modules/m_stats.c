@@ -722,7 +722,6 @@ static void
 stats_deny(struct Client *source_p)
 {
 	struct AddressRec *arec;
-	struct ConfItem *conf;
 	struct AccessItem *aconf;
 	int i;
 
@@ -737,8 +736,6 @@ stats_deny(struct Client *source_p)
 				/* dont report a tdline as a dline */
 				if(aconf->flags & CONF_FLAGS_TEMPORARY)
 					continue;
-
-				conf = unmap_conf_item(aconf);
 
 				sendto_one(source_p, form_str(RPL_STATSDLINE),
 					   from, to, 'D', aconf->host, aconf->reason,
@@ -758,7 +755,6 @@ static void
 stats_tdeny(struct Client *source_p)
 {
 	struct AddressRec *arec;
-	struct ConfItem *conf;
 	struct AccessItem *aconf;
 	int i;
 
@@ -773,8 +769,6 @@ stats_tdeny(struct Client *source_p)
 				/* dont report a permanent dline as a tdline */
 				if(!(aconf->flags & CONF_FLAGS_TEMPORARY))
 					continue;
-
-				conf = unmap_conf_item(aconf);
 
 				sendto_one(source_p, form_str(RPL_STATSDLINE),
 					   from, to, 'd', aconf->host, aconf->reason ? aconf->reason : "D-lined",
@@ -794,7 +788,6 @@ static void
 stats_exempt(struct Client *source_p)
 {
 	struct AddressRec *arec;
-	struct ConfItem *conf;
 	struct AccessItem *aconf;
 	int i;
 
@@ -811,8 +804,6 @@ stats_exempt(struct Client *source_p)
 			if(arec->type == CONF_EXEMPTDLINE)
 			{
 				aconf = arec->aconf;
-
-				conf = unmap_conf_item(aconf);
 
 				sendto_one(source_p, form_str(RPL_STATSDLINE),
 					   from, to, 'e', aconf->host,
@@ -958,7 +949,6 @@ stats_auth(struct Client *source_p)
 	/* If unopered, Only return matching auth blocks */
 	else if((ConfigFileEntry.stats_i_oper_only == 1) && !IsOper(source_p))
 	{
-		struct ConfItem *conf;
 		struct AccessItem *aconf;
 
 		if(MyConnect(source_p))
@@ -985,8 +975,6 @@ stats_auth(struct Client *source_p)
 		if(aconf == NULL)
 			return;
 
-		conf = unmap_conf_item(aconf);
-
 		sendto_one(source_p, form_str(RPL_STATSILINE), from,
 			   to, 'I',
 			   "*", show_iline_prefix(source_p, aconf, aconf->user),
@@ -1001,7 +989,6 @@ stats_auth(struct Client *source_p)
 static void
 stats_tklines(struct Client *source_p)
 {
-	struct ConfItem *conf;
 	/* Oper only, if unopered, return ERR_NOPRIVILEGES */
 	if((ConfigFileEntry.stats_k_oper_only == 2) && !IsOper(source_p))
 		sendto_one(source_p, form_str(ERR_NOPRIVILEGES), from, to);
@@ -1027,8 +1014,6 @@ stats_tklines(struct Client *source_p)
 		/* dont report a permanent kline as a tkline */
 		if(!(aconf->flags & CONF_FLAGS_TEMPORARY))
 			return;
-
-		conf = unmap_conf_item(aconf);
 
 		sendto_one(source_p, form_str(RPL_STATSKLINE), from,
 			   to, "k", aconf->host, aconf->user, aconf->reason, "");

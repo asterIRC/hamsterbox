@@ -175,7 +175,6 @@ mo_etrace(struct Client *client_p, struct Client *source_p, int parc, char *parv
 static void
 report_this_status(struct Client *source_p, struct Client *target_p, int full_etrace)
 {
-	const char *name;
 	const char *class_name;
 	char ip[HOSTIPLEN];
 
@@ -183,7 +182,6 @@ report_this_status(struct Client *source_p, struct Client *target_p, int full_et
 	irc_getnameinfo((struct sockaddr *) &target_p->localClient->ip,
 			target_p->localClient->ip.ss_len, ip, HOSTIPLEN, NULL, 0, NI_NUMERICHOST);
 
-	name = get_client_name(target_p, HIDE_IP);
 	class_name = get_client_class(target_p);
 
 	set_time();

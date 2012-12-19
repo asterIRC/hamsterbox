@@ -214,11 +214,11 @@ build_chanmode_string()
 {
 	static char *modebuf = NULL;
 	char temp_modebuf[64], *p = temp_modebuf;
-	int i, count;
+	int i;
 
 	MyFree(modebuf);
 
-	for (i = 0, count = 0; channel_mode_info[i].func != NULL; ++i)
+	for (i = 0; channel_mode_info[i].func != NULL; ++i)
 		if ((channel_mode_info[i].enabled == NULL || *channel_mode_info[i].enabled) && channel_mode_info[i].letter)
 			*p++ = channel_mode_info[i].letter;
 	*p++ = 0;

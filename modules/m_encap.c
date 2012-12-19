@@ -69,7 +69,6 @@ ms_encap(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 {
 	char buffer[IRCD_BUFSIZE], *ptr = buffer;
 	unsigned int cur_len = 0, len, i;
-	int paramcount, mpara = 0;
 	struct Message *mptr = NULL;
 	MessageHandler handler = 0;
 
@@ -108,9 +107,6 @@ ms_encap(struct Client *client_p, struct Client *source_p, int parc, char *parv[
 
 	if((mptr = find_command(parv[2])) == NULL)
 		return;
-
-	paramcount = mptr->parameters;
-	mpara = mptr->maxpara;
 
 	mptr->bytes += strlen(buffer);
 
