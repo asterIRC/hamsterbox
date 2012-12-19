@@ -122,6 +122,9 @@ make_auth_request(struct Client *client)
 	request->client = client;
 	request->timeout = CurrentTime + CONNECTTIMEOUT;
 
+	assert(client->localClient->auth == NULL);
+	client->localClient->auth = request;
+
 	return request;
 }
 
@@ -162,6 +165,10 @@ release_auth(struct AuthRequest *auth)
 	comm_setselect(&client->localClient->fd, COMM_SELECT_READ, read_packet, client, 0);
 
 	dlinkAdd(auth, &auth->dead_node, &dead_auth_list);
+	
+	assert(auth->client->localClient->auth == auth);
+	auth->client->localClient->auth = NULL;
+	auth->client = NULL;
 }
 
 /*
@@ -470,6 +477,7 @@ timeout_auth_queries_event(void *notused)
 	{
 		auth = ptr->data;
 		dlinkDelete(&auth->dead_node, &dead_auth_list);
+		assert(auth->client == NULL);
 		MyFree(auth);
 	}
 }
@@ -645,44 +653,29 @@ read_auth_reply(fde_t * fd, void *data)
 void
 delete_auth(struct Client *target_p)
 {
-	dlink_node *ptr;
-	dlink_node *next_ptr;
 	struct AuthRequest *auth;
 
-	if(!IsUnknown(target_p))
+	if (target_p == NULL || target_p->localClient == NULL || target_p->localClient->auth == NULL)
 		return;
+	
+	auth = target_p->localClient->auth;
 
-	if(target_p->localClient->dns_query != NULL)
-		DLINK_FOREACH_SAFE(ptr, next_ptr, auth_doing_dns_list.head)
+	if (target_p->localClient->dns_query != NULL)
 	{
-		auth = ptr->data;
+		delete_resolver_queries(target_p->localClient->dns_query);
+		MyFree(target_p->localClient->dns_query);
+		target_p->localClient->dns_query = NULL;
 
-		if(auth->client == target_p)
-		{
-			delete_resolver_queries(target_p->localClient->dns_query);
-			MyFree(target_p->localClient->dns_query);
-			target_p->localClient->dns_query = NULL;
-
-			dlinkDelete(&auth->dns_node, &auth_doing_dns_list);
-
-			if(!IsDoingAuth(auth))
-			{
-				MyFree(auth);
-				return;
-			}
-		}
+		dlinkDelete(&auth->dns_node, &auth_doing_dns_list);
 	}
 
-	DLINK_FOREACH_SAFE(ptr, next_ptr, auth_doing_ident_list.head)
+	if (IsDoingAuth(auth))
 	{
-		auth = ptr->data;
-
-		if(auth->client == target_p)
-		{
-			fd_close(&auth->fd);
-
-			dlinkDelete(&auth->ident_node, &auth_doing_ident_list);
-			MyFree(auth);
-		}
+		fd_close(&auth->fd);
+		dlinkDelete(&auth->ident_node, &auth_doing_ident_list);
 	}
+
+	assert(auth->client == target_p);
+	MyFree(auth);
+	target_p->localClient->auth = NULL;
 }

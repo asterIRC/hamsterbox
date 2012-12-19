@@ -207,6 +207,8 @@ struct LocalUser
 	unsigned int cap_client;	/* Client capabilities (from us) */
 	unsigned int cap_active;	/* Active capabilities (to us) */
 
+	struct AuthRequest *auth;	/* auth status, if currently in the auth system */
+
 	/* Anti flooding part, all because of lamers... */
 	time_t last_away;	/* Away since... */
 	time_t last_join_time;	/* when this client last 
