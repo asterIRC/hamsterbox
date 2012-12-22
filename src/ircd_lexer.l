@@ -324,6 +324,7 @@ use_noctcp      { return USE_NOCTCP; }
 use_logging	{ return USE_LOGGING; }
 use_whois_actually { return USE_WHOIS_ACTUALLY; }
 throttle_time { return THROTTLE_TIME; }
+throttle_num { return THROTTLE_NUM; }
 user		{ return USER; } 
 tkline		{ return TKLINE; } 
 txline		{ return TXLINE; } 

@@ -131,7 +131,11 @@ static struct ConfItem *class_default;
 struct ip_entry
 {
 	struct irc_ssaddr ip;
+	/* Number of registered users using this IP */
 	int count;
+	/* Number of connections from this IP in the last throttle_time secs */
+	int con_count;
+	/* The last time someone connected from this IP */
 	time_t last_attempt;
 	struct ip_entry *next;
 };
@@ -2009,6 +2013,7 @@ set_default_conf(void)
 #ifdef HAVE_LIBZ
 	ConfigFileEntry.compression_level = 0;
 #endif
+	ConfigFileEntry.throttle_num = 0;
 	ConfigFileEntry.throttle_time = 10;
 }
 
@@ -2132,13 +2137,19 @@ conf_connect_allowed(struct irc_ssaddr *addr, int aftype, const char **reason)
 	}
 
 	ip_found = find_or_add_ip(addr);
+	++ip_found->con_count;
 
-	if((CurrentTime - ip_found->last_attempt) < ConfigFileEntry.throttle_time)
+	if ((CurrentTime - ip_found->last_attempt) < ConfigFileEntry.throttle_time)
 	{
-		*reason = "Trying to reconnect too fast.";
-		ip_found->last_attempt = CurrentTime;
-		return TOO_FAST;
+		if (ip_found->con_count >= ConfigFileEntry.throttle_num)
+		{
+			*reason = "Trying to reconnect too fast.";
+			ip_found->last_attempt = CurrentTime;
+			return TOO_FAST;
+		}
 	}
+	else
+		ip_found->con_count = 1;
 
 	ip_found->last_attempt = CurrentTime;
 	return 0;

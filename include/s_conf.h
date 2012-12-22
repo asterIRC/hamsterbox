@@ -399,6 +399,7 @@ struct config_file_entry
 	int kill_chase_time_limit;
 	int default_floodcount;
 	int client_flood;
+	int throttle_num;
 	/* 0 == don't use throttle... */
 	int throttle_time;
 	int use_egd;

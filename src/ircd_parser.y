@@ -380,6 +380,7 @@ unhook_hub_leaf_confs(void)
 %token  T_UNXLINE
 %token  T_WALLOP
 %token  THROTTLE_TIME
+%token  THROTTLE_NUM
 %token  TOPICBURST
 %token  TRUE_NO_OPER_FLOOD
 %token  TKLINE
@@ -3396,6 +3397,7 @@ general_item:       general_hide_spoof_ips | general_ignore_bogus_ts |
                     general_servlink_path | general_disable_remote_commands |
                     general_default_cipher_preference | general_stats_e_disabled |
                     general_compression_level | general_client_flood |
+                    general_throttle_num |
                     general_throttle_time | general_havent_read_conf |
                     general_dot_in_ip6_addr | general_ping_cookie |
                     general_disable_auth | general_burst_away |
@@ -3763,6 +3765,11 @@ general_ping_cookie: PING_COOKIE '=' TBOOL ';'
 general_disable_auth: DISABLE_AUTH '=' TBOOL ';'
 {
   ConfigFileEntry.disable_auth = yylval.number;
+};
+
+general_throttle_num: THROTTLE_NUM '=' NUMBER ';'
+{
+  ConfigFileEntry.throttle_num = yylval.number;
 };
 
 general_throttle_time: THROTTLE_TIME '=' timespec ';'
