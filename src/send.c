@@ -140,9 +140,7 @@ send_message(struct Client *to, char *buf, int len)
 	++to->localClient->send.messages;
 	++me.localClient->send.messages;
 
-	if(dbuf_length(&to->localClient->buf_sendq) >
-	   (IsServer(to) ? (unsigned int) 1024 : (unsigned int) 4096))
-		send_queued_write(to);
+	comm_setselect(&to->localClient->fd, COMM_SELECT_WRITE, (PF *) sendq_unblocked, to, 0);
 }
 
 /* send_message_remote()
@@ -221,16 +219,8 @@ send_message_remote(struct Client *to, struct Client *from, char *buf, int len)
 void
 sendq_unblocked(fde_t * fd, struct Client *client_p)
 {
-	ClearSendqBlocked(client_p);
-	/* let send_queued_write be executed by send_queued_all */
-
-#ifdef HAVE_LIBCRYPTO
-	if(fd->flags.pending_read)
-	{
-		fd->flags.pending_read = 0;
-		read_packet(fd, client_p);
-	}
-#endif
+	assert(fd == &client_p->localClient->fd);
+	send_queued_write(client_p);
 }
 
 /*
@@ -260,7 +250,7 @@ send_queued_write(struct Client *to)
 	 ** Once socket is marked dead, we cannot start writing to it,
 	 ** even if the error is removed...
 	 */
-	if(IsDead(to) || IsSendqBlocked(to))
+	if(IsDead(to))
 		return;		/* no use calling send() now */
 
 	/* Next, lets try to write some data */
@@ -321,7 +311,6 @@ send_queued_write(struct Client *to)
 		if((retlen < 0) && (ignoreErrno(errno)))
 		{
 			/* we have a non-fatal error, reschedule a write */
-			SetSendqBlocked(to);
 			comm_setselect(&to->localClient->fd, COMM_SELECT_WRITE,
 				       (PF *) sendq_unblocked, (void *) to, 0);
 		}

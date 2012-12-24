@@ -435,8 +435,6 @@ read_packet(fde_t * fd, void *data)
 				switch (SSL_get_error(fd->ssl, length))
 				{
 				case SSL_ERROR_WANT_WRITE:
-					fd->flags.pending_read = 1;
-					SetSendqBlocked(client_p);
 					comm_setselect(fd, COMM_SELECT_WRITE,
 						       (PF *) sendq_unblocked, client_p, 0);
 					return;

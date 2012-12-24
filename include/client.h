@@ -392,7 +392,6 @@ struct LocalUser
 #define FLAGS_FLOODDONE     0x0000000000200000ULL	/* Flood grace period has been ended.       */
 #define FLAGS_EOB           0x0000000000400000ULL	/* server has received EOB                  */
 #define FLAGS_HIDDEN        0x0000000000800000ULL	/* a hidden server. not shown in /links     */
-#define FLAGS_BLOCKED       0x0000000001000000ULL	/* must wait for COMM_SELECT_WRITE          */
 #define FLAGS_SBLOCKED      0x0000000002000000ULL	/* slinkq is blocked                        */
 #define FLAGS_USERHOST      0x0000000004000000ULL	/* client is in userhost hash               */
 #define FLAGS_BURSTED       0x0000000008000000ULL	/* user was already bursted                 */
@@ -599,9 +598,6 @@ struct LocalUser
 #define IsHidden(x)             ((x)->flags &  FLAGS_HIDDEN)
 #define SetHidden(x)            ((x)->flags |= FLAGS_HIDDEN)
 
-#define IsSendqBlocked(x)       ((x)->flags &  FLAGS_BLOCKED)
-#define SetSendqBlocked(x)      ((x)->flags |= FLAGS_BLOCKED)
-#define ClearSendqBlocked(x)    ((x)->flags &= ~FLAGS_BLOCKED)
 #define IsSlinkqBlocked(x)      ((x)->flags &  FLAGS_SBLOCKED)
 #define SetSlinkqBlocked(x)     ((x)->flags |= FLAGS_SBLOCKED)
 #define ClearSlinkqBlocked(x)   ((x)->flags &= ~FLAGS_SBLOCKED)
