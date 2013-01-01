@@ -34,6 +34,7 @@
 #include "send.h"
 #include "memory.h"
 #include "numeric.h"
+#include "setup.h"
 
 fde_t *fd_hash[FD_HASH_SIZE];
 fde_t *fd_next_in_loop = NULL;

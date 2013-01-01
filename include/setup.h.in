@@ -21,6 +21,9 @@
 /* Size of the dlink_node heap. */
 #undef DNODE_HEAP_SIZE
 
+/* Size of the fd hash. */
+#undef FD_HASH_SIZE
+
 /* Define this if you want to enable gline voting. */
 #undef GLINE_VOTING
 
@@ -236,9 +239,6 @@
 
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
-
-/* Define to the home page for this package. */
-#undef PACKAGE_URL
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
