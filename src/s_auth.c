@@ -310,7 +310,7 @@ start_auth_query(struct AuthRequest *auth)
 	localaddr.ss_port = htons(0);
 
 	SetDoingAuth(auth);
-	dlinkAdd(auth, &auth->ident_node, &auth_doing_ident_list);
+	dlinkAddTail(auth, &auth->ident_node, &auth_doing_ident_list);
 
 	comm_connect_tcp(&auth->fd, auth->client->sockhost, 113,
 			 (struct sockaddr *) &localaddr, localaddr.ss_len, auth_connect_callback,
@@ -471,6 +471,8 @@ timeout_auth_queries_event(void *notused)
 			dlinkDelete(&auth->ident_node, &auth_doing_ident_list);
 			release_auth(auth);
 		}
+		else
+			break;
 	}
 
 	DLINK_FOREACH_SAFE(ptr, next_ptr, dead_auth_list.head)
