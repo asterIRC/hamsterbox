@@ -90,6 +90,8 @@ tstats(struct Client *source_p)
 
 	sendto_one(source_p, ":%s %d %s T :accepts %u refused %u",
 		   me.name, RPL_STATSDEBUG, source_p->name, sp->is_ac, sp->is_ref);
+	sendto_one(source_p, ":%s %d %s T :dns cache %u dnsbl cache %u",
+		   me.name, RPL_STATSDEBUG, source_p->name, sp->is_dc, sp->is_rblc);
 	sendto_one(source_p, ":%s %d %s T :unknown commands %u prefixes %u",
 		   me.name, RPL_STATSDEBUG, source_p->name, sp->is_unco, sp->is_unpf);
 	sendto_one(source_p, ":%s %d %s T :nick collisions %u unknown closes %u",

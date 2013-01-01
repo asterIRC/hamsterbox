@@ -59,6 +59,8 @@ static const char *HeaderMessages[] = {
 	":%s NOTICE AUTH :*** Looking up your hostname...",
 	":%s NOTICE AUTH :*** Found your hostname",
 	":%s NOTICE AUTH :*** Couldn't look up your hostname",
+	":%s NOTICE AUTH :*** Found your hostname (cached)",
+	":%s NOTICE AUTH :*** Couldn't look up your hostname (cached)",
 	":%s NOTICE AUTH :*** Checking Ident",
 	":%s NOTICE AUTH :*** Got Ident response",
 	":%s NOTICE AUTH :*** No Ident response",
@@ -71,6 +73,8 @@ enum
 	REPORT_DO_DNS,
 	REPORT_FIN_DNS,
 	REPORT_FAIL_DNS,
+	REPORT_FIN_DNS_CACHED,
+	REPORT_FAIL_DNS_CACHED,
 	REPORT_DO_ID,
 	REPORT_FIN_ID,
 	REPORT_FAIL_ID,
@@ -182,6 +186,9 @@ static void
 auth_dns_callback(void *vptr, struct DNSReply *reply)
 {
 	struct AuthRequest *auth = (struct AuthRequest *) vptr;
+	struct ip_entry *ip = find_or_add_ip(&auth->client->localClient->ip);
+
+	*ip->host = -1;
 
 	dlinkDelete(&auth->dns_node, &auth_doing_dns_list);
 	ClearDNSPending(auth);
@@ -221,6 +228,7 @@ auth_dns_callback(void *vptr, struct DNSReply *reply)
 			strlcpy(auth->client->host, reply->h_name, sizeof(auth->client->host));
 			strlcpy(auth->client->realhost, reply->h_name,
 				sizeof(auth->client->realhost));
+			strlcpy(ip->host, reply->h_name, sizeof(ip->host));
 			sendheader(auth->client, REPORT_FIN_DNS);
 		}
 		else if(strlen(reply->h_name) > HOSTLEN)
@@ -232,7 +240,7 @@ auth_dns_callback(void *vptr, struct DNSReply *reply)
 	MyFree(auth->client->localClient->dns_query);
 	auth->client->localClient->dns_query = NULL;
 
-	if(!IsDoingAuth(auth))
+	if(!IsDoingAuth(auth) && !IsCrit(auth))
 		release_auth(auth);
 }
 
@@ -399,6 +407,7 @@ start_auth(va_list args)
 {
 	struct Client *client = va_arg(args, struct Client *);
 	struct AuthRequest *auth = NULL;
+	struct ip_entry *ip = find_or_add_ip(&client->localClient->ip);
 
 	assert(client != NULL);
 
@@ -408,24 +417,44 @@ start_auth(va_list args)
 	auth = make_auth_request(client);
 	SetCrit(auth);
 
-	client->localClient->dns_query = MyMalloc(sizeof(struct DNSQuery));
-	client->localClient->dns_query->ptr = auth;
-	client->localClient->dns_query->callback = auth_dns_callback;
+	if (!*ip->host)
+	{
+		sendheader(client, REPORT_DO_DNS);
 
-	start_dnsbl_lookup(client);
+		client->localClient->dns_query = MyMalloc(sizeof(struct DNSQuery));
+		client->localClient->dns_query->ptr = auth;
+		client->localClient->dns_query->callback = auth_dns_callback;
 
-	sendheader(client, REPORT_DO_DNS);
+		SetDNSPending(auth);
+		dlinkAdd(auth, &auth->dns_node, &auth_doing_dns_list);
+
+		gethost_byaddr(&client->localClient->ip, client->localClient->dns_query);
+	}
+	else if (*ip->host == -1)
+	{
+		sendheader(client, REPORT_FAIL_DNS_CACHED);
+		++ServerStats->is_dc;
+	}
+	else
+	{
+		strlcpy(client->host, ip->host, sizeof(client->host));
+		strlcpy(client->realhost, ip->host, sizeof(client->realhost));
+		sendheader(client, REPORT_FIN_DNS_CACHED);
+		++ServerStats->is_dc;
+	}
+
+	if (!ip->dnsbl_clear)
+		start_dnsbl_lookup(client);
+	else
+		++ServerStats->is_rblc;
 
 	if(ConfigFileEntry.disable_auth == 0)
 		start_auth_query(auth);
 
-	/* auth order changed, before gethost_byaddr can immediately call
-	 * dns callback under win32 when the lookup cannot be started.
-	 * And that would do MyFree(auth) etc -adx */
-	SetDNSPending(auth);
-	dlinkAdd(auth, &auth->dns_node, &auth_doing_dns_list);
 	ClearCrit(auth);
-	gethost_byaddr(&client->localClient->ip, client->localClient->dns_query);
+	
+	if (!IsDoingAuth(auth) && !IsDNSPending(auth))
+		release_auth(auth);
 
 	return NULL;
 }

@@ -495,6 +495,23 @@ struct logging_entry
 	char failed_operlog[PATH_MAX + 1];
 };
 
+struct ip_entry
+{
+	struct irc_ssaddr ip;
+	/* Number of registered users using this IP */
+	int count;
+	/* Number of connections from this IP in the last throttle_time secs */
+	int con_count;
+	/* The last time someone connected from this IP */
+	time_t last_attempt;
+	/* The host the IP resolves to */
+	char host[HOSTLEN + 1];
+	/* Whether or not this ip has cleared the dnsbl checks */
+	unsigned int dnsbl_clear:1;
+
+	struct ip_entry *next;
+};
+
 extern int ypass;
 extern dlink_list class_items;
 extern dlink_list server_items;
@@ -526,6 +543,7 @@ extern void check_class(void);
 extern void init_class(void);
 extern struct ConfItem *find_class(const char *);
 extern void init_ip_hash_table(void);
+extern struct ip_entry *find_or_add_ip(struct irc_ssaddr *);
 extern void count_ip_hash(int *, unsigned long *);
 extern void remove_one_ip(struct irc_ssaddr *);
 extern struct ConfItem *make_conf_item(ConfType type);

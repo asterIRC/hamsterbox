@@ -58,6 +58,8 @@
 #include "channel_mode.h"
 #include "cloak.h"
 
+#define CACHE_EXPIRE 300
+
 struct Callback *client_check_cb = NULL;
 struct config_server_hide ConfigServerHide;
 
@@ -99,11 +101,10 @@ static void read_conf(FBFILE *);
 static void clear_out_old_conf(void);
 static void flush_deleted_I_P(void);
 static void expire_tklines(dlink_list *);
-static void garbage_collect_ip_entries(void);
+static void garbage_collect_ip_entries(void *);
 static int hash_ip(struct irc_ssaddr *);
 static int verify_access(struct Client *, const char *);
 static int attach_iline(struct Client *, struct ConfItem *);
-static struct ip_entry *find_or_add_ip(struct irc_ssaddr *);
 static void parse_conf_file(int, int);
 static dlink_list *map_to_list(ConfType);
 static int find_user_host(struct Client *, char *, char *, char *, unsigned int);
@@ -128,22 +129,9 @@ static struct ConfItem *class_default;
  */
 #define IP_HASH_SIZE 0x1000
 
-struct ip_entry
-{
-	struct irc_ssaddr ip;
-	/* Number of registered users using this IP */
-	int count;
-	/* Number of connections from this IP in the last throttle_time secs */
-	int con_count;
-	/* The last time someone connected from this IP */
-	time_t last_attempt;
-	struct ip_entry *next;
-};
-
 static struct ip_entry *ip_hash_table[IP_HASH_SIZE];
 static BlockHeap *ip_entry_heap = NULL;
 static int ip_entries_count = 0;
-
 
 inline void *
 map_to_conf(struct ConfItem *aconf)
@@ -1130,7 +1118,7 @@ void
 init_ip_hash_table(void)
 {
 	ip_entry_heap = BlockHeapCreate("ip", sizeof(struct ip_entry), 2 * hard_fdlimit);
-	memset(ip_hash_table, 0, sizeof(ip_hash_table));
+	eventAddIsh("garbage_collect_ip_entries", garbage_collect_ip_entries, NULL, CACHE_EXPIRE);
 }
 
 /* find_or_add_ip()
@@ -1142,7 +1130,7 @@ init_ip_hash_table(void)
  * If the ip # was not found, a new struct ip_entry is created, and the ip
  * count set to 0.
  */
-static struct ip_entry *
+struct ip_entry *
 find_or_add_ip(struct irc_ssaddr *ip_in)
 {
 	struct ip_entry *ptr, *newptr;
@@ -1175,9 +1163,6 @@ find_or_add_ip(struct irc_ssaddr *ip_in)
 		}
 	}
 
-	if(ip_entries_count >= 2 * hard_fdlimit)
-		garbage_collect_ip_entries();
-
 	newptr = BlockHeapAlloc(ip_entry_heap);
 	ip_entries_count++;
 	memcpy(&newptr->ip, ip_in, sizeof(struct irc_ssaddr));
@@ -1201,7 +1186,6 @@ void
 remove_one_ip(struct irc_ssaddr *ip_in)
 {
 	struct ip_entry *ptr;
-	struct ip_entry *last_ptr = NULL;
 	int hash_index = hash_ip(ip_in), res;
 	struct sockaddr_in *v4 = (struct sockaddr_in *) ip_in, *ptr_v4;
 #ifdef IPV6
@@ -1228,19 +1212,7 @@ remove_one_ip(struct irc_ssaddr *ip_in)
 			continue;
 		if(ptr->count > 0)
 			ptr->count--;
-		if(ptr->count == 0 &&
-		   (CurrentTime - ptr->last_attempt) >= ConfigFileEntry.throttle_time)
-		{
-			if(last_ptr != NULL)
-				last_ptr->next = ptr->next;
-			else
-				ip_hash_table[hash_index] = ptr->next;
-
-			BlockHeapFree(ip_entry_heap, ptr);
-			ip_entries_count--;
-			return;
-		}
-		last_ptr = ptr;
+		break;
 	}
 }
 
@@ -1317,7 +1289,7 @@ count_ip_hash(int *number_ips_stored, unsigned long *mem_ips_stored)
  * side effects	- free up all ip entries with no connections
  */
 static void
-garbage_collect_ip_entries(void)
+garbage_collect_ip_entries(void *unused)
 {
 	struct ip_entry *ptr;
 	struct ip_entry *last_ptr;
@@ -1343,7 +1315,12 @@ garbage_collect_ip_entries(void)
 				ip_entries_count--;
 			}
 			else
+			{
+				*ptr->host = 0;
+				ptr->dnsbl_clear = 0;
+
 				last_ptr = ptr;
+			}
 		}
 	}
 }

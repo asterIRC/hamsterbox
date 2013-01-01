@@ -52,6 +52,8 @@ struct ServerStatistics
 	unsigned int is_kill;	/* number of kills generated on collisions */
 	unsigned int is_asuc;	/* successful auth requests */
 	unsigned int is_abad;	/* bad auth requests */
+	unsigned int is_dc;     /* number of cached dns replies used */
+	unsigned int is_rblc;   /* number of cached dnsbl entries used */
 };
 
 extern struct ServerStatistics *ServerStats;

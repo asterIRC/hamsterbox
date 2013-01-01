@@ -41,6 +41,8 @@
 
 #include "dnsbl.h"
 
+#include "s_stats.h"
+
 static void mr_cgiirc(struct Client*, struct Client*, int, char**);
 
 struct Message cgiirc_msgtab = {
@@ -80,6 +82,7 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 	int hosttype = HM_HOST;
 	struct irc_ssaddr haddr;
 	int bits;
+	struct ip_entry *ip;
 	
 	if(parc < 5)
 	{
@@ -187,7 +190,11 @@ static void mr_cgiirc(struct Client *client_p, struct Client *source_p, int parc
 	sendto_one(source_p, ":%s NOTICE AUTH :*** CGI:IRC Host spoofing active", me.name);
 
 	/* Restart DNSBL lookups for the new IP */
-	start_dnsbl_lookup(source_p);
+	ip = find_or_add_ip(&source_p->localClient->ip);
+	if (!ip->dnsbl_clear)
+		start_dnsbl_lookup(source_p);
+	else
+		++ServerStats->is_rblc;
 }
 
 

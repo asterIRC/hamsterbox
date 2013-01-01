@@ -120,6 +120,9 @@ dnsbl_callback(void *ptr, struct DNSReply *reply)
 
 	if (dline == NULL && cptr->localClient->dnsbl_queries.length == 0)
 	{
+		struct ip_entry *ip = find_or_add_ip(&cptr->localClient->ip);
+		ip->dnsbl_clear = 1;
+
 		cptr->localClient->registration &= ~REG_NEED_DNSBL;
 		if (!cptr->localClient->registration)
 		{
