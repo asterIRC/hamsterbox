@@ -54,7 +54,7 @@ extern struct Callback *iorecvctrl_cb;
 
 PF read_ctrl_packet;
 PF read_packet;
-PF flood_recalc;
+void flood_recalc(struct Client *);
 void flood_endgrace(struct Client *);
 
 #endif /* INCLUDED_packet_h */

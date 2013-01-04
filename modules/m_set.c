@@ -82,7 +82,6 @@ struct SetStruct
 static void quote_autoconn(struct Client *, const char *, int);
 static void quote_autoconnall(struct Client *, int);
 static void quote_floodcount(struct Client *, int);
-static void quote_identtimeout(struct Client *, int);
 static void quote_idletime(struct Client *, int);
 static void quote_log(struct Client *, int);
 static void quote_max(struct Client *, int);
@@ -111,7 +110,6 @@ static struct SetStruct set_cmd_table[] = {
 	{"AUTOCONN", quote_autoconn, 1, 1},
 	{"AUTOCONNALL", quote_autoconnall, 0, 1},
 	{"FLOODCOUNT", quote_floodcount, 0, 1},
-	{"IDENTTIMEOUT", quote_identtimeout, 0, 1},
 	{"IDLETIME", quote_idletime, 0, 1},
 	{"LOG", quote_log, 0, 1},
 	{"MAX", quote_max, 0, 1},
@@ -199,28 +197,6 @@ quote_floodcount(struct Client *source_p, int newval)
 	else
 		sendto_one(source_p, ":%s NOTICE %s :FLOODCOUNT is currently %i",
 			   me.name, source_p->name, GlobalSetOptions.floodcount);
-}
-
-/* SET IDENTTIMEOUT */
-static void
-quote_identtimeout(struct Client *source_p, int newval)
-{
-	if(!IsAdmin(source_p))
-	{
-		sendto_one(source_p, form_str(ERR_NOPRIVS), me.name, source_p->name, "set");
-		return;
-	}
-
-	if(newval > 0)
-	{
-		sendto_realops_flags(UMODE_ALL, L_ALL,
-				     "%s has changed IDENTTIMEOUT to %d",
-				     get_oper_name(source_p), newval);
-		GlobalSetOptions.ident_timeout = newval;
-	}
-	else
-		sendto_one(source_p, ":%s NOTICE %s :IDENTTIMEOUT is currently %d",
-			   me.name, source_p->name, GlobalSetOptions.ident_timeout);
 }
 
 /* SET IDLETIME */

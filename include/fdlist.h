@@ -69,9 +69,6 @@ typedef struct _fde
 	PF *timeout_handler;
 	void *timeout_data;
 	time_t timeout;
-	PF *flush_handler;
-	void *flush_data;
-	time_t flush_timeout;
 	struct DNSQuery *dns_query;
 	struct
 	{
@@ -97,7 +94,6 @@ typedef struct _fde
 extern int number_fd;
 extern int hard_fdlimit;
 extern fde_t *fd_hash[];
-extern fde_t *fd_next_in_loop;
 extern struct Callback *fdlimit_cb;
 
 extern void fdlist_init(void);

@@ -124,7 +124,7 @@ make_auth_request(struct Client *client)
 	struct AuthRequest *request = MyMalloc(sizeof(struct AuthRequest));
 
 	request->client = client;
-	request->timeout = CurrentTime + CONNECTTIMEOUT;
+	request->timeout = CurrentTime + IDENT_TIMEOUT;
 
 	assert(client->localClient->auth == NULL);
 	client->localClient->auth = request;
@@ -142,7 +142,6 @@ release_auth(struct AuthRequest *auth)
 {
 	struct Client *client = auth->client;
 	client->localClient->allow_read = MAX_FLOOD;
-	comm_setflush(&client->localClient->fd, 1000, flood_recalc, client);
 
 	if((client->node.prev != NULL) || (client->node.next != NULL))
 	{
@@ -323,7 +322,7 @@ start_auth_query(struct AuthRequest *auth)
 	comm_connect_tcp(&auth->fd, auth->client->sockhost, 113,
 			 (struct sockaddr *) &localaddr, localaddr.ss_len, auth_connect_callback,
 			 auth, auth->client->localClient->ip.ss.ss_family,
-			 GlobalSetOptions.ident_timeout);
+			 0); /* No timeout here, auth queries have their own timeout system */
 	return 1;		/* We suceed here for now */
 }
 

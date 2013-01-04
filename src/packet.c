@@ -250,9 +250,8 @@ flood_endgrace(struct Client *client_p)
  * once a second on any given client. We then attempt to flush some data.
  */
 void
-flood_recalc(fde_t * fd, void *data)
+flood_recalc(struct Client *client_p)
 {
-	struct Client *client_p = data;
 	struct LocalUser *lclient_p = client_p->localClient;
 
 	/* allow a bursting client their allocation per second, allow
@@ -267,13 +266,6 @@ flood_recalc(fde_t * fd, void *data)
 		lclient_p->sent_parsed = 0;
 
 	parse_client_queued(client_p);
-
-	/* And now, try flushing .. */
-	if(!IsDead(client_p))
-	{
-		/* and finally, reset the flood check */
-		comm_setflush(fd, 1000, flood_recalc, client_p);
-	}
 }
 
 /*

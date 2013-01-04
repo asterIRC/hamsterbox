@@ -123,7 +123,7 @@
 #define INIT_LOG_LEVEL L_NOTICE	/* default for log_level */
 
 #define CONNECTTIMEOUT  30	/* Recommended value: 30 */
-#define IDENT_TIMEOUT 10
+#define IDENT_TIMEOUT 2
 
 #define MIN_JOIN_LEAVE_TIME  60
 #define MAX_JOIN_LEAVE_COUNT  25

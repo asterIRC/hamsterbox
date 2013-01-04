@@ -37,7 +37,6 @@
 #include "setup.h"
 
 fde_t *fd_hash[FD_HASH_SIZE];
-fde_t *fd_next_in_loop = NULL;
 int number_fd = LEAKED_FDS;
 int hard_fdlimit = 0;
 struct Callback *fdlimit_cb = NULL;
@@ -156,9 +155,6 @@ void
 fd_close(fde_t * F)
 {
 	unsigned int hashv = hash_fd(F->fd);
-
-	if(F == fd_next_in_loop)
-		fd_next_in_loop = F->hnext;
 
 	if(F->flags.is_socket)
 		comm_setselect(F, COMM_SELECT_WRITE | COMM_SELECT_READ, NULL, NULL, 0);

@@ -64,6 +64,7 @@ struct Callback *setup_socket_cb = NULL;
 
 static void comm_connect_callback(fde_t * fd, int status);
 static PF comm_connect_timeout;
+static dlink_list comm_timeout_fds;
 static void comm_connect_dns_callback(void *vptr, struct DNSReply *reply);
 static PF comm_connect_tryconnect;
 
@@ -440,28 +441,11 @@ comm_settimeout(fde_t * fd, time_t timeout, PF * callback, void *cbdata)
 	fd->timeout = CurrentTime + (timeout / 1000);
 	fd->timeout_handler = callback;
 	fd->timeout_data = cbdata;
-}
 
-/*
- * comm_setflush() - set a flush function
- *
- * A flush function is simply a function called if found during
- * comm_timeouts(). Its basically a second timeout, except in this case
- * I'm too lazy to implement multiple timeout functions! :-)
- * its kinda nice to have it separate, since this is designed for
- * flush functions, and when comm_close() is implemented correctly
- * with close functions, we _actually_ don't call comm_close() here ..
- * -- originally Adrian's notes
- * comm_close() is replaced with fd_close() in fdlist.c 
- */
-void
-comm_setflush(fde_t * fd, time_t timeout, PF * callback, void *cbdata)
-{
-	assert(fd->flags.open);
-
-	fd->flush_timeout = CurrentTime + (timeout / 1000);
-	fd->flush_handler = callback;
-	fd->flush_data = cbdata;
+	if (timeout > 0)
+		dlinkAdd(fd, make_dlink_node(), &comm_timeout_fds);
+	else
+		dlinkFindDelete(&comm_timeout_fds, fd);
 }
 
 /*
@@ -474,37 +458,41 @@ comm_setflush(fde_t * fd, time_t timeout, PF * callback, void *cbdata)
 void
 comm_checktimeouts(void *notused)
 {
-	int i;
-	fde_t *F;
+	dlink_node *ptr, *next_ptr;
 	PF *hdl;
 	void *data;
 
-	for(i = 0; i < FD_HASH_SIZE; i++)
-		for(F = fd_hash[i]; F != NULL; F = fd_next_in_loop)
+	DLINK_FOREACH_SAFE(ptr, next_ptr, local_client_list.head)
+	{
+		struct Client *cptr = ptr->data;
+
+		if (IsDefunct(cptr))
+			continue;
+
+		flood_recalc(cptr);
+	}
+
+	DLINK_FOREACH_SAFE(ptr, next_ptr, comm_timeout_fds.head)
+	{
+		fde_t *F = ptr->data;
+
+		/* check timeouts */
+		if(F->timeout_handler && F->timeout > 0 && F->timeout < CurrentTime)
 		{
-			assert(F->flags.open);
-			fd_next_in_loop = F->hnext;
-
-			/* check flush functions */
-			if(F->flush_handler && F->flush_timeout > 0 &&
-			   F->flush_timeout < CurrentTime)
-			{
-				hdl = F->flush_handler;
-				data = F->flush_data;
-				comm_setflush(F, 0, NULL, NULL);
-				hdl(F, data);
-			}
-
-			/* check timeouts */
-			if(F->timeout_handler && F->timeout > 0 && F->timeout < CurrentTime)
-			{
-				/* Call timeout handler */
-				hdl = F->timeout_handler;
-				data = F->timeout_data;
-				comm_settimeout(F, 0, NULL, NULL);
-				hdl(F, data);
-			}
+			/* Call timeout handler */
+			hdl = F->timeout_handler;
+			data = F->timeout_data;
+			comm_settimeout(F, 0, NULL, NULL);
+			hdl(F, data);
 		}
+	}
+
+	/* We only care about recalculating flood for registered clients.
+	 * Unregistered clients already receive allow_read of MAX_FLOOD_BURST, which is
+	 * more than enough for anyone that wants to register (currently 48 commands).
+	 *
+	 * - Adam
+	 */
 }
 
 /*
@@ -577,7 +565,8 @@ comm_connect_tcp(fde_t * fd, const char *host, unsigned short port,
 		fd->connect.hostaddr.ss_len = res->ai_addrlen;
 		fd->connect.hostaddr.ss.ss_family = res->ai_family;
 		irc_freeaddrinfo(res);
-		comm_settimeout(fd, timeout * 1000, comm_connect_timeout, NULL);
+		if (timeout > 0)
+			comm_settimeout(fd, timeout * 1000, comm_connect_timeout, NULL);
 		comm_connect_tryconnect(fd, NULL);
 	}
 }
@@ -636,8 +625,8 @@ comm_connect_dns_callback(void *vptr, struct DNSReply *reply)
 		return;
 	}
 
-	/* No error, set a 10 second timeout */
-	comm_settimeout(F, 30 * 1000, comm_connect_timeout, NULL);
+	/* No error, set a timeout */
+	comm_settimeout(F, CONNECTTIMEOUT * 1000, comm_connect_timeout, NULL);
 
 	/* Copy over the DNS reply info so we can use it in the connect() */
 	/*
