@@ -73,6 +73,7 @@ const char *infotext[] = {
 	"The core plexus team as, of this major release:",
 	"",
 	"ThaPrince, Jon Christopherson <jon@jons.org>",
+	"Adam <Adam@anope.org>",
 	"",
 	"The core hybrid team as, of this major release:",
 	"",
