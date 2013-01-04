@@ -22,7 +22,6 @@
 /*! \file balloc.h
  * \brief A block allocator
  * \version $Id: balloc.h 403 2006-06-14 05:04:42Z jon $
- * \todo Get rid of all typedefs in this file
  */
 
 #ifndef INCLUDED_balloc_h
@@ -36,17 +35,33 @@
 #include "memory.h"
 #include "ircd_defs.h"
 
+/*! \brief BlockHeap contains the information for the root node of the
+ *         memory heap.
+ */
+struct BlockHeap
+{
+	const char *name;	/*!< Name of the heap */
+	size_t elemSize;	/*!< Size of each element to be stored */
+	int elemsPerBlock;	/*!< Number of elements per block */
+
+	dlink_node node;
+
+	dlink_list blocks; /* Block heaps */
+
+	dlink_list used_list, free_list; /* Memory blocks */
+};
+
+typedef struct BlockHeap BlockHeap;
 
 /*! \brief Block contains status information for
  *         an allocated block in our heap.
  */
 struct Block
 {
+	BlockHeap *heap;
+	dlink_node node;
 	int freeElems;		/*!< Number of available elems */
-	size_t alloc_size;	/*!< Size of data space for each block */
-	struct Block *next;	/*!< Next in our chain of blocks */
 	void *elems;		/*!< Points to allocated memory */
-	dlink_list free_list;	/*!< Chain of free memory blocks */
 };
 
 typedef struct Block Block;
@@ -55,31 +70,16 @@ struct MemBlock
 {
 	dlink_node self;	/*!< Node for linking into free_list or used_list */
 	Block *block;		/*!< Which block we belong to */
+	void *data;		/* Memory associated with the block */
 };
 typedef struct MemBlock MemBlock;
-
-/*! \brief BlockHeap contains the information for the root node of the
- *         memory heap.
- */
-struct BlockHeap
-{
-	size_t elemSize;	/*!< Size of each element to be stored */
-	int elemsPerBlock;	/*!< Number of elements per block */
-	int blocksAllocated;	/*!< Number of blocks allocated */
-	int freeElems;		/*!< Number of free elements */
-	Block *base;		/*!< Pointer to first block */
-	const char *name;	/*!< Name of the heap */
-	struct BlockHeap *next;	/*!< Pointer to next heap */
-};
-
-typedef struct BlockHeap BlockHeap;
 
 
 extern int BlockHeapFree(BlockHeap *, void *);
 extern void *BlockHeapAlloc(BlockHeap *);
 
 extern BlockHeap *BlockHeapCreate(const char *const, size_t, int);
-extern int BlockHeapDestroy(BlockHeap *);
+extern void BlockHeapDestroy(BlockHeap *);
 extern void initBlockHeap(void);
 extern void block_heap_report_stats(struct Client *);
 #else /* NOBALLOC */

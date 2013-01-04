@@ -73,9 +73,9 @@
 #include "event.h"
 
 
-static BlockHeap *heap_list = NULL;
+static dlink_list heap_list;
 
-static int BlockHeapGarbageCollect(BlockHeap *);
+static void BlockHeapGarbageCollect(BlockHeap *);
 static void heap_garbage_collection(void *);
 
 /*! \brief Returns memory for the block back to either the malloc heap
@@ -114,8 +114,8 @@ initBlockHeap(void)
 		outofmemory();
 	fd_open(&dpfd, zero_fd, 0, "Anonymous mmap()");
 #endif
-	eventAdd("heap_garbage_collection", &heap_garbage_collection, NULL, 119);
 #endif
+	eventAdd("heap_garbage_collection", &heap_garbage_collection, NULL, 119);
 }
 
 /*!
@@ -142,10 +142,10 @@ get_block(size_t size)
 static void
 heap_garbage_collection(void *arg)
 {
-	BlockHeap *bh;
+	dlink_node *ptr;
 
-	for(bh = heap_list; bh != NULL; bh = bh->next)
-		BlockHeapGarbageCollect(bh);
+	DLINK_FOREACH(ptr, heap_list.head)
+		BlockHeapGarbageCollect(ptr->data);
 }
 
 /*! \brief Allocates a new block for addition to a blockheap
@@ -153,43 +153,32 @@ heap_garbage_collection(void *arg)
  * \return 0 if successful, 1 if not
  */
 static int
-newblock(BlockHeap * bh)
+newblock(BlockHeap *bh)
 {
-	MemBlock *newblk = NULL;
-	Block *b = NULL;
-	int i = 0;
-	void *offset = NULL;
+	Block *b;
+	int i;
 
 	/* Setup the initial data structure. */
-	if((b = calloc(1, sizeof(Block))) == NULL)
+	if((b = MyMalloc(sizeof(Block))) == NULL)
 		return 1;
 
+	b->heap = bh;
 	b->freeElems = bh->elemsPerBlock;
-	b->next = bh->base;
-	b->alloc_size = bh->elemsPerBlock * (bh->elemSize + sizeof(MemBlock));
-	b->elems = get_block(b->alloc_size);
+	b->elems = get_block(bh->elemsPerBlock * (bh->elemSize + sizeof(MemBlock)));
 
 	if(b->elems == NULL)
 		return 1;
 
-	offset = b->elems;
-
 	/* Setup our blocks now */
-	for(; i < bh->elemsPerBlock; ++i)
+	for(i = 0; i < bh->elemsPerBlock; ++i)
 	{
-		void *data;
-
-		newblk = offset;
-		newblk->block = b;
-		data = (void *) ((size_t) offset + sizeof(MemBlock));
-
-		dlinkAdd(data, &newblk->self, &b->free_list);
-		offset = (void *) ((size_t) offset + bh->elemSize + sizeof(MemBlock));
+		MemBlock *block = (MemBlock *) ((size_t) b->elems + i * (bh->elemSize + sizeof(MemBlock)));
+		block->block = b;
+		block->data = (void *) ((size_t) block + sizeof(MemBlock));
+		dlinkAdd(block, &block->self, &bh->free_list);
 	}
 
-	++bh->blocksAllocated;
-	bh->freeElems += bh->elemsPerBlock;
-	bh->base = b;
+	dlinkAdd(b, &b->node, &bh->blocks);
 
 	return 0;
 }
@@ -218,7 +207,7 @@ BlockHeapCreate(const char *const name, size_t elemsize, int elemsperblock)
 		outofmemory();	/* die.. out of memory */
 
 	/* Allocate our new BlockHeap */
-	if((bh = calloc(1, sizeof(BlockHeap))) == NULL)
+	if((bh = MyMalloc(sizeof(BlockHeap))) == NULL)
 		outofmemory();	/* die.. out of memory */
 
 	if((elemsize % sizeof(void *)) != 0)
@@ -236,15 +225,14 @@ BlockHeapCreate(const char *const name, size_t elemsize, int elemsperblock)
 	if(newblock(bh))
 	{
 		if(bh != NULL)
-			free(bh);
+			MyFree(bh);
 
 		outofmemory();	/* die.. out of memory */
 	}
 
 	assert(bh);
 
-	bh->next = heap_list;
-	heap_list = bh;
+	dlinkAdd(bh, &bh->node, &heap_list);
 
 	return bh;
 }
@@ -257,12 +245,9 @@ BlockHeapCreate(const char *const name, size_t elemsize, int elemsperblock)
 void *
 BlockHeapAlloc(BlockHeap * bh)
 {
-	Block *walker = NULL;
-	dlink_node *new_node = NULL;
-
 	assert(bh != NULL);
 
-	if(bh->freeElems == 0)
+	if (dlink_list_length(&bh->free_list) == 0)
 	{
 		/* Allocate new block and assign */
 		/* newblock returns 1 if unsuccessful, 0 if not */
@@ -276,25 +261,17 @@ BlockHeapAlloc(BlockHeap * bh)
 		}
 	}
 
-	for(walker = bh->base; walker != NULL; walker = walker->next)
-	{
-		if(walker->freeElems > 0)
-		{
-			--bh->freeElems;
-			--walker->freeElems;
-			new_node = walker->free_list.head;
+	assert(dlink_list_length(&bh->free_list));
 
-			dlinkDelete(new_node, &walker->free_list);
-			assert(new_node->data != NULL);
+	MemBlock *b = bh->free_list.head->data;
+	dlinkDelete(&b->self, &bh->free_list);
+	dlinkAdd(b, &b->self, &bh->used_list);
 
-			memset(new_node->data, 0, bh->elemSize);
-			return new_node->data;
-		}
-	}
+	--b->block->freeElems;
+	assert(b->block->freeElems >= 0);
 
-	assert(0 == 1);
-	outofmemory();
-	return NULL;
+	memset(b->data, 0, bh->elemSize);
+	return b->data;
 }
 
 /*! \brief Returns an element to the free pool, does not free()
@@ -305,24 +282,24 @@ BlockHeapAlloc(BlockHeap * bh)
 int
 BlockHeapFree(BlockHeap * bh, void *ptr)
 {
-	Block *block = NULL;
-	struct MemBlock *memblock = NULL;
+	Block *block;
+	MemBlock *memblock;
 
 	assert(bh != NULL);
 	assert(ptr != NULL);
 
 	memblock = (void *) ((size_t) ptr - sizeof(MemBlock));
-	assert(memblock->block != NULL);
 
+	assert(memblock->block != NULL);
 	if(memblock->block == NULL)
 		outofmemory();
 
 	block = memblock->block;
-	++bh->freeElems;
 	++block->freeElems;
 	mem_frob(ptr, bh->elemSize);
 
-	dlinkAdd(ptr, &memblock->self, &block->free_list);
+	dlinkDelete(&memblock->self, &bh->used_list);
+	dlinkAdd(memblock, &memblock->self, &bh->free_list);
 	return 0;
 }
 
@@ -333,93 +310,59 @@ BlockHeapFree(BlockHeap * bh, void *ptr)
  * will \b never remove the root node of the heap.
  *
  * \param bh Pointer to the BlockHeap to be cleaned up
- * \return 0 if successful, 1 if bh == NULL
  */
-static int
+static void
 BlockHeapGarbageCollect(BlockHeap * bh)
 {
-	Block *walker = NULL, *last = NULL;
+	dlink_node *ptr, *next_ptr;
 
 	assert(bh != NULL);
 
-	if(bh->freeElems < bh->elemsPerBlock || bh->blocksAllocated == 1)
+	if (dlink_list_length(&bh->free_list) < bh->elemsPerBlock || dlink_list_length(&bh->blocks) == 1)
 	{
 		/* There couldn't possibly be an entire free block.  Return. */
-		return 0;
+		return;
 	}
 
-	walker = bh->base;
-
-	while(walker != NULL)
+	DLINK_FOREACH_SAFE(ptr, next_ptr, bh->blocks.head)
 	{
+		Block *walker = ptr->data;
+
 		if(walker->freeElems == bh->elemsPerBlock)
 		{
-			free_block(walker->elems, walker->alloc_size);
+			dlink_node *ptr2, *next_ptr2;
 
-			if(last != NULL)
+			DLINK_FOREACH_SAFE(ptr2, next_ptr2, bh->free_list.head)
 			{
-				last->next = walker->next;
-
-				if(walker != NULL)
-					free(walker);
-				walker = last->next;
-			}
-			else
-			{
-				bh->base = walker->next;
-
-				if(walker != NULL)
-					free(walker);
-				walker = bh->base;
+				MemBlock *b = ptr2->data;
+				if (b->block->heap == bh)
+					dlinkDelete(&b->self, &bh->free_list);
 			}
 
-			--bh->blocksAllocated;
-			bh->freeElems -= bh->elemsPerBlock;
-		}
-		else
-		{
-			last = walker;
-			walker = walker->next;
+			free_block(walker->elems, bh->elemsPerBlock * (bh->elemSize + sizeof(MemBlock)));
+			dlinkDelete(&walker->node, &bh->blocks);
+			MyFree(walker);
 		}
 	}
-
-	return 0;
 }
 
 /*! \brief Completely free()s a BlockHeap.  Use for cleanup.
  * \param bh Pointer to the BlockHeap to be destroyed
- * \return 0 if successful, 1 if bh == NULL
  */
-int
+void
 BlockHeapDestroy(BlockHeap * bh)
 {
-	Block *walker = NULL, *next = NULL;
+	dlink_node *ptr;
 
-	if(bh == NULL)
-		return 1;
-
-	for(walker = bh->base; walker != NULL; walker = next)
+	DLINK_FOREACH(ptr, bh->blocks.head)
 	{
-		next = walker->next;
-		free_block(walker->elems, walker->alloc_size);
-
-		if(walker != NULL)
-			free(walker);
+		Block *b = ptr->data;
+		free_block(b->elems, bh->elemsPerBlock * (bh->elemSize + sizeof(MemBlock)));
+		MyFree(b);
 	}
 
-	if(heap_list == bh)
-		heap_list = bh->next;
-	else
-	{
-		BlockHeap *prev;
-
-		for(prev = heap_list; prev->next != bh; prev = prev->next)
-			/* nothing */ ;
-		prev->next = bh->next;
-	}
-
-	free(bh);
-	return 0;
+	dlinkDelete(&bh->node, &heap_list);
+	MyFree(bh);
 }
 
 /*! \brief Returns the number of bytes being used
@@ -429,8 +372,8 @@ BlockHeapDestroy(BlockHeap * bh)
 static size_t
 block_heap_get_used_mem(const BlockHeap * const bh)
 {
-	return (((bh->blocksAllocated *
-		  bh->elemsPerBlock) - bh->freeElems) * (bh->elemSize + sizeof(MemBlock)));
+	return (((dlink_list_length(&bh->blocks) *
+		  bh->elemsPerBlock) - dlink_list_length(&bh->free_list)) * (bh->elemSize + sizeof(MemBlock)));
 }
 
 /*! \brief Returns the number of bytes being free for further allocations
@@ -440,7 +383,7 @@ block_heap_get_used_mem(const BlockHeap * const bh)
 static size_t
 block_heap_get_free_mem(const BlockHeap * const bh)
 {
-	return (bh->freeElems * (bh->elemSize + sizeof(MemBlock)));
+	return (dlink_list_length(&bh->free_list) * (bh->elemSize + sizeof(MemBlock)));
 }
 
 /*! \brief Returns the total number of bytes of memory belonging to a heap
@@ -450,7 +393,7 @@ block_heap_get_free_mem(const BlockHeap * const bh)
 static size_t
 block_heap_get_size_mem(const BlockHeap * const bh)
 {
-	return (((bh->blocksAllocated * bh->elemsPerBlock)) * (bh->elemSize + sizeof(MemBlock)));
+	return (((dlink_list_length(&bh->blocks) * bh->elemsPerBlock)) * (bh->elemSize + sizeof(MemBlock)));
 }
 
 /*! \brief Returns the number of elements being used.
@@ -460,7 +403,7 @@ block_heap_get_size_mem(const BlockHeap * const bh)
 static unsigned int
 block_heap_get_used_elm(const BlockHeap * const bh)
 {
-	return ((bh->blocksAllocated * bh->elemsPerBlock) - bh->freeElems);
+	return ((dlink_list_length(&bh->blocks) * bh->elemsPerBlock) - dlink_list_length(&bh->free_list));
 }
 
 /*! \brief Returns the number of elements being free for further allocations.
@@ -470,7 +413,7 @@ block_heap_get_used_elm(const BlockHeap * const bh)
 static unsigned int
 block_heap_get_free_elm(const BlockHeap * const bh)
 {
-	return (bh->freeElems);
+	return dlink_list_length(&bh->free_list);
 }
 
 /*! \brief Returns the number of total elements belonging to a heap.
@@ -481,15 +424,18 @@ block_heap_get_free_elm(const BlockHeap * const bh)
 static unsigned int
 block_heap_get_size_elm(const BlockHeap * const bh)
 {
-	return (bh->blocksAllocated * bh->elemsPerBlock);
+	return (dlink_list_length(&bh->blocks) * bh->elemsPerBlock);
 }
 
 void
 block_heap_report_stats(struct Client *client_p)
 {
-	const BlockHeap *bh = NULL;
+	dlink_node *node;
 
-	for(bh = heap_list; bh != NULL; bh = bh->next)
+	DLINK_FOREACH(node, heap_list.head)
+	{
+		const BlockHeap *bh = node->data;
+
 		sendto_one(client_p, ":%s %d %s z :%s mempool: used %u/%u free %u/%u (size %u/%u)",
 			   me.name, RPL_STATSDEBUG, client_p->name, bh->name,
 			   block_heap_get_used_elm(bh),
@@ -497,4 +443,5 @@ block_heap_report_stats(struct Client *client_p)
 			   block_heap_get_free_elm(bh),
 			   block_heap_get_free_mem(bh),
 			   block_heap_get_size_elm(bh), block_heap_get_size_mem(bh));
+	}
 }
