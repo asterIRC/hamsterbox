@@ -1,3 +1,24 @@
+Adam              2013/01/04 15:00:00    (20130104_0-536)
+
+  Log:
+  - Really only enable assert when given --enable-assert
+  - Rewrote the DNS query code to be more efficient. Do not infinite loop when
+  all requests are in use.
+  - Clean up unknown_list code slightly to just use LocalClient's lclient_node
+  - Optimize delete_auth()
+  - Add general:throttle_num to configure how many connections should be
+  allowed in throttle_time
+  - Remove this send_queued_all() hack and actually use the i/o engine to do
+  writes
+  - Optimize timeout_auth_queries_event() to not have to loop all existing
+  auths
+  - Cache user's hostnames and if IPs have recently cleared dnsbl checks
+  - Up FD_HASH_SIZE to 65535, depending on whether small net support is
+  enabled or not
+  - Optimize comm_checktimeouts, reduce ident check delay to 2 seconds
+  - Optimize balloc
+  - Remove this hard limit on fdmax, it is unnecessary
+
 Adam              2012/12/09 19:00:00    (20121209_0-535)
 
   Log:
