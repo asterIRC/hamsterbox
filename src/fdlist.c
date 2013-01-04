@@ -95,10 +95,6 @@ recalc_fdlimit(void *unused)
 	 * some not really LEAKED_FDS */
 	fdmax = IRCD_MAX(fdmax, LEAKED_FDS + MAX_BUFFER + MAXCLIENTS_MIN);
 
-	/* under no condition shall this raise over 65536
-	 * for example user ip heap is sized 2*hard_fdlimit */
-	fdmax = IRCD_MIN(fdmax, 65536);
-
 	if(fdmax != hard_fdlimit)
 		execute_callback(fdlimit_cb, fdmax);
 #endif
