@@ -715,7 +715,6 @@ enable_poll
 enable_select
 enable_kqueue
 enable_devpoll
-enable_rtsigio
 enable_epoll
 enable_clobber
 enable_assert
@@ -1359,7 +1358,6 @@ Optional Features:
   --enable-select         Force select() usage.
   --enable-kqueue         Force kqueue() usage.
   --enable-devpoll        Force usage of /dev/poll.
-  --enable-rtsigio        Enable SIGIO with RT Signals (Linux only)
   --enable-epoll          Enable Linux epoll support.
   --enable-clobber        Don't preserve old binaries on make install
   --enable-assert         Enable assert().
@@ -6773,12 +6771,6 @@ done
 fi
 
 
-# Check whether --enable-rtsigio was given.
-if test "${enable_rtsigio+set}" = set; then :
-  enableval=$enable_rtsigio; SELECT_TYPE_EXPLICIT="sigio"; echo "Forcing Linux RT Sigio to be enabled"
-fi
-
-
 # Check whether --enable-epoll was given.
 if test "${enable_epoll+set}" = set; then :
   enableval=$enable_epoll; SELECT_TYPE_EXPLICIT="epoll"; echo "Forcing Linux epoll to be enabled"
@@ -6884,32 +6876,12 @@ $as_echo "no" >&6; }
 			{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for RT Signal IO" >&5
 $as_echo_n "checking for RT Signal IO... " >&6; }
 
-									cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#define _GNU_SOURCE
-			#include <fcntl.h>
-			#ifdef F_SETSIG
-			 YUP_HAVE_F_SETSIG
-			#endif
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "YUP_HAVE_F_SETSIG" >/dev/null 2>&1; then :
-
-				SELECT_TYPE="sigio"
-				{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
-else
-
-				{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-				ac_fn_c_check_func "$LINENO" "poll" "ac_cv_func_poll"
+			ac_fn_c_check_func "$LINENO" "poll" "ac_cv_func_poll"
 if test "x$ac_cv_func_poll" = xyes; then :
   SELECT_TYPE="poll"
 else
 
-					ac_fn_c_check_func "$LINENO" "select" "ac_cv_func_select"
+				ac_fn_c_check_func "$LINENO" "select" "ac_cv_func_select"
 if test "x$ac_cv_func_select" = xyes; then :
   SELECT_TYPE="select"
 else
@@ -6919,10 +6891,6 @@ fi
 
 
 fi
-
-
-fi
-rm -f conftest*
 
 		fi
 	fi
