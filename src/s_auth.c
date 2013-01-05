@@ -124,7 +124,7 @@ make_auth_request(struct Client *client)
 	struct AuthRequest *request = MyMalloc(sizeof(struct AuthRequest));
 
 	request->client = client;
-	request->timeout = CurrentTime + IDENT_TIMEOUT;
+	request->timeout = CurrentTime + GlobalSetOptions.ident_timeout;
 
 	assert(client->localClient->auth == NULL);
 	client->localClient->auth = request;

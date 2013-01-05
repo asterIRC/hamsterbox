@@ -346,6 +346,7 @@ initialize_global_set_options(void)
 		splitchecking = 1;
 	}
 
+	GlobalSetOptions.ident_timeout = IDENT_TIMEOUT;
 	GlobalSetOptions.idletime = ConfigFileEntry.idletime;
 	/* End of global set options */
 }

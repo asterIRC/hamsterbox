@@ -43,6 +43,7 @@ struct SetOptions
 	int joinfloodcount;
 	/* XXX */
 	int rejecttime;
+	int ident_timeout;	/* timeout for identd lookups        */
 	int spam_num;
 	int spam_time;
 };
