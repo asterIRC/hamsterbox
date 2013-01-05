@@ -657,10 +657,6 @@ echo "Forcing /dev/poll to be enabled"
 dnl These need to be defined or not defined
 AC_CHECK_HEADERS([sys/devpoll.h devpoll.h])],)
 
-AC_ARG_ENABLE(rtsigio,
-AC_HELP_STRING([--enable-rtsigio],[Enable SIGIO with RT Signals (Linux only)]),
-[SELECT_TYPE_EXPLICIT="sigio"; echo "Forcing Linux RT Sigio to be enabled"],)
-
 AC_ARG_ENABLE(epoll,
 AC_HELP_STRING([--enable-epoll], [Enable Linux epoll support.]),
 [SELECT_TYPE_EXPLICIT="epoll"; echo "Forcing Linux epoll to be enabled"],)
@@ -724,26 +720,10 @@ main() { return epoll_create(256) == -1 ? 1 : 0; },
 			AC_MSG_RESULT(no)
 			AC_MSG_CHECKING(for RT Signal IO)
 
-			dnl check for rtsig readiness notification under Linux
-			dnl (but don't use it unless kernel 2.4 or higher)
-			AC_EGREP_CPP(YUP_HAVE_F_SETSIG,
-			[#define _GNU_SOURCE
-			#include <fcntl.h>
-			#ifdef F_SETSIG
-			 YUP_HAVE_F_SETSIG
-			#endif
-			],
+			AC_CHECK_FUNC(poll, [SELECT_TYPE="poll"],
 			[
-				SELECT_TYPE="sigio"
-				AC_MSG_RESULT(yes)
-			],
-			[
-				AC_MSG_RESULT(no)
-				AC_CHECK_FUNC(poll, [SELECT_TYPE="poll"],
-				[
-					AC_CHECK_FUNC(select, [SELECT_TYPE="select"],
-					[AC_MSG_ERROR([Couldn't find anything to use for IO loop. Is your C environment POSIXly sane?])
-					])
+				AC_CHECK_FUNC(select, [SELECT_TYPE="select"],
+				[AC_MSG_ERROR([Couldn't find anything to use for IO loop. Is your C environment POSIXly sane?])
 				])
 			])
 		fi
