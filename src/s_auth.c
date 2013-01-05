@@ -483,6 +483,9 @@ timeout_auth_queries_event(void *notused)
 			if(IsDNSPending(auth))
 			{
 				struct Client *client_p = auth->client;
+				struct ip_entry *ip = find_or_add_ip(&client_p->localClient->ip);
+
+				*ip->host = -1;
 
 				dlinkDelete(&auth->dns_node, &auth_doing_dns_list);
 				if(client_p->localClient->dns_query != NULL)
