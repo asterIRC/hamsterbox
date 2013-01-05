@@ -1117,7 +1117,7 @@ attach_iline(struct Client *client_p, struct ConfItem *conf)
 void
 init_ip_hash_table(void)
 {
-	ip_entry_heap = BlockHeapCreate("ip", sizeof(struct ip_entry), 2 * hard_fdlimit);
+	ip_entry_heap = BlockHeapCreate("ip", sizeof(struct ip_entry), 2 * LCLIENT_HEAP_SIZE);
 	eventAddIsh("garbage_collect_ip_entries", garbage_collect_ip_entries, NULL, CACHE_EXPIRE);
 }
 
