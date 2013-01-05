@@ -40,26 +40,8 @@
 #endif
 
 static struct pollfd *pollfds;
+static int pollfds_size; /* number of allocated pollfd structures */
 static int pollmax = -1;	/* highest FD number */
-static dlink_node *hookptr;
-
-/*
- * changing_fdlimit
- *
- * Resize pollfds array if necessary.
- */
-static void *
-changing_fdlimit(va_list args)
-{
-	int old_fdlimit = hard_fdlimit;
-
-	pass_callback(hookptr, va_arg(args, int));
-
-	if(hard_fdlimit != old_fdlimit)
-		pollfds = MyRealloc(pollfds, sizeof(struct pollfd) * hard_fdlimit);
-
-	return NULL;
-}
 
 /*
  * init_netio
@@ -72,12 +54,11 @@ init_netio(void)
 {
 	int fd;
 
-	pollfds = MyMalloc(sizeof(struct pollfd) * hard_fdlimit);
+	pollfds_size = LCLIENT_HEAP_SIZE;
+	pollfds = MyMalloc(sizeof(struct pollfd) * pollfds_size);
 
-	for(fd = 0; fd < hard_fdlimit; fd++)
+	for(fd = 0; fd < pollfds_size; fd++)
 		pollfds[fd].fd = -1;
-
-	hookptr = install_hook(fdlimit_cb, changing_fdlimit);
 }
 
 /*
@@ -89,12 +70,25 @@ poll_findslot(void)
 {
 	int i;
 
-	for(i = 0; i < hard_fdlimit; i++)
+	for(i = 0; i < pollfds_size; i++)
 		if(pollfds[i].fd == -1)
 		{
 			/* MATCH!!#$*&$ */
 			return i;
 		}
+	
+	if (pollfds_size < hard_fdlimit)
+	{
+		int old = pollfds_size;
+		pollfds_size *= 2;
+		if (pollfds_size > hard_fdlimit)
+			pollfds_size = hard_fdlimit;
+
+		pollfds = MyRealloc(pollfds, sizeof(struct pollfd) * pollfds_size);
+
+		for (; old < pollfds_size; ++old)
+			pollfds[old].fd = -1;
+	}
 
 	assert(1 == 0);
 	/* NOTREACHED */
