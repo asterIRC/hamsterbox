@@ -79,15 +79,17 @@ poll_findslot(void)
 	
 	if (pollfds_size < hard_fdlimit)
 	{
-		int old = pollfds_size;
+		int i, old = pollfds_size;
 		pollfds_size *= 2;
 		if (pollfds_size > hard_fdlimit)
 			pollfds_size = hard_fdlimit;
 
 		pollfds = MyRealloc(pollfds, sizeof(struct pollfd) * pollfds_size);
 
-		for (; old < pollfds_size; ++old)
-			pollfds[old].fd = -1;
+		for (i = old; i < pollfds_size; ++i)
+			pollfds[i].fd = -1;
+
+		return old;
 	}
 
 	assert(1 == 0);
