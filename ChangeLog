@@ -1,3 +1,9 @@
+Adam              2013/01/09 21:00:00    (20130109_0-536)
+
+  Log:
+  - Allow dbufs to contain refcounts to prevent copying the same message many
+times for each user
+
 Adam              2013/01/04 15:00:00    (20130104_0-536)
 
   Log:
