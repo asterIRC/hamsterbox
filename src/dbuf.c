@@ -1,6 +1,6 @@
 /*
  *  ircd-hybrid: an advanced Internet Relay Chat Daemon(ircd).
- *  dbuf.c: Supports dynamic data buffers.
+ *  dbuf.c: Supports dynamic data blocks.
  *
  *  Copyright (C) 2002 by the past and present ircd coders, and others.
  *
@@ -19,7 +19,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: dbuf.c 147 2005-12-26 02:52:10Z jon $
  */
 
 #include "stdinc.h"
@@ -38,78 +37,120 @@ dbuf_init(void)
 	dbuf_heap = BlockHeapCreate("dbuf", sizeof(struct dbuf_block), DBUF_HEAP_SIZE);
 }
 
-static struct dbuf_block *
-dbuf_alloc(struct dbuf_queue *qptr)
+void dbuf_add(struct dbuf_queue *qptr, struct dbuf_block *bptr)
 {
-	struct dbuf_block *block = BlockHeapAlloc(dbuf_heap);
+	assert(bptr->size > 0);
 
-	dlinkAddTail(block, make_dlink_node(), &qptr->blocks);
-	return block;
+	bptr->refs++;
+	dlinkAddTail(bptr, make_dlink_node(), &qptr->blocks);
+
+	qptr->total_size += bptr->size;
 }
 
-void
-dbuf_put(struct dbuf_queue *qptr, char *data, size_t count)
+void dbuf_delete(struct dbuf_queue *qptr, size_t count)
 {
-	struct dbuf_block *last;
-	size_t amount;
+	assert(qptr->total_size >= count);
 
-	assert(count > 0);
-	if(qptr->blocks.tail == NULL)
-		dbuf_alloc(qptr);
+	qptr->total_size -= count;
+
+	while (count > 0 && dlink_list_length(&qptr->blocks) > 0)
+	{
+		dlink_node *node = qptr->blocks.head;
+		struct dbuf_block *buffer = node->data;
+		size_t avail;
+
+		assert(buffer->size > qptr->pos);
+		avail = buffer->size - qptr->pos;
+
+		if (count >= avail)
+		{
+			count -= avail;
+
+			buffer->refs--;
+			dbuf_ref_free(buffer);
+
+			dlinkDelete(node, &qptr->blocks);
+			free_dlink_node(node);
+
+			qptr->pos = 0;
+		}
+		else
+		{
+			qptr->pos += count;
+			count = 0;
+		}
+	}
+}
+
+struct dbuf_block *dbuf_alloc()
+{
+	return BlockHeapAlloc(dbuf_heap);
+}
+
+void dbuf_ref_free(struct dbuf_block *bptr)
+{
+	if (bptr->refs <= 0)
+		BlockHeapFree(dbuf_heap, bptr);
+}
+
+void dbuf_put(struct dbuf_block *dbuf, const char *pattern, ...)
+{
+	va_list args;
+
+	assert(dbuf->refs == 0);
+
+	va_start(args, pattern);
+	dbuf_put_args(dbuf, pattern, args);
+	va_end(args);
+}
+
+void dbuf_put_args(struct dbuf_block *dbuf, const char *data, va_list args)
+{
+	assert(dbuf->refs == 0);
+
+	dbuf->size += vsnprintf(dbuf->data + dbuf->size, sizeof(dbuf->data) - dbuf->size, data, args);
+	if (dbuf->size > sizeof(dbuf->data))
+		dbuf->size = sizeof(dbuf->data); /* required by some versions of vsnprintf */
+}
+
+void dbuf_put_raw(struct dbuf_queue *qptr, const char *buf, size_t sz)
+{
+	struct dbuf_block *buffer;
+
+	assert(sz > 0);
+
+	if (dlink_list_length(&qptr->blocks) == 0)
+	{
+		buffer = BlockHeapAlloc(dbuf_heap);
+		dlinkAddTail(buffer, make_dlink_node(), &qptr->blocks);
+		assert(qptr->pos == 0);
+	}
 
 	do
 	{
-		last = qptr->blocks.tail->data;
+		size_t amount;
 
-		amount = DBUF_BLOCK_SIZE - last->size;
-		if(!amount)
+		buffer = qptr->blocks.tail->data;
+
+		amount = sizeof(buffer->data) - buffer->size;
+		if (!amount)
 		{
-			last = dbuf_alloc(qptr);
-			amount = DBUF_BLOCK_SIZE;
+			buffer = BlockHeapAlloc(dbuf_heap);
+			dlinkAddTail(buffer, make_dlink_node(), &qptr->blocks);
 		}
-		if(amount > count)
-			amount = count;
 
-		memcpy((void *) &last->data[last->size], data, amount);
-		count -= amount;
-		last->size += amount;
+		if (amount > sz)
+			amount = sz;
+
+		memcpy(&buffer->data[buffer->size], buf, amount);
+		buffer->size += amount;
+
 		qptr->total_size += amount;
 
-		data += amount;
+		sz -= amount;
 
+		buf += amount;
 	}
-	while(count > 0);
+	while (sz > 0);
 }
 
-void
-dbuf_delete(struct dbuf_queue *qptr, size_t count)
-{
-	dlink_node *ptr;
-	struct dbuf_block *first;
-
-	assert(qptr->total_size >= count);
-	if(count == 0)
-		return;
-
-	/* free whole blocks first.. */
-	while(1)
-	{
-		if(!count)
-			return;
-		ptr = qptr->blocks.head;
-		first = ptr->data;
-		if(count < first->size)
-			break;
-
-		qptr->total_size -= first->size;
-		count -= first->size;
-		dlinkDelete(ptr, &qptr->blocks);
-		free_dlink_node(ptr);
-		BlockHeapFree(dbuf_heap, first);
-	}
-
-	/* ..then remove data from the beginning of the queue */
-	first->size -= count;
-	qptr->total_size -= count;
-	memmove((void *) &first->data, (void *) &first->data[count], first->size);
-}

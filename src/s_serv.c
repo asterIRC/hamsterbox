@@ -1321,7 +1321,8 @@ start_io(struct Client *server)
 	int alloclen = 1;
 	char *buf;
 	dlink_node *ptr;
-	struct dbuf_block *block;
+	struct dbuf_block *buffer;
+	size_t used;
 
 	/* calculate how many bytes to allocate */
 	if(IsCapable(server, CAP_ZIP))
@@ -1381,12 +1382,17 @@ start_io(struct Client *server)
 	/* pass the whole recvq to servlink */
 	DLINK_FOREACH(ptr, lserver->buf_recvq.blocks.head)
 	{
-		block = ptr->data;
+		buffer = ptr->data;
+		if (ptr == lserver->buf_recvq.blocks.head)
+			used = buffer->size - lserver->buf_recvq.pos;
+		else
+			used = 0;
+
 		*buf++ = SLINKCMD_INJECT_RECVQ;
-		*buf++ = (block->size >> 8);
-		*buf++ = (block->size & 0xff);
-		memcpy(buf, &block->data[0], block->size);
-		buf += block->size;
+		*buf++ = (used >> 8);
+		*buf++ = (used & 0xff);
+		memcpy(buf, &buffer->data[used], used);
+		buf += used;
 	}
 
 	dbuf_clear(&lserver->buf_recvq);
@@ -1394,12 +1400,17 @@ start_io(struct Client *server)
 	/* pass the whole sendq to servlink */
 	DLINK_FOREACH(ptr, lserver->buf_sendq.blocks.head)
 	{
-		block = ptr->data;
+		buffer = ptr->data;
+		if (ptr == lserver->buf_sendq.blocks.head)
+			used = buffer->size - lserver->buf_sendq.pos;
+		else
+			used = 0;
+
 		*buf++ = SLINKCMD_INJECT_SENDQ;
-		*buf++ = (block->size >> 8);
-		*buf++ = (block->size & 0xff);
-		memcpy(buf, &block->data[0], block->size);
-		buf += block->size;
+		*buf++ = (used >> 8);
+		*buf++ = (used & 0xff);
+		memcpy(buf, &buffer->data[used], used);
+		buf += used;
 	}
 
 	dbuf_clear(&lserver->buf_sendq);

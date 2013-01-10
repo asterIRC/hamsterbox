@@ -41,7 +41,6 @@
 
 #define READBUF_SIZE 16384
 
-struct Callback *iorecv_cb = NULL;
 struct Callback *iorecvctrl_cb = NULL;
 
 static char readBuf[READBUF_SIZE];
@@ -57,7 +56,6 @@ static void client_dopacket(struct Client *, char *, size_t);
 static int
 extract_one_line(struct dbuf_queue *qptr, char *buffer)
 {
-	struct dbuf_block *block;
 	int line_bytes = 0, empty_bytes = 0, phase = 0;
 	unsigned int idx;
 
@@ -78,11 +76,16 @@ extract_one_line(struct dbuf_queue *qptr, char *buffer)
 	 */
 	DLINK_FOREACH(ptr, qptr->blocks.head)
 	{
-		block = ptr->data;
+		struct dbuf_block *dbuffer = ptr->data;
 
-		for(idx = 0; idx < block->size; idx++)
+		if (ptr == qptr->blocks.head)
+			idx = qptr->pos;
+		else
+			idx = 0;
+
+		for(; idx < dbuffer->size; idx++)
 		{
-			c = block->data[idx];
+			c = dbuffer->data[idx];
 			if(IsEol(c) || (c == ' ' && phase != 1))
 			{
 				empty_bytes++;
@@ -385,20 +388,6 @@ read_ctrl_packet(fde_t * fd, void *data)
 }
 
 /*
- * iorecv_default - append a packet to the recvq dbuf
- */
-void *
-iorecv_default(va_list args)
-{
-	struct Client *client_p = va_arg(args, struct Client *);
-	int length = va_arg(args, int);
-	char *buf = va_arg(args, char *);
-
-	dbuf_put(&client_p->localClient->buf_recvq, buf, length);
-	return NULL;
-}
-
-/*
  * read_packet - Read a 'packet' of data from a connection and process it.
  */
 void
@@ -468,7 +457,7 @@ read_packet(fde_t * fd, void *data)
 			return;
 		}
 
-		execute_callback(iorecv_cb, client_p, length, readBuf);
+		dbuf_put_raw(&client_p->localClient->buf_recvq, readBuf, length);
 
 		if(client_p->lasttime < CurrentTime)
 			client_p->lasttime = CurrentTime;
