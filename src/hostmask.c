@@ -537,7 +537,6 @@ find_conf_by_address(const char *name, struct irc_ssaddr *addr, int type,
 							continue;
 						}
 					}
-					else
 #endif
 					if (!match(arec->Mask.hostname, name)) {
 						continue;
@@ -567,7 +566,6 @@ find_conf_by_address(const char *name, struct irc_ssaddr *addr, int type,
 						    continue;
 					}
 				}
-				else
 #endif
 				if (!match(arec->Mask.hostname, name)) {
 					continue;
