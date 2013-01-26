@@ -459,6 +459,16 @@ find_conf_by_address(const char *name, struct irc_ssaddr *addr, int type,
 			for(b = 128; b >= 0; b -= 16)
 			{
 				for(arec = atable[hash_ipv6(addr, b)]; arec; arec = arec->next)
+				{
+#ifdef HAVE_LIBCRYPTO
+					if (arec->aconf->certfp != NULL) {
+						if (memcmp(arec->aconf->certfp, certfp,
+						    SHA_DIGEST_LENGTH) != 0) {
+							continue;
+						}
+					}
+#endif
+				
 					if(arec->type == (type & ~0x1) &&
 					   arec->precedence > hprecv &&
 					   arec->masktype == HM_IPV6 &&
@@ -472,6 +482,7 @@ find_conf_by_address(const char *name, struct irc_ssaddr *addr, int type,
 						hprecv = arec->precedence;
 						hprec = arec->aconf;
 					}
+				}
 			}
 		}
 		else
@@ -481,6 +492,16 @@ find_conf_by_address(const char *name, struct irc_ssaddr *addr, int type,
 			for(b = 32; b >= 0; b -= 8)
 			{
 				for(arec = atable[hash_ipv4(addr, b)]; arec; arec = arec->next)
+				{
+#ifdef HAVE_LIBCRYPTO
+					if (arec->aconf->certfp != NULL) {
+						if (memcmp(arec->aconf->certfp, certfp,
+						    SHA_DIGEST_LENGTH) != 0) {
+							continue;
+						}
+					}
+#endif
+
 					if(arec->type == (type & ~0x1) &&
 					   arec->precedence > hprecv &&
 					   arec->masktype == HM_IPV4 &&
@@ -494,6 +515,7 @@ find_conf_by_address(const char *name, struct irc_ssaddr *addr, int type,
 						hprecv = arec->precedence;
 						hprec = arec->aconf;
 					}
+				}
 			}
 		}
 	}
