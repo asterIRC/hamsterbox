@@ -1,3 +1,8 @@
+Adam              2013/01/26 00:00:00    (20130126_0-537)
+
+  Log:
+  - Add missing certfp check to find_conf_by_address when searching by IP
+
 Adam              2013/01/09 21:00:00    (20130109_0-536)
 
   Log:
@@ -7,10 +12,6 @@ times for each user
 Adam              2013/01/04 15:00:00    (20130104_0-536)
 
   Log:
-  - Really only enable assert when given --enable-assert
-  - Rewrote the DNS query code to be more efficient. Do not infinite loop when
-  all requests are in use.
-  - Clean up unknown_list code slightly to just use LocalClient's lclient_node
   - Optimize delete_auth()
   - Add general:throttle_num to configure how many connections should be
   allowed in throttle_time
