@@ -412,6 +412,15 @@ ms_server(struct Client *client_p, struct Client *source_p, int parc, char *parv
 		}
 	}
 
+#ifdef RIZON
+	if (IsConfIllegal((struct AccessItem *) map_to_conf(client_p->serv->sconf)) && !hlined)
+	{
+		sendto_realops_flags(UMODE_ALL, L_ADMIN, "Warning: Link %s with nonexistant connect block introduced %s. Assuming wide hub_mask to prevent quitting %s",
+		     get_client_name(client_p, HIDE_IP), name, client_p->name);
+		hlined = 1;
+	}
+#endif
+
 	/* Ok, this way this works is
 	 *
 	 * A server can have a CONF_HUB allowing it to introduce servers
@@ -676,6 +685,15 @@ ms_sid(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 				hlined++;
 		}
 	}
+
+#ifdef RIZON
+	if (IsConfIllegal((struct AccessItem *) map_to_conf(client_p->serv->sconf)) && !hlined)
+	{
+		sendto_realops_flags(UMODE_ALL, L_ADMIN, "Warning: Link %s with nonexistant connect block introduced %s. Assuming wide hub_mask to prevent quitting %s",
+		     get_client_name(client_p, HIDE_IP), SID_NAME, client_p->name);
+		hlined = 1;
+	}
+#endif
 
 	/* Ok, this way this works is
 	 *
