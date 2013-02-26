@@ -127,6 +127,7 @@ m_join(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 	struct ResvChannel *resv_p = NULL;
 	int i = 0;
 	unsigned int flags = 0;
+	int max_channels;
 
 	if(EmptyString(parv[1]))
 	{
@@ -138,6 +139,12 @@ m_join(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 
 	key_list = parv[2];
 	chan_list = last0(client_p, source_p, parv[1]);
+
+	max_channels = ConfigChannel.max_chans_per_user;
+	if (IsOper(source_p))
+		max_channels *= 2;
+	if (IsExemptLimits(source_p))
+		max_channels *= 10;
 
 	for(chan = strtoken(&p, chan_list, ","); chan; chan = strtoken(&p, NULL, ","))
 	{
@@ -185,7 +192,7 @@ m_join(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 			continue;
 		}
 
-		if(!IsExemptLimits(source_p) && dlink_list_length(&source_p->channel) >= ConfigChannel.max_chans_per_user)
+		if(dlink_list_length(&source_p->channel) >= max_channels)
 		{
 			sendto_one(source_p, form_str(ERR_TOOMANYCHANNELS),
 				   me.name, source_p->name, chan);
