@@ -613,6 +613,12 @@ register_remote_user(struct Client *client_p, struct Client *source_p,
 	add_user_host(source_p->username, source_p->realhost, 1);
 	SetUserHost(source_p);
 
+	if(ConfigFileEntry.enable_cloak_system && !IsIPSpoof(source_p))
+	{
+		make_virthost(source_p->realhost, source_p->cloaked_host);
+		make_virthost(source_p->sockhost, source_p->cloaked_ip);
+	}
+
 	/* If the client is on a services server mark it as a services client - ThaPrince */
 	if(IsServices(source_p->servptr))
 		SetServices(source_p);
