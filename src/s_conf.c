@@ -515,8 +515,11 @@ delete_conf_item(struct ConfItem *conf)
 		dlinkDelete(&conf->node, &nresv_items);
 
 		if(conf->flags & CONF_FLAGS_TEMPORARY)
+		{
 			if((m = dlinkFindDelete(&temporary_resv, conf)) != NULL)
 				free_dlink_node(m);
+			ClearConfTemporary(conf);
+		}
 
 		MyFree(conf);
 		break;
@@ -536,8 +539,11 @@ delete_conf_item(struct ConfItem *conf)
 
 	case CRESV_TYPE:
 		if(conf->flags & CONF_FLAGS_TEMPORARY)
+		{
 			if((m = dlinkFindDelete(&temporary_resv, conf)) != NULL)
 				free_dlink_node(m);
+			ClearConfTemporary(conf);
+		}
 
 		MyFree(conf);
 		break;
@@ -2342,6 +2348,7 @@ expire_tklines(dlink_list * tklist)
 				}
 
 				dlinkDelete(ptr, tklist);
+				ClearConfTemporary(aconf);
 				delete_one_address_conf(aconf->host, aconf);
 			}
 		}
@@ -2357,6 +2364,7 @@ expire_tklines(dlink_list * tklist)
 							     conf->type ==
 							     RXLINE_TYPE ? "(REGEX) " : "");
 				dlinkDelete(ptr, tklist);
+				ClearConfTemporary(conf);
 				free_dlink_node(ptr);
 				delete_conf_item(conf);
 			}
@@ -2372,6 +2380,7 @@ expire_tklines(dlink_list * tklist)
 							     (aconf->user) ? aconf->user : "*",
 							     (aconf->host) ? aconf->host : "*");
 				dlinkDelete(ptr, tklist);
+				ClearConfTemporary(conf);
 				free_dlink_node(ptr);
 				delete_conf_item(conf);
 			}
@@ -2386,6 +2395,7 @@ expire_tklines(dlink_list * tklist)
 							     "Temporary RESV for [%s] expired",
 							     conf->name);
 				dlinkDelete(ptr, tklist);
+				ClearConfTemporary(conf);
 				free_dlink_node(ptr);
 				delete_conf_item(conf);
 			}

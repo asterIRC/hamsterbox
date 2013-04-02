@@ -709,6 +709,7 @@ ms_unkline(struct Client *client_p, struct Client *source_p, int parc, char *par
 static int
 remove_tkline_match(const char *host, const char *user)
 {
+	struct ConfItem *conf;
 	struct AccessItem *tk_c;
 	dlink_node *tk_n;
 	struct irc_ssaddr addr, caddr;
@@ -717,7 +718,8 @@ remove_tkline_match(const char *host, const char *user)
 
 	DLINK_FOREACH(tk_n, temporary_klines.head)
 	{
-		tk_c = map_to_conf(tk_n->data);
+		conf = tk_n->data;
+		tk_c = map_to_conf(conf);
 		cnm_t = parse_netmask(tk_c->host, &caddr, &cbits);
 		if(cnm_t != nm_t || irccmp(user, tk_c->user))
 			continue;
@@ -729,6 +731,7 @@ remove_tkline_match(const char *host, const char *user)
 			)
 		{
 			dlinkDelete(tk_n, &temporary_klines);
+			ClearConfTemporary(tk_c);
 			delete_one_address_conf(tk_c->host, tk_c);
 			return (YES);
 		}
@@ -745,6 +748,7 @@ remove_tkline_match(const char *host, const char *user)
 static int
 remove_tdline_match(const char *cidr)
 {
+	struct ConfItem *conf;
 	struct AccessItem *td_conf;
 	dlink_node *td_node;
 	struct irc_ssaddr addr, caddr;
@@ -753,7 +757,8 @@ remove_tdline_match(const char *cidr)
 
 	DLINK_FOREACH(td_node, temporary_dlines.head)
 	{
-		td_conf = map_to_conf(td_node->data);
+		conf = td_node->data;
+		td_conf = map_to_conf(conf);
 		cnm_t = parse_netmask(td_conf->host, &caddr, &cbits);
 
 		if(cnm_t != nm_t)
@@ -767,6 +772,7 @@ remove_tdline_match(const char *cidr)
 			)
 		{
 			dlinkDelete(td_node, &temporary_dlines);
+			ClearConfTemporary(td_conf);
 			delete_one_address_conf(td_conf->host, td_conf);
 			return (YES);
 		}

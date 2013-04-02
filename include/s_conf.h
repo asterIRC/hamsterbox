@@ -296,6 +296,7 @@ struct DnsblItem
 #define ClearConfAllowAutoConn(x) ((x)->flags &= ~CONF_FLAGS_ALLOW_AUTO_CONN)
 #define IsConfTemporary(x)      ((x)->flags & CONF_FLAGS_TEMPORARY)
 #define SetConfTemporary(x)     ((x)->flags |= CONF_FLAGS_TEMPORARY)
+#define ClearConfTemporary(x)   ((x)->flags &= ~CONF_FLAGS_TEMPORARY)
 #define IsConfRedir(x)          ((x)->flags & CONF_FLAGS_REDIR)
 #define IsConfAwayBurst(x)      ((x)->flags & CONF_FLAGS_BURST_AWAY)
 #define SetConfAwayBurst(x)     ((x)->flags |= CONF_FLAGS_BURST_AWAY)

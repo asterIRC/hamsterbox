@@ -553,6 +553,7 @@ check_majority_gline(const struct Client *source_p,
 static int
 remove_gline_match(const char *user, const char *host)
 {
+	struct ConfItem *conf;
 	struct AccessItem *aconf;
 	dlink_node *ptr = NULL;
 	struct irc_ssaddr addr, caddr;
@@ -562,7 +563,8 @@ remove_gline_match(const char *user, const char *host)
 
 	DLINK_FOREACH(ptr, temporary_glines.head)
 	{
-		aconf = map_to_conf(ptr->data);
+		conf = ptr->data;
+		aconf = map_to_conf(conf);
 		cnm_t = parse_netmask(aconf->host, &caddr, &cbits);
 
 		if(cnm_t != nm_t || irccmp(user, aconf->user))
@@ -576,6 +578,7 @@ remove_gline_match(const char *user, const char *host)
 			)
 		{
 			dlinkDelete(ptr, &temporary_glines);
+			ClearConfTemporary(aconf);
 			delete_one_address_conf(aconf->host, aconf);
 			return (1);
 		}

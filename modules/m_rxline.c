@@ -396,6 +396,7 @@ remove_txline(const char *const gecos)
 		if(!strcmp(gecos, conf->name))
 		{
 			dlinkDelete(ptr, &temporary_rxlines);
+			ClearConfTemporary(conf);
 			free_dlink_node(ptr);
 			delete_conf_item(conf);
 			return 1;

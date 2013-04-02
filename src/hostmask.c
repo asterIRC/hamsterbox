@@ -763,8 +763,33 @@ int del_conf_by_address(int type, const char *username, const char *address)
 		hv = get_mask_hash(address);
 	
 	for (arec = atable[hv], arec_prev = NULL; arec; arec_prev = arec, arec = arec->next)
-		if (arec->type == (type & ~0x1) && (type & 0x1 || match(username, arec->aconf->user)) && match(address, arec->aconf->host))
+	{
+		struct irc_ssaddr arec_addr;
+		int arec_mt, arec_bits;
+
+		if (arec->type != (type & ~0x1))
+			continue;
+		else if (!(type & 0x01) && username && arec->aconf->user && irccmp(username, arec->aconf->user))
+			continue;
+
+		arec_mt = parse_netmask(arec->aconf->host, &arec_addr, &arec_bits);
+
+		if (arec_mt != masktype)
+			continue;
+
+		if ((arec_mt == HM_HOST && !irccmp(address, arec->aconf->host)) ||
+			(arec_mt == HM_IPV4 && bits == arec_bits && match_ipv4(&addr, &arec_addr, bits))
+#ifdef IPV6
+			|| (arec_mt == HM_IPV6 && bits == arec_bits && match_ipv6(&addr, &arec_addr, bits))
+#endif
+			)
 		{
+			if (IsConfTemporary(arec->aconf))
+			{
+				sendto_realops_flags(UMODE_ALL, L_OPER, "del_conf_by_address() is trying to remove a temporary entry!");
+				return 0;
+			}
+
 			if (arec_prev)
 				arec_prev->next = arec->next;
 			else
@@ -777,6 +802,7 @@ int del_conf_by_address(int type, const char *username, const char *address)
 			MyFree(arec);
 			return 1;
 		}
+	}
 	
 	return 0;
 }
@@ -795,6 +821,12 @@ delete_one_address_conf(const char *address, struct AccessItem *aconf)
 	struct AddressRec *arec, *arecl = NULL;
 	struct irc_ssaddr addr;
 	masktype = parse_netmask(address, &addr, &bits);
+
+	if (IsConfTemporary(aconf))
+	{
+		sendto_realops_flags(UMODE_ALL, L_OPER, "delete_one_address_conf() is trying to remove a temporary entry!");
+		return;
+	}
 
 #ifdef IPV6
 	if(masktype == HM_IPV6)

@@ -525,6 +525,7 @@ remove_trkline_match(const char *const host, const char *const user)
 		if(!strcmp(user, aptr->user) && !strcmp(aptr->host, host))
 		{
 			dlinkDelete(ptr, &temporary_rklines);
+			ClearConfTemporary(conf);
 			free_dlink_node(ptr);
 			delete_conf_item(conf);
 			return 1;
