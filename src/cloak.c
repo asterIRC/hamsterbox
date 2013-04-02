@@ -209,6 +209,8 @@ hidehost_ipv4(char *host)
 	unsigned long n;
 	unsigned int alpha, beta, gamma;
 
+	a = b = c = d = 0;
+
 	/* 
 	 * Output: ALPHA.BETA.GAMMA.IP
 	 * ALPHA is unique for a.b.c.d
