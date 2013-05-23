@@ -853,7 +853,7 @@ sendto_match_butone(struct Client *one, struct Client *from, char *mask,
 	local_buf = dbuf_alloc(), remote_buf = dbuf_alloc();
 
 	dbuf_put(local_buf, ":%s!%s@%s ", from->name, from->username, from->host);
-	dbuf_put(remote_buf, ":%s!%s@%s ", from->name, from->username, from->host);
+	dbuf_put(remote_buf, ":%s ", from->name);
 
 	va_start(alocal, pattern);
 	va_start(aremote, pattern);
