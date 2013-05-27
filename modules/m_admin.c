@@ -163,6 +163,9 @@ do_admin(struct Client *source_p)
 	me_name = ID_or_name(&me, source_p->from);
 	nick = ID_or_name(source_p, source_p->from);
 
+	if (EmptyString(nick))
+		nick = "*";
+
 	sendto_one(source_p, form_str(RPL_ADMINME), me_name, nick, me.name);
 	if(AdminInfo.name != NULL)
 		sendto_one(source_p, form_str(RPL_ADMINLOC1), me_name, nick, AdminInfo.name);
