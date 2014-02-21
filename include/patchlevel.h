@@ -23,5 +23,5 @@
  */
 
 #ifndef PATCHLEVEL
-#define PATCHLEVEL   "hybrid-7.2.3+plexus-3.1.0"
+#define PATCHLEVEL   "hybrid-7.2.3+plexus(3.1.0)+HamsterBox-IRCd(0.1)"
 #endif
