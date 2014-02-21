@@ -57,6 +57,34 @@
 #include "memory.h"
 #include "channel.h"		/* chcap_usage_counts stuff... */
 
+#include "fdlist.h"
+#include "hash.h"
+#include "irc_string.h"
+#include "sprintf_irc.h"
+#include "s_bsd.h"
+#include "irc_getnameinfo.h"
+#include "ircd.h"
+#include "list.h"
+#include "listener.h"
+#include "motd.h"
+#include "numeric.h"
+#include "s_conf.h"
+#include "s_log.h"
+#include "s_serv.h"
+#include "s_stats.h"
+#include "send.h"
+#include "supported.h"
+#include "whowas.h"
+#include "memory.h"
+#include "packet.h"
+#include "userhost.h"
+#include "hook.h"
+#include "s_misc.h"
+#include "msg.h"
+#include "pcre.h"
+#include "cloak.h"
+#include "hostmask.h"
+
 #define MIN_CONN_FREQ 300
 
 struct Client *uplink = NULL;
@@ -870,6 +898,7 @@ sendnick_TS(struct Client *client_p, struct Client *target_p)
 	static char ubuf[12];
 	static char authflags[14]; 
 	char *prefix_ptr;
+        char buf[SHA_DIGEST_LENGTH*2+1];
 
 	if(!IsClient(target_p))
 		return;
@@ -884,6 +913,7 @@ sendnick_TS(struct Client *client_p, struct Client *target_p)
 	}
 
 	/* XXX Both of these need to have a :me.name or :mySID!?!?! */
+#ifndef HAVE_LIBCRYPTO
 	if(HasID(target_p) && IsCapable(client_p, CAP_TS6))
 		sendto_one(client_p, ":%s UID %s %d %lu %s %s %s %s %s %s %s :%s",
 			   target_p->servptr->id,
@@ -893,6 +923,25 @@ sendnick_TS(struct Client *client_p, struct Client *target_p)
 			   IsIPSpoof(target_p) ? "0" : target_p->sockhost, target_p->id,
 			   EmptyString(target_p->suser) ? "0" : target_p->suser, target_p->realhost,
 			   target_p->info);
+#else
+	if(HasID(target_p) && IsCapable(client_p, CAP_TS6)) { /* Ok sir, we will send the certfp or if the client hasn't one, the word NONE */
+	        if(IsSSL(target_p)) {
+	                if(!EmptyString(target_p->certfp))
+	                {
+	
+	                        base16_encode(buf, SHA_DIGEST_LENGTH*2+1, target_p->certfp,
+	                                      SHA_DIGEST_LENGTH);
+	                }
+	        }
+		sendto_one(client_p, ":%s UID %s %d %lu %s %s %s %s %s %s %s %s :%s",
+			   target_p->servptr->id,
+			   target_p->name, target_p->hopcount + 1,
+			   (unsigned long) target_p->tsinfo,
+			   ubuf, target_p->username, target_p->host,
+			   IsIPSpoof(target_p) ? "0" : target_p->sockhost, target_p->id,
+			   EmptyString(target_p->suser) ? "0" : target_p->suser, target_p->realhost,
+			   EmptyString(buf) ? "NONE" : buf, target_p->info); }
+#endif
 	else
 		sendto_one(client_p, "NICK %s %d %lu %s %s %s %s %s %s :%s",
 			   target_p->name, target_p->hopcount + 1,

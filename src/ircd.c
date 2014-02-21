@@ -379,6 +379,9 @@ initialize_message_files(void)
 static void
 initialize_server_capabs(void)
 {
+#ifdef HAVE_LIBCRYPTO
+	add_capability("XUID", CAP_XUID, 0);
+#endif
 	add_capability("QS", CAP_QS, 1);
 	add_capability("LL", CAP_LL, 1);
 	add_capability("EOB", CAP_EOB, 1);

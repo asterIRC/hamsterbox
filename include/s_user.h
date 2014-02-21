@@ -50,7 +50,7 @@ extern void oper_up(struct Client *);
 extern void register_local_user(struct Client *, struct Client *, const char *, const char *);
 extern void register_remote_user(struct Client *, struct Client *,
 				 const char *, const char *, const char *, const char *,
-				 const char *);
+				 const char *, const char *);
 extern void do_local_user(const char *, struct Client *, struct Client *, const char *,
 			  const char *, const char *, const char *);
 extern void init_uid(void);

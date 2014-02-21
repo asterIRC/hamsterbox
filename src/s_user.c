@@ -552,7 +552,7 @@ register_local_user(struct Client *client_p, struct Client *source_p,
 void
 register_remote_user(struct Client *client_p, struct Client *source_p,
 		     const char *username, const char *host, const char *server,
-		     const char *realname, const char *realhost)
+		     const char *realname, const char *realhost, const char *certfp)
 {
 	struct Client *target_p = NULL;
 
@@ -562,6 +562,7 @@ register_remote_user(struct Client *client_p, struct Client *source_p,
 	strlcpy(source_p->host, host, sizeof(source_p->host));
 	strlcpy(source_p->realhost, realhost, sizeof(source_p->realhost));
 	strlcpy(source_p->info, realname, sizeof(source_p->info));
+	strlcpy(source_p->certfp, certfp, sizeof(source_p->certfp));
 	strlcpy(source_p->username, username, sizeof(source_p->username));
 
 	/*
@@ -649,6 +650,7 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 	static char ubuf[12];
 	static char authflags[14]; 
 	char *prefix_ptr; 
+	char buf[SHA_DIGEST_LENGTH*2+1];
 
 	if(MyClient(source_p))
 		send_umode(source_p, source_p, 0, SEND_UMODES, ubuf);
@@ -680,14 +682,35 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 	{
 		if(IsCapable(uplink, CAP_TS6) && HasID(source_p))
 		{
-			sendto_one(uplink, ":%s UID %s %d %lu %s %s %s %s %s %s %s :%s",
-				   source_p->servptr->id,
-				   source_p->name, source_p->hopcount + 1,
-				   (unsigned long) source_p->tsinfo,
-				   ubuf, source_p->username, source_p->host,
-				   IsIPSpoof(source_p) ? "0" : source_p->sockhost,
-				   source_p->id, EmptyString(source_p->services_stamp) ? "0" : source_p->services_stamp,
-				   source_p->realhost, source_p->info);
+#ifndef HAVE_LIBCRYPTO
+        if(HasID(source_p) && IsCapable(uplink, CAP_TS6))
+                sendto_one(uplink, ":%s UID %s %d %lu %s %s %s %s %s %s %s :%s",
+                           source_p->servptr->id,
+                           source_p->name, source_p->hopcount + 1,
+                           (unsigned long) source_p->tsinfo,
+                           ubuf, source_p->username, source_p->host,
+                           IsIPSpoof(source_p) ? "0" : source_p->sockhost, source_p->id,
+                           EmptyString(source_p->suser) ? "0" : source_p->suser, source_p->realhost,
+                           source_p->info);
+#else
+        if(HasID(source_p) && IsCapable(uplink, CAP_TS6)) { /* Ok sir, we will send the certfp or if the client hasn't one, the word NONE */
+                if(IsSSL(source_p)) {
+                        if(!EmptyString(source_p->certfp))
+                        {
+
+                                base16_encode(buf, SHA_DIGEST_LENGTH*2+1, source_p->certfp,
+                                              SHA_DIGEST_LENGTH);
+                        }
+                }
+                sendto_one(uplink, ":%s UID %s %d %lu %s %s %s %s %s %s %s %s :%s",
+                           source_p->servptr->id,
+                           source_p->name, source_p->hopcount + 1,
+                           (unsigned long) source_p->tsinfo,
+                           ubuf, source_p->username, source_p->host,
+                           IsIPSpoof(source_p) ? "0" : source_p->sockhost, source_p->id,
+                           EmptyString(source_p->suser) ? "0" : source_p->suser, source_p->realhost,
+                           IsSSL(source_p) ? buf : "NONE", source_p->info); }
+#endif
 		}
 		else
 		{
@@ -709,14 +732,35 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 				continue;
 
 			if(IsCapable(server, CAP_TS6) && HasID(source_p))
-				sendto_one(server, ":%s UID %s %d %lu %s %s %s %s %s %s %s :%s",
-					   source_p->servptr->id,
-					   source_p->name, source_p->hopcount + 1,
-					   (unsigned long) source_p->tsinfo,
-					   ubuf, source_p->username, source_p->host,
-					   IsIPSpoof(source_p) ? "0" : source_p->sockhost,
-					   source_p->id, EmptyString(source_p->services_stamp) ? "0" : source_p->services_stamp,
-					   source_p->realhost, source_p->info);
+#ifndef HAVE_LIBCRYPTO
+        if(HasID(source_p) && IsCapable(server, CAP_TS6))
+                sendto_one(server, ":%s UID %s %d %lu %s %s %s %s %s %s %s :%s",
+                           source_p->servptr->id,
+                           source_p->name, source_p->hopcount + 1,
+                           (unsigned long) source_p->tsinfo,
+                           ubuf, source_p->username, source_p->host,
+                           IsIPSpoof(source_p) ? "0" : source_p->sockhost, source_p->id,
+                           EmptyString(source_p->suser) ? "0" : source_p->suser, source_p->realhost,
+                           source_p->info);
+#else
+        if(HasID(source_p) && IsCapable(server, CAP_TS6)) { /* Ok sir, we will send the certfp or if the client hasn't one, the word NONE */
+                if(IsSSL(source_p)) {
+                        if(!EmptyString(source_p->certfp))
+                        {
+
+                                base16_encode(buf, SHA_DIGEST_LENGTH*2+1, source_p->certfp,
+                                              SHA_DIGEST_LENGTH);
+                        }
+                }
+                sendto_one(server, ":%s UID %s %d %lu %s %s %s %s %s %s %s %s :%s",
+                           source_p->servptr->id,
+                           source_p->name, source_p->hopcount + 1,
+                           (unsigned long) source_p->tsinfo,
+                           ubuf, source_p->username, source_p->host,
+                           IsIPSpoof(source_p) ? "0" : source_p->sockhost, source_p->id,
+                           EmptyString(source_p->suser) ? "0" : source_p->suser, source_p->realhost,
+                           IsSSL(source_p) ? buf : "NONE", source_p->info); }
+#endif
 			else
 				sendto_one(server, "NICK %s %d %lu %s %s %s %s %s %s :%s",
 					   source_p->name, source_p->hopcount + 1,
@@ -752,7 +796,7 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 		if(!EmptyString(source_p->suser))
 			sendto_server(NULL, source_p, NULL, CAP_ENCAP, NOCAPS,
 				      LL_ICLIENT, ":%s ENCAP * SU %s %s",
-				      me.name, source_p->name, source_p->suser);
+				      me.id, source_p->id, source_p->suser);
 #ifdef HAVE_LIBCRYPTO
 	   if(!EmptyString(source_p->certfp))
 	   {
@@ -761,7 +805,7 @@ introduce_client(struct Client *client_p, struct Client *source_p)
 			   base16_encode(buf, sizeof(buf), source_p->certfp, sizeof(source_p->certfp));
 			   sendto_server(NULL, source_p, NULL, CAP_ENCAP, NOCAPS,
 			          LL_ICLIENT, ":%s ENCAP * CERTFP %s :%s",
-			          me.name, source_p->name, buf);
+			          me.id, source_p->id, buf);
 	   }
 #endif
 	}

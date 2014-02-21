@@ -50,11 +50,12 @@ static void m_nick(struct Client *, struct Client *, int, char **);
 static void mr_nick(struct Client *, struct Client *, int, char **);
 static void ms_nick(struct Client *, struct Client *, int, char **);
 static void ms_uid(struct Client *, struct Client *, int, char **);
+static void ms_xuid(struct Client *, struct Client *, int, char **);
 
 static void nick_from_server(struct Client *, struct Client *, int, char **,
 			     time_t, char *, char *);
 static void client_from_server(struct Client *, struct Client *, int, char **,
-			       time_t, char *, char *);
+			       time_t, char *, char *, char *);
 static int check_clean_nick(struct Client *client_p, struct Client *source_p,
 			    char *nick, char *newnick, struct Client *server_p);
 static int check_clean_user(struct Client *client_p, char *nick, char *user,
@@ -72,11 +73,17 @@ struct Message nick_msgtab = {
 	{mr_nick, m_nick, ms_nick, m_ignore, m_nick, m_ignore}
 };
 
+#ifndef HAVE_LIBCRYPTO
 struct Message uid_msgtab = {
-	"UID", 0, 0, 12, 0, MFLG_SLOW, 0,
+	"UID", 0, 0, 13, 0, MFLG_SLOW, 0,
 	{m_ignore, m_ignore, ms_uid, m_ignore, m_ignore, m_ignore}
 };
-
+#else
+struct Message uid_msgtab = {
+	"UID", 0, 0, 12, 12, MFLG_SLOW, 0,
+	{m_ignore, m_ignore, ms_xuid, m_ignore, m_ignore, m_ignore}
+};
+#endif
 #ifndef STATIC_MODULES
 void
 _modinit(void)
@@ -472,16 +479,86 @@ ms_uid(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 	}
 
 	if((target_p = find_client(unick)) == NULL)
-		client_from_server(client_p, source_p, parc, parv, newts, nick, ugecos);
+		client_from_server(client_p, source_p, parc, parv, newts, nick, ugecos, "NONE");
 	else if(IsUnknown(target_p))
 	{
 		exit_client(target_p, &me, "Overridden");
-		client_from_server(client_p, source_p, parc, parv, newts, nick, ugecos);
+		client_from_server(client_p, source_p, parc, parv, newts, nick, ugecos, "NONE");
 	}
 	else
 		perform_nick_collides(source_p, client_p, target_p,
 				      parc, parv, newts, nick, ugecos, uid);
 }
+
+/* ms_xuid: Handle XUID from capable servers */
+static void
+ms_xuid(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+	struct Client *target_p;
+	char nick[NICKLEN];
+	char ugecos[REALLEN + 1];
+	time_t newts = 0;
+	char *unick = parv[1];
+	char *uts = parv[3];
+	char *uname = parv[5];
+	char *uhost = parv[6];
+	char *uid = parv[8];
+	char *urealhost = parv[10];
+	char *ucertfp = parv[11];
+
+	if(EmptyString(unick))
+		return;
+
+	/* Fix the lengths */
+	strlcpy(nick, parv[1], sizeof(nick));
+	strlcpy(ugecos, parv[12], sizeof(ugecos));
+
+	if(check_clean_nick(client_p, source_p, nick, unick, source_p) ||
+	   check_clean_user(client_p, nick, uname, source_p) ||
+	   check_clean_host(client_p, nick, uhost, source_p) ||
+	   check_clean_host(client_p, nick, urealhost, source_p))
+		return;
+
+	if(strlen(parv[12]) > REALLEN)
+		sendto_realops_flags(UMODE_ALL, L_ALL, "Long realname from server %s for %s",
+				     parv[0], parv[1]);
+
+	newts = atol(uts);
+
+	/* if there is an ID collision, kill our client, and kill theirs.
+	 * this may generate 401's, but it ensures that both clients always
+	 * go, even if the other server refuses to do the right thing.
+	 */
+	if((target_p = hash_find_id(uid)) != NULL)
+	{
+		sendto_realops_flags(UMODE_ALL, L_ALL,
+				     "ID collision on %s(%s <- %s)(both killed)",
+				     target_p->name, target_p->from->name, client_p->name);
+
+		if(ServerInfo.hub && IsCapable(client_p, CAP_LL))
+			add_lazylinkclient(client_p, source_p);
+
+		kill_client_ll_serv_butone(NULL, target_p, "%s (ID collision)", me.name);
+
+		ServerStats->is_kill++;
+
+		SetKilled(target_p);
+		exit_client(target_p, &me, "ID Collision");
+		return;
+	}
+
+	if((target_p = find_client(unick)) == NULL)
+		client_from_server(client_p, source_p, parc, parv, newts, nick, ugecos, ucertfp);
+	else if(IsUnknown(target_p))
+	{
+		exit_client(target_p, &me, "Overridden");
+		client_from_server(client_p, source_p, parc, parv, newts, nick, ugecos, ucertfp);
+	}
+	else
+		perform_nick_collides(source_p, client_p, target_p,
+				      parc, parv, newts, nick, ugecos, uid);
+}
+
 
 /* check_clean_nick()
  *
@@ -723,7 +800,7 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
 			}
 
 			register_remote_user(client_p, source_p, parv[5], parv[6], parv[7], ngecos,
-					     parv[9]);
+					     parv[9], "NONE");
 			return;
 		}
 	}
@@ -763,7 +840,7 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
  */
 static void
 client_from_server(struct Client *client_p, struct Client *source_p, int parc,
-		   char *parv[], time_t newts, char *nick, char *ugecos)
+		   char *parv[], time_t newts, char *nick, char *ugecos, char *ucertfp)
 {
 	char *m;
 	unsigned int flag;
@@ -804,7 +881,7 @@ client_from_server(struct Client *client_p, struct Client *source_p, int parc,
 		m++;
 	}
 
-	register_remote_user(client_p, source_p, parv[5], parv[6], servername, ugecos, parv[10]);
+	register_remote_user(client_p, source_p, parv[5], parv[6], servername, ugecos, ucertfp, parv[11]);
 }
 
 static void
@@ -894,7 +971,7 @@ perform_nick_collides(struct Client *source_p, struct Client *client_p,
 							 nick, gecos);
 				else if(parc == 12)
 					client_from_server(client_p, source_p, parc, parv, newts,
-							   nick, gecos);
+							   nick, gecos, "NONE");
 
 				return;
 			}
