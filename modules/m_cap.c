@@ -71,6 +71,7 @@ const char *_version = "$Revision: 489 $";
 #define CAPFL_PROHIBIT  0x0002	/**< Client may not set this capability */
 #define CAPFL_PROTO     0x0004	/**< Cap must be acknowledged by client */
 #define CAPFL_STICKY    0x0008	/**< Cap may not be cleared once set */
+#define CAP_SASL "sasl"
 
 typedef int (*bqcmp) (const void *, const void *);
 
@@ -86,7 +87,8 @@ static struct capabilities
 	{ (cap), (flags), (name), sizeof(name) - 1 }
 	_CAP(CAP_MULTI_PREFIX, 0, "multi-prefix"),
 	_CAP(CAP_UHNAMES, 0, "uhnames"),
-	_CAP(CAP_UHNAMES, 0, "userhost-in-names")
+	_CAP(CAP_UHNAMES, 0, "userhost-in-names"),
+	_CAP(CAP_MULTI_PREFIX, 0, "sasl"),
 #undef _CAP
 };
 

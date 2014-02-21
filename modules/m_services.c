@@ -23,6 +23,29 @@
  *  $Id: m_services.c 493 2007-07-07 17:45:14Z jon $
  */
 /*
+ *  ircd-hamsterbox: a really fucking stupid IRCd
+ *  m_services_account.c: PleXus services integration, with some extra goodies
+ * 
+ *  The goodies? Account support in WHOIS, among other things.
+ *  As seen in Charybdis, we will soon support several kinds of 'ext'ban.
+ * 
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
+ *  USA
+ *
+ */
+/*
  *
  * With code from 'bane' the URL following is valid as of this date.
  * http://hybserv2.net/file/trunk/contrib/hybrid_services.c
@@ -64,6 +87,9 @@
 #include "packet.h"
 #include "sprintf_irc.h"
 #include "cloak.h"
+
+static struct Callback *whois_cb = NULL;
+static dlink_node *prev_hook;
 
 /* Custom Macros */
 #define services_function(a,b,c) static void a(struct Client *client_p,\
@@ -195,6 +221,8 @@ struct Message identify_msgtab = {
 	{m_unregistered, m_identify, m_ignore, m_ignore, m_identify, m_ignore}
 };
 
+static void *h_svc_whois(va_list);
+
 #ifndef STATIC_MODULES
 void
 _modinit(void)
@@ -221,6 +249,8 @@ _modinit(void)
 	mod_add_cmd(&identify_msgtab);
 	add_isupport("FNC", NULL, -1);
 	add_capability("SVS", CAP_SVS, 0);
+        if((whois_cb = find_callback("doing_whois")))
+                prev_hook = install_hook(whois_cb, h_svc_whois);
 }
 
 void
@@ -248,8 +278,9 @@ _moddeinit(void)
 	mod_del_cmd(&identify_msgtab);
 	delete_isupport("FNC");
 	delete_capability("SVS");
+        if(whois_cb)
+                uninstall_hook(whois_cb, h_svc_whois);
 }
-
 const char *_version = "$Revision: 493 $";
 #endif
 
@@ -690,6 +721,21 @@ clean_nick_name(char *nick, int local, int netadmin)
  * parv[1] = NickServ Password or Channel
  * parv[2] = ChanServ Password
  */
+#ifndef AUTH_TYPE
+#define AUTH_TYPE "IDENTIFY" 
+#endif
+/* ^^ If ./configure.account is called with argv1 as LOGIN, this should be changed to LOGIN, as if your
+ * services used LOGIN. If called with AUTH, your account-based services use AUTH. */
+#ifndef AUTH_SERVICE
+#define AUTH_SERVICE "NickServ"
+#endif
+/* Seriously, CHANGEME if your Nick/AuthServ is otherly named.
+ * */
+#ifndef DEFINE_ACCT_C
+#error "If you are sure the defaults are correct (your network uses NickServ,"
+#error "and NickServ requires that the user specify an account name in IDENTIFY) rerun the compiler"
+#error "with -DDEFINE_ACCT_C. If this is not the case, use -DDEFINE_ACCT_C -DUSES_NICKSERV -DAUTH_TYPE=\"command you use to identify to nickserv\" -DAUTH_SERVICE=\"Nickserv's nickname\""
+#endif
 static void
 m_identify(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
@@ -698,30 +744,60 @@ m_identify(struct Client *client_p, struct Client *source_p, int parc, char *par
 	switch (parc)
 	{
 	case 2:
+#ifdef USES_NICKSERV
 		if(!(target_p = find_server(ConfigFileEntry.services_name)))
 			sendto_one(source_p, form_str(ERR_SERVICESDOWN), me.name, source_p->name,
 				   "NickServ");
 		else
-			sendto_one(target_p, ":%s PRIVMSG NickServ@%s :IDENTIFY %s",
-				   source_p->name, ConfigFileEntry.services_name, parv[1]);
+			sendto_one(target_p, ":%s PRIVMSG %s@%s :%s %s",
+				   source_p->name, AUTH_SERVICE, ConfigFileEntry.services_name, "IDENTIFY", parv[1]);
 		break;
-
+#else
+		sendto_one(source_p, ":0-Server-Notice!sno@%s NOTICE %s :This network does NOT use NickServ. To /IDENTIFY, use /IDENTIFY login-name password", me.name, source_p->name);
+		sendto_one(source_p, ":0-Server-Notice!sno@%s NOTICE %s :to log into AuthServ.", me.name, source_p->name);
+		break;
+#endif
 	case 3:
 		if(!(target_p = find_server(ConfigFileEntry.services_name)))
 			sendto_one(source_p, form_str(ERR_SERVICESDOWN), me.name, source_p->name,
-				   "ChanServ");
+				   "AuthServ");
 		else
-			sendto_one(target_p, ":%s PRIVMSG ChanServ@%s :IDENTIFY %s %s",
-				   source_p->name, ConfigFileEntry.services_name, parv[1], parv[2]);
+			sendto_one(target_p, ":%s PRIVMSG %s@%s :%s %s %s",
+				   source_p->name, AUTH_SERVICE, ConfigFileEntry.services_name, AUTH_TYPE, parv[1], parv[2]);
 		break;
 
 	default:
 		sendto_one(source_p, ":%s NOTICE %s :Syntax: IDENTIFY <password> "
-			   "- for nickname", me.name, source_p->name);
-		sendto_one(source_p, ":%s NOTICE %s :Syntax: IDENTIFY <channel> "
-			   "<password> - for channel", me.name, source_p->name);
+			   "- for nickServ", me.name, source_p->name);
+		sendto_one(source_p, ":%s NOTICE %s :Syntax: IDENTIFY <username> "
+			   "<password> - for AuthServ", me.name, source_p->name);
 		break;
 	}
+}
+
+static void *h_svc_whois(va_list data)
+{
+        struct Client *source_p = va_arg(data, struct Client *);
+        int parc = va_arg(data, int);
+        char **parv = va_arg(data, char **);
+        struct Client *target_p;
+
+        char *p = target_p->suser;
+        if(!EmptyString(p))
+        {
+                /* Try to strip off any leading digits as this may be used to
+                 * store both an ID number and an account name in one field.
+                 * If only digits are present, leave as is.
+                 */
+                while(IsDigit(*p))
+                        p++;
+                if(*p == '\0')
+                        p = target_p->suser;
+
+                sendto_one(source_p, ":%s 330 %s %s %s :is authed as",
+                                me.name, source_p->name, target_p->name, target_p->suser);
+        }
+	return pass_callback(prev_hook, source_p, parc, parv);
 }
 
 /*
@@ -969,30 +1045,28 @@ me_svspart(struct Client *client_p, struct Client *source_p, int parc, char *par
  * me_su
  *      parv[0] = sender prefix
  *      parv[1] = nick
- *      parv[2] = nick core identified to
+ *      parv[2] = authname identified to
  */
 static void
 me_su(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
-	struct Client *target_p = NULL;
+        struct Client *target_p;
 
-	if(!IsServer(source_p))
-		return;
+        if(!IsServer(source_p))
+                return;
 
-	if(parc < 2)
-		return;
+        if((target_p = find_client(parv[1])) == NULL)
+                return 0;
 
-	if((target_p = (struct Client*)find_client(parv[1])) == NULL)
-		return;
+        if(!target_p)
+                return 0;
 
+        if(EmptyString(parv[2]))
+                target_p->suser[0] = '\0';
+        else
+                strlcpy(target_p->suser, parv[2], sizeof(target_p->suser));
 
-	if(!IsClient(target_p))
-		return;
-
-	if(EmptyString(parv[2]))
-		target_p->suser[0] = '\0';
-	else
-		strlcpy(target_p->suser, parv[2], sizeof(target_p->suser));
+        return 0;
 }
 
 /*

@@ -300,7 +300,7 @@ m_nick(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
  *    parv[5] = username
  *    parv[6] = hostname
  *    parv[7] = server
- *    parv[8] = services_stamp
+ *    parv[8] = suser
  *    parv[9] = realhost
  *    parv[10] = ircname
  */
@@ -412,7 +412,7 @@ ms_nick(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
  *  parv[6] = hostname
  *  parv[7] = ip
  *  parv[8] = uid
- *  parv[9] = services_stamp
+ *  parv[9] = suser
  *  parv[10] = realhost
  *  parv[11] = ircname (gecos)
  */
@@ -693,7 +693,7 @@ nick_from_server(struct Client *client_p, struct Client *source_p, int parc,
 			ts_warn("Remote nick %s (%s) introduced without a TS", nick, parv[0]);
 		}
 
-		strlcpy(source_p->services_stamp, parv[8], sizeof(source_p->services_stamp));
+		strlcpy(source_p->suser, parv[8], sizeof(source_p->suser));
 
 		/* copy the nick in place */
 		strcpy(source_p->name, nick);
@@ -778,7 +778,7 @@ client_from_server(struct Client *client_p, struct Client *source_p, int parc,
 
 	source_p->hopcount = atoi(parv[2]);
 	source_p->tsinfo = newts;
-	strlcpy(source_p->services_stamp, parv[9], sizeof(source_p->services_stamp));
+	strlcpy(source_p->suser, parv[9], sizeof(source_p->suser));
 
 	/* copy the nick in place */
 	strcpy(source_p->name, nick);

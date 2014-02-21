@@ -447,6 +447,9 @@ whois_person(struct Client *source_p, struct Client *target_p)
 		sendto_one(source_p, form_str(RPL_WHOISREGNICK),
 			   me.name, source_p->name, target_p->name, "this nick");
 	}
+	if (!EmptyString (target_p->suser)) {
+		sendto_one(source_p, ":%s 330 %s %s %s :is authed as",
+		   me.name, source_p->name, target_p->name, target_p->suser); }
 
 #ifdef HAVE_LIBCRYPTO
 	if(IsSSL(target_p)) {

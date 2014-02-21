@@ -1375,7 +1375,7 @@ user_welcome(struct Client *source_p)
 #endif
 
 	if(IsCloaked(source_p))
-		sendto_one(source_p, ":%s NOTICE %s :*** Your host is masked (%s)", me.name,
+		sendto_one(source_p, ":%s NOTICE %s :*** Congratulations! Your host is mangled-via-I:line.", me.name,
 			   source_p->name, source_p->host);
 
 	sendto_one(source_p, form_str(RPL_WELCOME), me.name, source_p->name,
