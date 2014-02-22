@@ -107,6 +107,7 @@ static void m_botserv(struct Client *, struct Client *, int, char *[]);
 static void m_chanserv(struct Client *, struct Client *, int, char *[]);
 static void m_hostserv(struct Client *, struct Client *, int, char *[]);
 static void m_identify(struct Client *, struct Client *, int, char *[]);
+static void m_register(struct Client *, struct Client *, int, char *[]);
 static void m_memoserv(struct Client *, struct Client *, int, char *[]);
 static void m_nickserv(struct Client *, struct Client *, int, char *[]);
 static void m_operserv(struct Client *, struct Client *, int, char *[]);
@@ -159,6 +160,11 @@ struct Message svskill_msgtab = {
 struct Message botserv_msgtab = {
 	"BOTSERV", 0, 0, 1, 0, MFLG_SLOW, 0,
 	{m_unregistered, m_botserv, m_ignore, m_ignore, m_botserv, m_ignore}
+};
+
+struct Message register_msgtab = {
+	"REGISTER", 0, 0, 1, 0, MFLG_SLOW, 0,
+	{m_unregistered, m_register, m_ignore, m_ignore, m_register, m_ignore}
 };
 
 struct Message bs_msgtab = {
@@ -247,6 +253,7 @@ _modinit(void)
 	mod_add_cmd(&operserv_msgtab);
 	mod_add_cmd(&os_msgtab);
 	mod_add_cmd(&identify_msgtab);
+	mod_add_cmd(&register_msgtab);
 	add_isupport("FNC", NULL, -1);
 	add_capability("SVS", CAP_SVS, 0);
         if((whois_cb = find_callback("doing_whois")))
@@ -256,6 +263,7 @@ _modinit(void)
 void
 _moddeinit(void)
 {
+	mod_del_cmd(&register_msgtab);
 	mod_del_cmd(&svsjoin_msgtab);
 	mod_del_cmd(&svsmode_msgtab);
 	mod_del_cmd(&svsnick_msgtab);
@@ -729,12 +737,15 @@ clean_nick_name(char *nick, int local, int netadmin)
 #ifndef AUTH_SERVICE
 #define AUTH_SERVICE "NickServ"
 #endif
+#ifndef CHAN_SERVICE
+#define AUTH_SERVICE "ChanServ"
+#endif
 /* Seriously, CHANGEME if your Nick/AuthServ is otherly named.
  * */
 #ifndef DEFINE_ACCT_C
 #error "If you are sure the defaults are correct (your network uses NickServ,"
 #error "and NickServ requires that the user specify an account name in IDENTIFY) rerun the compiler"
-#error "with -DDEFINE_ACCT_C. If this is not the case, use -DDEFINE_ACCT_C -DUSES_NICKSERV -DAUTH_TYPE=\"command you use to identify to nickserv\" -DAUTH_SERVICE=\"Nickserv's nickname\""
+#error "with -DDEFINE_ACCT_C. If this is not the case, use a CC of gcc -DDEFINE_ACCT_C -DUSES_NICKSERV -DUSES_CHANSERV -DCHAN_SERVICE=\\\"ChanServ's nickname\\\" -DAUTH_TYPE=\\\"command you use to identify to nickserv\\\" -DAUTH_SERVICE=\\\"Nickserv's nickname\\\""
 #endif
 static void
 m_identify(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
@@ -764,6 +775,39 @@ m_identify(struct Client *client_p, struct Client *source_p, int parc, char *par
 		else
 			sendto_one(target_p, ":%s PRIVMSG %s@%s :%s %s %s",
 				   source_p->name, AUTH_SERVICE, ConfigFileEntry.services_name, AUTH_TYPE, parv[1], parv[2]);
+		break;
+
+	default:
+		sendto_one(source_p, ":%s NOTICE %s :Syntax: IDENTIFY <password> "
+			   "- for nickServ", me.name, source_p->name);
+		sendto_one(source_p, ":%s NOTICE %s :Syntax: IDENTIFY <username> "
+			   "<password> - for AuthServ", me.name, source_p->name);
+		break;
+	}
+}
+
+static void
+m_register(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
+{
+	struct Client *target_p = NULL;
+
+	switch (parc)
+	{
+	case 2:
+		if(!(target_p = find_server(ConfigFileEntry.services_name)))
+			sendto_one(source_p, form_str(ERR_SERVICESDOWN), me.name, source_p->name,
+				   "ChanServ");
+		else
+			sendto_one(target_p, ":%s PRIVMSG %s@%s :%s %s",
+				   source_p->name, CHAN_SERVICE, ConfigFileEntry.services_name, "REGISTER", parv[1]);
+		break;
+	case 3:
+		if(!(target_p = find_server(ConfigFileEntry.services_name)))
+			sendto_one(source_p, form_str(ERR_SERVICESDOWN), me.name, source_p->name,
+				   "NickServ");
+		else
+			sendto_one(target_p, ":%s PRIVMSG %s@%s :%s %s %s",
+				   source_p->name, AUTH_SERVICE, ConfigFileEntry.services_name, "REGISTER", parv[1], parv[2]);
 		break;
 
 	default:
