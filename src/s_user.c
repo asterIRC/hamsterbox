@@ -690,9 +690,9 @@ introduce_client(struct Client *client_p, struct Client *source_p)
                            (unsigned long) source_p->tsinfo,
                            ubuf, source_p->username, source_p->host,
                            IsIPSpoof(source_p) ? "0" : source_p->sockhost, source_p->id,
-                           EmptyString(source_p->suser) ? "0" : source_p->suser, source_p->realhost,
+                           EmptyString(source_p->suser) ? "NONE" : source_p->suser, source_p->realhost,
                            source_p->info);
-#else
+#endif
         if(HasID(source_p) && IsCapable(uplink, CAP_TS6)) { /* Ok sir, we will send the certfp or if the client hasn't one, the word NONE */
                 if(IsSSL(source_p)) {
                         if(!EmptyString(source_p->certfp))
@@ -708,9 +708,9 @@ introduce_client(struct Client *client_p, struct Client *source_p)
                            (unsigned long) source_p->tsinfo,
                            ubuf, source_p->username, source_p->host,
                            IsIPSpoof(source_p) ? "0" : source_p->sockhost, source_p->id,
-                           EmptyString(source_p->suser) ? "0" : source_p->suser, source_p->realhost,
-                           IsSSL(source_p) ? buf : "NONE", source_p->info); }
-#endif
+                           EmptyString(source_p->suser) ? "NONE" : source_p->suser, source_p->realhost,
+                           EmptyString(source_p->certfp) ? "NONE" : buf, source_p->info); }
+//#endif
 		}
 		else
 		{
@@ -759,7 +759,7 @@ introduce_client(struct Client *client_p, struct Client *source_p)
                            ubuf, source_p->username, source_p->host,
                            IsIPSpoof(source_p) ? "0" : source_p->sockhost, source_p->id,
                            EmptyString(source_p->suser) ? "0" : source_p->suser, source_p->realhost,
-                           IsSSL(source_p) ? buf : "NONE", source_p->info); }
+                           EmptyString(source_p->certfp)?"NONE":buf, source_p->info); }
 #endif
 			else
 				sendto_one(server, "NICK %s %d %lu %s %s %s %s %s %s :%s",

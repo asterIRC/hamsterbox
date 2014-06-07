@@ -1012,12 +1012,13 @@ handle_special(int p_or_n, const char *command, struct Client *client_p,
 			if(*s == '.' || *s == '*' || *s == '?')
 				break;
 
-		if(*s == '*' || *s == '?')
+/*		if(*s == '*' || *s == '?')
 		{
 			sendto_one(source_p, form_str(ERR_WILDTOPLEVEL),
 				   ID_or_name(&me, client_p), ID_or_name(source_p, client_p), nick);
 			return;
 		}
+* Disabled this because we don't think it's sane not to be able to notice $$* (sending a global) */
 
 		sendto_match_butone(IsServer(client_p) ? client_p : NULL, source_p,
 				    nick + 1, (*nick == '#') ? MATCH_HOST : MATCH_SERVER,

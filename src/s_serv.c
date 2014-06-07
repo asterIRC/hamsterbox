@@ -940,7 +940,7 @@ sendnick_TS(struct Client *client_p, struct Client *target_p)
 			   ubuf, target_p->username, target_p->host,
 			   IsIPSpoof(target_p) ? "0" : target_p->sockhost, target_p->id,
 			   EmptyString(target_p->suser) ? "0" : target_p->suser, target_p->realhost,
-			   EmptyString(buf) ? "NONE" : buf, target_p->info); }
+			   EmptyString(target_p->certfp) ? "NONE" : buf, target_p->info); }
 #endif
 	else
 		sendto_one(client_p, "NICK %s %d %lu %s %s %s %s %s %s :%s",

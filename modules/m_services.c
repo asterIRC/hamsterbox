@@ -105,6 +105,8 @@ static void me_svspart(struct Client *, struct Client *, int, char *[]);
 
 static void m_botserv(struct Client *, struct Client *, int, char *[]);
 static void m_chanserv(struct Client *, struct Client *, int, char *[]);
+static void m_groupserv(struct Client *, struct Client *, int, char *[]);
+static void m_infoserv(struct Client *, struct Client *, int, char *[]);
 static void m_hostserv(struct Client *, struct Client *, int, char *[]);
 static void m_identify(struct Client *, struct Client *, int, char *[]);
 static void m_register(struct Client *, struct Client *, int, char *[]);
@@ -182,6 +184,26 @@ struct Message cs_msgtab = {
 	{m_unregistered, m_chanserv, m_ignore, m_ignore, m_chanserv, m_ignore}
 };
 
+struct Message infoserv_msgtab = {
+	"INFOSERV", 0, 0, 1, 0, MFLG_SLOW, 0,
+	{m_unregistered, m_infoserv, m_ignore, m_ignore, m_infoserv, m_ignore}
+};
+
+struct Message is_msgtab = {
+	"IS", 0, 0, 1, 0, MFLG_SLOW, 0,
+	{m_unregistered, m_infoserv, m_ignore, m_ignore, m_infoserv, m_ignore}
+};
+
+struct Message groupserv_msgtab = {
+	"GROUPSERV", 0, 0, 1, 0, MFLG_SLOW, 0,
+	{m_unregistered, m_groupserv, m_ignore, m_ignore, m_groupserv, m_ignore}
+};
+
+struct Message gs_msgtab = {
+	"GS", 0, 0, 1, 0, MFLG_SLOW, 0,
+	{m_unregistered, m_groupserv, m_ignore, m_ignore, m_groupserv, m_ignore}
+};
+
 struct Message hostserv_msgtab = {
 	"HOSTSERV", 0, 0, 1, 0, MFLG_SLOW, 0,
 	{m_unregistered, m_hostserv, m_ignore, m_ignore, m_hostserv, m_ignore}
@@ -246,6 +268,10 @@ _modinit(void)
 	mod_add_cmd(&cs_msgtab);
 	mod_add_cmd(&hostserv_msgtab);
 	mod_add_cmd(&hs_msgtab);
+	mod_add_cmd(&groupserv_msgtab);
+	mod_add_cmd(&gs_msgtab);
+	mod_add_cmd(&infoserv_msgtab);
+	mod_add_cmd(&is_msgtab);
 	mod_add_cmd(&memoserv_msgtab);
 	mod_add_cmd(&ms_msgtab);
 	mod_add_cmd(&nickserv_msgtab);
@@ -273,6 +299,12 @@ _moddeinit(void)
 	mod_del_cmd(&svskill_msgtab);
 	mod_del_cmd(&botserv_msgtab);
 	mod_del_cmd(&bs_msgtab);
+
+	mod_del_cmd(&infoserv_msgtab);
+	mod_del_cmd(&is_msgtab);
+	mod_del_cmd(&groupserv_msgtab);
+	mod_del_cmd(&gs_msgtab);
+
 	mod_del_cmd(&chanserv_msgtab);
 	mod_del_cmd(&cs_msgtab);
 	mod_del_cmd(&hostserv_msgtab);
@@ -674,6 +706,8 @@ services_function(m_hostserv, "HostServ", "HOSTSERV")
 services_function(m_memoserv, "MemoServ", "MEMOSERV")
 services_function(m_nickserv, "NickServ", "NICKSERV")
 services_function(m_operserv, "OperServ", "OPERSERV")
+services_function(m_groupserv, "GroupServ", "GROUPSERV")
+services_function(m_infoserv, "InfoServ", "INFOSERV")
 /*
  * get_string() 
  *
@@ -729,6 +763,8 @@ clean_nick_name(char *nick, int local, int netadmin)
  * parv[1] = NickServ Password or Channel
  * parv[2] = ChanServ Password
  */
+#define DEFINE_ACCT_C
+#define USES_NICKSERV
 #ifndef AUTH_TYPE
 #define AUTH_TYPE "IDENTIFY" 
 #endif
@@ -738,7 +774,7 @@ clean_nick_name(char *nick, int local, int netadmin)
 #define AUTH_SERVICE "NickServ"
 #endif
 #ifndef CHAN_SERVICE
-#define AUTH_SERVICE "ChanServ"
+#define CHAN_SERVICE "ChanServ"
 #endif
 /* Seriously, CHANGEME if your Nick/AuthServ is otherly named.
  * */
@@ -757,11 +793,10 @@ m_identify(struct Client *client_p, struct Client *source_p, int parc, char *par
 	case 2:
 #ifdef USES_NICKSERV
 		if(!(target_p = find_server(ConfigFileEntry.services_name)))
-			sendto_one(source_p, form_str(ERR_SERVICESDOWN), me.name, source_p->name,
-				   "NickServ");
+			break;//sendto_one(source_p, form_str(ERR_SERVICESDOWN), me.name, source_p->name, "NickServ");
 		else
-			sendto_one(target_p, ":%s PRIVMSG %s@%s :%s %s",
-				   source_p->name, AUTH_SERVICE, ConfigFileEntry.services_name, "IDENTIFY", parv[1]);
+			sendto_one(target_p, ":%s PRIVMSG " AUTH_SERVICE "@%s :%s %s",
+				   source_p->name, ConfigFileEntry.services_name, "IDENTIFY", parv[1]);
 		break;
 #else
 		sendto_one(source_p, ":0-Server-Notice!sno@%s NOTICE %s :This network does NOT use NickServ. To /IDENTIFY, use /IDENTIFY login-name password", me.name, source_p->name);
@@ -770,11 +805,10 @@ m_identify(struct Client *client_p, struct Client *source_p, int parc, char *par
 #endif
 	case 3:
 		if(!(target_p = find_server(ConfigFileEntry.services_name)))
-			sendto_one(source_p, form_str(ERR_SERVICESDOWN), me.name, source_p->name,
-				   "AuthServ");
+			break;//sendto_one(source_p, form_str(ERR_SERVICESDOWN), me.name, source_p->name, "AuthServ");
 		else
-			sendto_one(target_p, ":%s PRIVMSG %s@%s :%s %s %s",
-				   source_p->name, AUTH_SERVICE, ConfigFileEntry.services_name, AUTH_TYPE, parv[1], parv[2]);
+			sendto_one(target_p, ":%s PRIVMSG " AUTH_SERVICE "@%s :" AUTH_TYPE " %s %s",
+				   source_p->name, ConfigFileEntry.services_name, parv[1], parv[2]);
 		break;
 
 	default:
@@ -798,23 +832,36 @@ m_register(struct Client *client_p, struct Client *source_p, int parc, char *par
 			sendto_one(source_p, form_str(ERR_SERVICESDOWN), me.name, source_p->name,
 				   "ChanServ");
 		else
-			sendto_one(target_p, ":%s PRIVMSG %s@%s :%s %s",
-				   source_p->name, CHAN_SERVICE, ConfigFileEntry.services_name, "REGISTER", parv[1]);
+			sendto_one(target_p, ":%s PRIVMSG " CHAN_SERVICE "@%s :%s %s",
+				   source_p->name, ConfigFileEntry.services_name, "REGISTER", parv[1]);
 		break;
 	case 3:
 		if(!(target_p = find_server(ConfigFileEntry.services_name)))
 			sendto_one(source_p, form_str(ERR_SERVICESDOWN), me.name, source_p->name,
 				   "NickServ");
 		else
-			sendto_one(target_p, ":%s PRIVMSG %s@%s :%s %s %s",
-				   source_p->name, AUTH_SERVICE, ConfigFileEntry.services_name, "REGISTER", parv[1], parv[2]);
+			sendto_one(target_p, ":%s PRIVMSG " AUTH_SERVICE "@%s :%s %s %s",
+				   source_p->name, ConfigFileEntry.services_name, "REGISTER", parv[1], parv[2]);
+		break;
+
+	case 4:
+		if(!(target_p = find_server(ConfigFileEntry.services_name)))
+			sendto_one(source_p, form_str(ERR_SERVICESDOWN), me.name, source_p->name,
+				   "NickServ");
+		else
+			sendto_one(target_p, ":%s PRIVMSG " AUTH_SERVICE "@%s :%s %s %s",
+				   source_p->name, ConfigFileEntry.services_name, "REGISTER", parv[1], parv[2], parv[3]);
 		break;
 
 	default:
-		sendto_one(source_p, ":%s NOTICE %s :Syntax: IDENTIFY <password> "
-			   "- for nickServ", me.name, source_p->name);
-		sendto_one(source_p, ":%s NOTICE %s :Syntax: IDENTIFY <username> "
+		sendto_one(source_p, ":%s NOTICE %s :Syntax: REGISTER <channel> "
+			   "- for ChanServ", me.name, source_p->name);
+		sendto_one(source_p, ":%s NOTICE %s :Syntax: REGISTER <username> "
 			   "<password> - for AuthServ", me.name, source_p->name);
+		sendto_one(source_p, ":%s NOTICE %s :Syntax: REGISTER <username> "
+			   "<password> <email> - for AuthServ", me.name, source_p->name);
+		sendto_one(source_p, ":%s NOTICE %s :Syntax: REGISTER "
+			   "<password> <email> - for NickServ", me.name, source_p->name);
 		break;
 	}
 }

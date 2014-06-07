@@ -88,7 +88,6 @@ static struct capabilities
 	_CAP(CAP_MULTI_PREFIX, 0, "multi-prefix"),
 	_CAP(CAP_UHNAMES, 0, "uhnames"),
 	_CAP(CAP_UHNAMES, 0, "userhost-in-names"),
-	_CAP(CAP_MULTI_PREFIX, 0, "sasl"),
 #undef _CAP
 };
 

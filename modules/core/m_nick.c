@@ -80,7 +80,7 @@ struct Message uid_msgtab = {
 };
 #else
 struct Message uid_msgtab = {
-	"UID", 0, 0, 12, 12, MFLG_SLOW, 0,
+	"UID", 0, 0, 12, 14, MFLG_SLOW, 0,
 	{m_ignore, m_ignore, ms_xuid, m_ignore, m_ignore, m_ignore}
 };
 #endif
@@ -442,7 +442,7 @@ ms_uid(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 
 	/* Fix the lengths */
 	strlcpy(nick, parv[1], sizeof(nick));
-	strlcpy(ugecos, parv[11], sizeof(ugecos));
+	strlcpy(ugecos, parv[12], sizeof(ugecos));
 
 	if(check_clean_nick(client_p, source_p, nick, unick, source_p) ||
 	   check_clean_user(client_p, nick, uname, source_p) ||
@@ -546,6 +546,8 @@ ms_xuid(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
 		exit_client(target_p, &me, "ID Collision");
 		return;
 	}
+
+	if (ucertfp == "NONE") ucertfp = "";
 
 	if((target_p = find_client(unick)) == NULL)
 		client_from_server(client_p, source_p, parc, parv, newts, nick, ugecos, ucertfp);

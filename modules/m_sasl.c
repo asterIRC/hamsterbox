@@ -151,26 +151,34 @@ mr_authenticate(struct Client *client_p, struct Client *source_p, int parc, char
         if(strlen(parv[1]) > 400)
         {
                 sendto_one(source_p, ":%s 905 %s :SASL message too long.", me.name, EmptyString(source_p->name) ? "*" : source_p->name);
-                return 0;
+                return;
         }
 
         if(!*source_p->id)
         {
                 /* Allocate a UID. */
-                strcpy(source_p->id, uid_get(source_p));
+                strcpy(source_p->id, uid_get(NULL));
                 hash_add_id(source_p);
         }
 
+	struct Client *target_p = find_server(ConfigFileEntry.services_name);
+
+	if (!target_p) {
+		sendto_one(source_p, ":%s NOTICE * :Service login not successful; SASL server not connected",
+			   me.name);
+		return;
+	}
+
         if (!strcmp(parv[1], "EXTERNAL") && source_p->certfp != NULL)
-                sendto_server(NULL, NULL, CAP_TS6|CAP_ENCAP, NOCAPS, ":%s ENCAP * SASL %s * S %s %s", me.id,
+                sendto_one(target_p, ":%s ENCAP * SASL %s * S %s :%s", me.id,
                                 source_p->id, parv[1],
                                 source_p->certfp);
         else
-                sendto_server(NULL, NULL, CAP_TS6|CAP_ENCAP, NOCAPS, ":%s ENCAP * SASL %s * S %s", me.id,
+                sendto_one(target_p, ":%s ENCAP * SASL %s * S :%s", me.id,
                                 source_p->id, parv[1]);
 
-	sendto_one(source_p, ":%s NOTICE %s :Attempting service login.",
-		   me.name, source_p->name);
+	sendto_one(source_p, ":%s NOTICE * :Attempting service login.",
+		   me.name);
 }
 
 /*
@@ -186,7 +194,7 @@ mr_authenticate(struct Client *client_p, struct Client *source_p, int parc, char
 static void
 me_sasl(struct Client *client_p, struct Client *source_p, int parc, char *parv[])
 {
-	struct Client *target_p;
+	struct Client *target_p = hash_find_id(parv[1]);
 
         if(*parv[3] == 'C')
                 sendto_one(target_p, "AUTHENTICATE %s", parv[4]);
@@ -199,6 +207,6 @@ me_sasl(struct Client *client_p, struct Client *source_p, int parc, char *parv[]
                 }
         }
 
-        return 0;
+        return;
 }
 
